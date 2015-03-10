@@ -1,0 +1,250 @@
+
+
+body {
+	background: #EFEFEF;
+	color: #444;
+	font-family: 'Muli', 'HelveticaNeue-Light', 'Helvetica Neue Light', 'Helvetica Neue', Helvetica, Arial, sans-serif;;
+	font-weight: 100;
+	min-height: 1000px;
+}
+
+
+.btn {
+	font-family: 'Muli', 'HelveticaNeue-Light', 'Helvetica Neue Light', 'Helvetica Neue', Helvetica, Arial, sans-serif;;
+	text-transform: none;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+    margin: 0 0 35px;
+    text-transform: uppercase;
+    font-family: 'Muli', 'HelveticaNeue-Light', 'Helvetica Neue Light', 'Helvetica Neue', Helvetica, Arial, sans-serif;;
+    font-weight: 700;
+    letter-spacing: 0;
+}
+
+[ng-cloak] {
+	display: none;
+}
+
+[ui-view].root {
+	height: 100%;
+}
+
+header.intro {
+	background-image: url(/images/sky.jpg);
+	background-color: #AAA;
+	height: 85%;
+}
+
+header.intro .intro-body {
+	padding: 70px 0;
+}
+
+header.intro h1 {
+	font-family: Montserrat;
+	letter-spacing: 1px;
+	color: #FFFFF6;
+	text-shadow: 0 2px 24px rgba(255, 255, 255, 0.9);
+}
+
+header.intro p,
+header.intro a {
+	color: #FFFFF6;
+	text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+header.intro .btn-circle {
+	box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+    transition: none;
+}
+header.intro .btn-circle:active {
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.6);
+    color: #00BBFF;
+}
+header.intro .btn-circle .fa {
+	opacity: 0.8;
+}
+
+.morefiles {
+	font-family: Montserrat;
+}
+
+.items-collection .thumbnail {
+	color: #444;
+	margin: 20px auto;
+	box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+    position: relative;
+}
+
+.items-collection .thumbnail img {
+    min-height: 50px;
+}
+
+.items-collection .thumbnail-overlay {
+    position: absolute;
+    bottom: 4px;
+    left: 4px;
+    right: 4px;
+    opacity: 0;
+    overflow: hidden;
+    background-color: rgba(0, 0, 0, 0.4);
+    color: white;
+    padding: 10px;
+    transition: opacity 0.2s ease-in-out;
+}
+
+.items-collection .thumbnail:hover .thumbnail-overlay {
+    opacity: 1;
+}
+
+.panel-signup {
+	color: #444;
+	padding: 40px;
+}
+
+.panel-signup h2 {
+	text-transform: none;
+	font-weight: 100;
+	font-size: 20px;
+}
+
+.row-centered {
+    text-align:center;
+}
+
+.col-centered {
+    display:inline-block;
+    float:none;
+    text-align:left;
+}
+
+.view-items {
+    display: table;
+    width: 100%;
+    height: 85%;
+    padding: 100px 0;
+    text-align: center;
+    color: #fff;
+    /* background-color: #AAA;
+    background: url(/images/sky.jpg) no-repeat bottom center scroll; */
+    background-color: #007483;
+    -webkit-background-size: cover;
+    -moz-background-size: cover;
+    background-size: cover;
+    -o-background-size: cover;
+}
+
+.view-items .view-items-body {
+    display: table-cell;
+    vertical-align: middle;
+    padding: 70px 0;
+}
+
+.btn-file {
+    position: relative;
+    overflow: hidden;
+}
+.btn-file input[type=file] {
+    position: absolute;
+    top: 0;
+    right: 0;
+    min-width: 100%;
+    min-height: 100%;
+    font-size: 100px;
+    text-align: right;
+    filter: alpha(opacity=0);
+    opacity: 0;
+    outline: none;
+    background: white;
+    cursor: inherit;
+    display: block;
+}
+
+.nav > li > .btn-nav {
+  position: relative;
+  display: block;
+  padding: 10px 15px;
+}
+
+.navbar-nav > li > .btn-nav {
+	padding-top: 10px;
+	padding-bottom: 10px;
+	line-height: 20px;
+}
+
+.navbar-custom .btn-nav {
+    color: #fff;
+}
+
+.navbar-custom .nav li.active {
+    outline: nonte;
+    background-color: rgba(255,255,255,.3);
+}
+
+.navbar-custom .nav li .btn-nav {
+    -webkit-transition: background .3s ease-in-out;
+    -moz-transition: background .3s ease-in-out;
+    transition: background .3s ease-in-out;
+}
+
+.navbar-custom .nav li .btn-nav:hover,
+.navbar-custom .nav li .btn-nav:focus,
+.navbar-custom .nav li .btn-nav.active {
+    outline: 0;
+    background-color: rgba(255,255,255,.3);
+}
+
+@media (min-width: 768px) {
+  .navbar-nav > li > .btn-nav {
+    padding-top: 15px;
+    padding-bottom: 15px;
+  }
+}
+
+.img-modal {
+    max-width: 100%;
+}
+
+.modal-header-form {
+    padding: 10px 15px 5px 15px;
+}
+
+.form-control-naked,
+.form-control-naked:focus {
+    border: 0;
+    box-shadow: none;
+    padding: 0;
+    max-width: 70%;
+}
+
+.btn-close {
+    padding: 6px;
+}
+
+/*
+.navbar {
+	background: white;
+}
+
+.container {
+	max-width: 600px;
+}
+
+
+
+.shadow {
+	box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+}
+
+.text-input-naked,
+.text-input-naked:focus {
+	border: none;
+	padding: 0;
+	box-shadow: none;
+	-webkit-box-shadow: none;
+}
+*/

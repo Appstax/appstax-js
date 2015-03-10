@@ -1,0 +1,18 @@
+<form>
+    <div class="modal-header">
+        <h3 class="modal-title">Log in</h3>
+    </div>
+    <div class="modal-body">
+        <div class="form-group">
+            <input type="email" placeholder="email" class="form-control" ng-model="model.email" ng-enter="ok();" autocapitalize="off" autocorrect="off" />
+        </div>
+        <div class="form-group">
+            <input type="password" placeholder="password" class="form-control" ng-model="model.password" ng-enter="ok();" autocapitalize="off" autocorrect="off" />
+        </div>
+        <div ng-show="model.error" class="alert alert-danger">{{model.error}}</div>
+    </div>
+    <div class="modal-footer">
+        <button type="submit" class="btn btn-primary" ng-click="ok()" ladda="activity" data-style="expand-left">OK</button>
+        <button class="btn" ng-click="cancel()">Cancel</button>
+    </div>
+</form>

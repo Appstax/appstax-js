@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html class="no-js" ng-app="MyBoxApp">
+<head>
+    <meta charset="utf-8">
+    <title></title>
+    <meta name="description" content="">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0">
+    <link rel="stylesheet" href="styles/bower_components/ladda/dist/ladda.min.css" />
+    <link rel="stylesheet" href="styles/themes/grayscale/css/bootstrap.css" /> 
+    <link rel="stylesheet" href="styles/themes/grayscale/css/grayscale.css" /> 
+    <link rel="stylesheet" href="styles/themes/grayscale/font-awesome-4.1.0/css/font-awesome.css" /> 
+    <link rel="stylesheet" href="//fonts.googleapis.com/css?family=Lora:400,700,400italic,700italic">
+    <link rel="stylesheet" href="//fonts.googleapis.com/css?family=Montserrat:400,700">
+    <link rel="stylesheet" href="//fonts.googleapis.com/css?family=Lato:100">
+    <link rel="stylesheet" href="//fonts.googleapis.com/css?family=Muli">
+    <link rel="stylesheet" href="styles/app/styles/site.css">
+</head>
+<body id="page-top" data-spy="scroll" data-target=".navbar-fixed-top">
+
+    <!-- Navigation -->
+    <nav ng-cloak class="navbar navbar-custom navbar-fixed-top" role="navigation" ng-controller="NavigationController">
+        <div class="container">
+            <div class="navbar-header">
+                <button type="button" class="navbar-toggle" ng-click="navbarCollapsed = !navbarCollapsed">
+                    <i class="fa fa-bars"></i>
+                </button>
+                <a ng-show="!isLoggedIn()" class="navbar-brand page-scroll" href="#page-top">
+                    <i class="fa fa-archive"></i> mybox
+                </a>
+                <a ng-show="isLoggedIn()" class="navbar-brand" href="/#/">
+                    <i class="fa fa-archive"></i> mybox
+                </a>
+            </div>
+
+            <!-- Collect the nav links, forms, and other content for toggling -->
+            <div class="collapse navbar-collapse navbar-right navbar-main-collapse" collapse="navbarCollapsed">
+                <ul ng-show="!isLoggedIn()" class="nav navbar-nav">
+                    <!-- Hidden li included to remove active class from about link when scrolled up past about section -->
+                    <li class="hidden"><a href="#page-top"></a></li>
+                    <li><a class="page-scroll" href="#about">About</a></li>
+                    <li><a class="page-scroll" href="#contact">Contact</a></li>
+                    <li><a href="#" ng-click="login()">Log in</a></li>
+                </ul>
+                <ul ng-show="isLoggedIn()" class="nav navbar-nav">
+                    <li><span class="btn-nav btn-file">Add files...<input type="file" multiple mbx-fileselect="addItems(files)"/></span></li>
+                    <li><a href="#" ng-click="logout()">Log out</a></li>
+                </ul>
+            </div>
+            <!-- /.navbar-collapse -->
+        </div>
+        <!-- /.container -->
+    </nav>
+
+    <div ng-cloak ui-view class="root"></div>
+
+    <!-- Footer -->
+    <!--
+    <footer>
+        <div class="container text-center">
+            <p>Copyright &copy; Appstax Technologies 2014</p>
+        </div>
+    </footer>
+    -->
+
+    <script src="scripts/vendor.js"></script>
+    <script src="scripts/app.js"></script>
+</body>
+</html>

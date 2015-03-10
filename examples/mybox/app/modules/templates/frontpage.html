@@ -1,0 +1,90 @@
+<!-- Intro Header -->
+<header class="intro" mbx-filedrop="addItems(files)">
+    <div class="intro-body">
+        <div class="container" ng-show="!showSignup">
+            <div class="row">
+                <div class="col-md-8 col-md-offset-2">
+                    <h1 class="brand-heading">mybox</h1>
+                    <p class="intro-text">Drop some files to get started!</p>                  
+                    <span class="btn btn-circle btn-file">
+                        <i class="fa fa-folder-open-o"></i>
+                        <input type="file" mbx-fileselect="addItems(files)" multiple />
+                    </span>
+                    <!--
+                    <p><a href="#about" class="page-scroll">
+                        Learn more
+                    </a></p>
+                    -->
+                </div>
+            </div>
+        </div>
+        <div class="container items-collection" ng-show="showSignup">
+            <div class="row row-centered">
+                <div class="col-xs-6 col-sm-3 col-md-3 col-centered" ng-repeat="item in items.slice(0,maxShowItems)">
+                    <div class="thumbnail">
+                        <img class="" alt="" ng-src="{{item.file.url}}">
+                    </div>
+                </div>
+            </div> 
+            <div class="row row-centered" ng-show="items.length &gt; maxShowItems">
+                <p class="morefiles">+ {{items.length - maxShowItems}} more files</p>
+            </div> 
+            <div class="row row-centered">
+                <div class="col-md-6 col-sm-9 col-xs-12 col-centered">
+                    <form class="panel panel-signup">
+                        <h2>Sign up now to store your files!</h2>
+                        <div class="form-group">
+                            <input type="text" class="form-control" ng-model="signup.name" placeholder="full name" />
+                        </div>
+                        <div class="form-group">
+                            <input type="email" class="form-control" ng-model="signup.email" placeholder="email" />
+                        </div>
+                        <div class="form-group">
+                            <input type="password" class="form-control" ng-model="signup.password" placeholder="password" />
+                        </div>
+                        <div class="form-group">
+                            <button class="btn btn-primary" ng-click="submitSignup()" ladda="upload.activity" data-style="expand-right">Sign up!</button>
+                            <span>&nbsp;{{upload.status}}</span>
+                        </div>
+                        <div class="alert alert-danger" ng-show="error">{{error}}</div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</header>
+
+<!-- About Section -->
+<section ng-show="items.length == 0" id="about" class="container content-section text-center">
+    <div class="row">
+        <div class="col-lg-8 col-lg-offset-2">
+            <h2>About MyBox</h2>
+            <p>MyBox is ...</p>
+        </div>
+    </div>
+</section>
+
+<!-- Contact Section -->
+<section ng-show="items.length == 0" id="contact" class="container content-section text-center">
+    <div class="row">
+        <div class="col-lg-8 col-lg-offset-2">
+            <h2>Contact Appstax</h2>
+            <p>Feel free to email us!</p>
+            <p><a href="mailto:karl-erik@appstax.com">karl-erik@appstax.com</a>
+            </p>
+            <!--
+            <ul class="list-inline banner-social-buttons">
+                <li>
+                    <a href="https://twitter.com/SBootstrap" class="btn btn-default btn-lg"><i class="fa fa-twitter fa-fw"></i> <span class="network-name">Twitter</span></a>
+                </li>
+                <li>
+                    <a href="https://github.com/IronSummitMedia/startbootstrap" class="btn btn-default btn-lg"><i class="fa fa-github fa-fw"></i> <span class="network-name">Github</span></a>
+                </li>
+                <li>
+                    <a href="https://plus.google.com/+Startbootstrap/posts" class="btn btn-default btn-lg"><i class="fa fa-google-plus fa-fw"></i> <span class="network-name">Google+</span></a>
+                </li>
+            </ul>
+            -->
+        </div>
+    </div>
+</section>

@@ -1,0 +1,21 @@
+{
+    "preset": "crockford",
+
+    "validateQuoteMarks" : "\"",
+    "requireMultipleVarDecl" : null,
+    "disallowDanglingUnderscores": null,
+    "requireBlocksOnNewline": 2,
+    "requireSpaceAfterKeywords": [
+        "do",
+        "else",
+        "case",
+        "try",
+        "void",
+        "return",
+        "typeof"
+    ],
+
+    "excludeFiles": [
+        "src/nibbler.js"
+    ]
+}

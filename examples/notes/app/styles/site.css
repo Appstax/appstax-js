@@ -1,0 +1,145 @@
+
+body {
+   font-family: "HelveticaNeue-Light", "Helvetica Neue Light", "Helvetica Neue", Helvetica, Arial, "Lucida Grande", sans-serif; 
+   font-weight: 300;
+   background: white;
+   color: #444;
+}
+
+[ng-cloak] {
+	display: none;
+}
+
+.nav, 
+.pagination, 
+.carousel, 
+a { 
+	cursor: pointer; 
+}
+
+.container {
+	max-width: 600px;
+}
+
+.modal-dialog {
+	color: black;
+}
+
+.accordion-toggle {
+	display: block;
+}
+
+.accordion-toggle:hover {
+	text-decoration: none !important;
+}
+
+accordion .panel {
+	border: none;
+	margin-top: 0px !important;
+	border-radius: 3px !important;
+	background: transparent;
+	overflow: visible !important;
+}
+
+accordion .panel-heading {
+	padding: 0;
+}
+
+accordion .accordion-toggle {
+	padding: 10px 15px;
+}
+
+accordion .panel-title {
+	background-image: linear-gradient(to bottom, rgba(0, 0, 0, 0), rgba(0, 0, 0, 0.2));
+}
+
+accordion .panel-title:hover {
+	background-image: linear-gradient(to bottom, rgba(0, 0, 0, 0.1), rgba(0, 0, 0, 0.3));
+}
+
+accordion .panel-body {
+	background: #EFEFEF;
+	color: black;
+}
+
+.label-sharedwith {
+	font-size: 10px;
+	margin-right: 5px;
+	background-color: rgba(255,255,255,0.3);
+}
+
+.label-sharedwith .glyphicon {
+	color: white;
+	opacity: 0.5;
+	overflow: hidden;
+	width: 0;
+	transition: width .4s;
+    -webkit-transition: width .4s;
+}
+
+.label-sharedwith:hover .glyphicon {
+	width: 10px;
+	margin-right: 4px;
+}
+
+.label-sharedwith:hover .glyphicon:hover {
+	opacity: 1;
+}
+
+.signup-form {
+	width: 50%;
+}
+
+.note-color-0  .panel-heading { background: rgba(24,73,128,0.8); color: white; }
+.note-color-1  .panel-heading { background: rgba(24,171,172,0.8); color: white; }
+.note-color-2  .panel-heading { background: rgba(65,143,43,0.8); color: white; }
+.note-color-3  .panel-heading { background: rgba(113,83,153,0.8); color: white; }
+.note-color-4  .panel-heading { background: rgba(165,62,151,0.8); color: white; }
+.note-color-5  .panel-heading { background: rgba(216,176,109,0.8); color: white; }
+.note-color-6  .panel-heading { background: rgba(241,142,24,0.8); color: white; }
+.note-color-7  .panel-heading { background: rgba(240,73,23,0.8); color: white; }
+.note-color-8  .panel-heading { background: rgba(219,24,23,0.8); color: white; }
+.note-color-9  .panel-heading { background: rgba(132,23,24,0.8); color: white; }
+.note-color-10 .panel-heading { background: rgba(25,143,242,0.8); color: white; }
+.note-color-11 .panel-heading { background: rgba(24,210,212,0.8); color: white; }
+.note-color-12 .panel-heading { background: rgba(128,241,65,0.8); color: white; }
+.note-color-13 .panel-heading { background: rgba(172,125,241,0.8); color: white; }
+.note-color-14 .panel-heading { background: rgba(241,82,217,0.8); color: white; }
+.note-color-15 .panel-heading { background: rgba(242,215,25,0.8); color: white; }
+.note-color-16 .panel-heading { background: rgba(0,196,103,0.8); color: white; }
+
+.color-menu {
+	padding: 8px;
+	font-size: inherit;
+	line-height: 1em;
+	right: 0;
+	left: auto;
+}
+
+.color-menu-item {
+	width:20px;
+	height:20px;
+	display:inline-block;
+	margin-right: 4px;
+}
+
+.color-menu-item-0  { background: rgba(24,73,128,0.8); }
+.color-menu-item-1  { background: rgba(24,171,172,0.8); }
+.color-menu-item-2  { background: rgba(65,143,43,0.8); }
+.color-menu-item-3  { background: rgba(113,83,153,0.8); }
+.color-menu-item-4  { background: rgba(165,62,151,0.8); }
+.color-menu-item-5  { background: rgba(216,176,109,0.8); }
+.color-menu-item-6  { background: rgba(241,142,24,0.8); }
+.color-menu-item-7  { background: rgba(240,73,23,0.8); }
+.color-menu-item-8  { background: rgba(219,24,23,0.8); }
+.color-menu-item-9  { background: rgba(132,23,24,0.8); }
+.color-menu-item-10 { background: rgba(25,143,242,0.8); }
+.color-menu-item-11 { background: rgba(24,210,212,0.8); }
+.color-menu-item-12 { background: rgba(128,241,65,0.8); }
+.color-menu-item-13 { background: rgba(172,125,241,0.8); }
+.color-menu-item-14 { background: rgba(241,82,217,0.8); }
+.color-menu-item-15 { background: rgba(242,215,25,0.8); }
+.color-menu-item-16 { background: rgba(0,196,103,0.8); }
+
+
+

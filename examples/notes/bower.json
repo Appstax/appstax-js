@@ -1,0 +1,12 @@
+{
+  "name": "appstax-starterproject-angular",
+  "version": "0.0.0",
+  "dependencies": {
+    "angular": "latest",
+    "angular-bootstrap": "latest",
+    "bootstrap": "3.1.1",
+    "angular-elastic": "latest",
+    "ladda": "latest",
+    "angular-ladda": "latest"
+  }
+}

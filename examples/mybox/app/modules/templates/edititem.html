@@ -1,0 +1,17 @@
+
+<form>
+    <div class="modal-header modal-header-form">
+        <button class="pull-right btn btn-primary" ng-show="hasChanges()" ng-click="save()">Save</button>
+        <a href="#" class="btn btn-close pull-right" ng-show="!hasChanges()" ng-click="close()">
+            <i class="fa fa-times"></i>
+        </a>
+        <input type="text" class="form-control form-control-naked" ng-model="changes.description" ng-enter="save()" placeholder="Click to add a description" />
+    </div>
+    <div class="modal-body">
+        <div class="row row-centered">
+            <div class="col col-centered">
+                <img ng-src="{{item.file.imageUrl('resize', {width:1000})}}" class="img-responsive" mbx-maxheight="80%" />
+            </div>
+        </div>
+    </div>
+</form>

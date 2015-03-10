@@ -1,0 +1,19 @@
+
+<div class="view-items" mbx-filedrop="addItems(files)">
+    <div ng-show="items.length == 0" class="alert alert-info">You have no items!</div>
+    <div class="container items-collection">
+        <div class="row row-centered">
+            <div class="col-xs-6 col-sm-3 col-md-3 col-centered" ng-repeat="item in items.slice(0, limit)">
+                <div class="thumbnail" ng-click="editItem(item)">
+                    <img class="" alt="" ng-src="{{item.file.imageUrl('resize', {width:400})}}">
+                    <div class="thumbnail-overlay" ng-show="item.description">
+                        {{item.description}}
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="row row-centered" ng-show="limit &lt; items.length">
+            <a href="#" class="btn" ng-click="showMore($event)">Show more</a>
+        </div>
+    </div>
+</div>

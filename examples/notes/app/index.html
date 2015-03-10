@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html class="no-js" ng-app="AppstaxNotes">
+<head>
+    <meta charset="utf-8">
+    <title></title>
+    <meta name="description" content="">
+    <meta name="viewport" content="width=device-width">
+    <link rel="stylesheet" href="styles/ladda/dist/ladda.min.css" />
+    <link rel="stylesheet" href="styles/bootstrap/dist/css/bootstrap.css" /> 
+    <link rel="stylesheet" href="styles/site.css">
+</head>
+<body>
+    <div class="container" ng-cloak>
+        <div class="page-header">
+            <h1>Appstax Notes</h1>
+            <div ng-controller="LogoutCtl" ng-show="loggedIn">
+                Logged in as {{username}}. <a ng-click="logout()">Log out</a>
+            </div>
+        </div>
+        <div ng-controller="LoginCtl">
+            <form novalidate class="simple-form signup-form" ng-show="!loggedIn">
+                <div ng-show="mode=='signup'">
+                    <h3>Sign up</h3>
+                    <p>Already registered? <a ng-click="setMode('login')">Log in</a></p>
+                </div>
+                <div ng-show="mode=='login'">
+                    <h3>Log in</h3>
+                    <p>Need an account? <a ng-click="setMode('signup')">Sign up</a></p>
+                </div>
+                <div class="form-group">
+                    <input ng-model="username" placeholder="username" type="text" class="form-control" />
+                </div>
+                <div class="form-group">
+                    <input ng-model="password" placeholder="password" type="password" class="form-control" />
+                </div>
+                <div ng-show="error" class="alert alert-danger">{{error}}</div>
+                <div class="form-group">
+                    <button type="submit" class="btn btn-primary" ng-click="submit()" ladda="activity" data-style="expand-right">{{submitLabel[mode]}}</button>
+                </div>
+            </form>
+        </div>
+        <div ng-controller="NotesCtl" ng-show="loggedIn">
+            <p ng-show="loading">Loading ...</p>
+            <p ng-show="empty">You have no notes</p>
+            <p><button ng-show="!loading" ng-click="add()" class="btn btn-primary">+ Add new note</button></p>
+            <accordion close-others="false">
+                <accordion-group ng-repeat="note in notes" is-open="open[$index]" class="note-color-{{note.ColorIndex}}">
+                    <accordion-heading>
+                        <div ng-show="editing[$index]">
+                            <div class="input-group" ng-click="titleInputClicked($event)">
+                                <input type="text" class="form-control" ng-model="note.Title"/>
+                                <div class="input-group-btn dropdown" dropdown>
+                                    <button class="btn btn-default dropdown-toggle" dropdown-toggle>Color <span class="caret"></span></button>
+                                    <div class="dropdown-menu color-menu" role="menu">
+                                        <span ng-repeat="colorIndex in [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16]" class="color-menu-item color-menu-item-{{$index}}" ng-click="selectColor(note, $index)"></span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div ng-show="!editing[$index]">
+                            <span>{{note.Title}}&nbsp;</span>
+                            <i class="pull-right glyphicon" ng-class="{'glyphicon-chevron-down': open[$index], 'glyphicon-chevron-right': !open[$index]}"></i>
+                            <span ng-repeat="username in note.SharedWith" class="pull-right label label-default label-sharedwith"><a class="glyphicon glyphicon-remove" ng-click="unshare(note, username);$event.stopPropagation();"></a>{{username}}</span>
+                        </div>
+                    </accordion-heading>
+                    <span class="pull-right" ng-show="!editing[$index]">
+                        <a ng-click="edit(note, $index)">edit</a>
+                        &nbsp;|&nbsp;
+                        <a ng-click="share(note, $index)">share</a>
+                    </span>
+                    <div ng-show="!editing[$index]" style="white-space: pre;" ng-click="edit(note, $index)">{{note.Content}}&nbsp;</div>
+                    <div ng-show="editing[$index]">
+                        <div class="form-group">
+                            <textarea ng-model="note.Content" class="form-control" msd-elastic></textarea>
+                        </div>
+                        <button ng-click="save(note, $index)" class="btn btn-primary" ladda="saveActivity[$index]" data-style="expand-right">Save</button>
+                        &nbsp;<a ng-click="cancelEdit(note, $index);">Cancel</a>
+                    </div>
+                </accordion-group>
+            </accordion>
+
+            <script type="text/ng-template" id="share.html">
+                <form>
+                    <div class="modal-header">
+                        <h3 class="modal-title">Share '{{note.Title}}'</h3>
+                    </div>
+                    <div class="modal-body">
+                        <p>Who will you share your note with?</p>
+                        <div class="form-group">
+                            <input type="text" placeholder="username" class="form-control" ng-model="username" ng-enter="ok();" />
+                        </div>
+                        <div ng-show="error" class="alert alert-danger">{{error}}</div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="submit" class="btn btn-primary" ng-click="ok()" ladda="activity" data-style="expand-left">OK</button>
+                        <button class="btn" ng-click="cancel()">Cancel</button>
+                    </div>
+                </form>
+            </script>
+        </div>
+    </div>
+   
+    <script src="scripts/vendor.js"></script>
+    <script src="scripts/app.js"></script>
+</body>
+</html>
