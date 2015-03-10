@@ -1,13 +1,12 @@
 {
   "name": "appstax-starterproject-angular",
   "version": "0.0.0",
-  "scripts": {
-    
-  },
+  "scripts": {},
   "devDependencies": {
     "gulp": "^3.8.7",
-    "gulp-concat": "^2.3.4",
     "gulp-clean": "^0.3.1",
-    "gulp-connect": "^2.0.6"
+    "gulp-concat": "^2.3.4",
+    "gulp-connect": "^2.0.6",
+    "main-bower-files": "^2.5.0"
   }
 }

@@ -2,6 +2,7 @@ var gulp = require('gulp');
 var clean = require('gulp-clean');
 var connect = require('gulp-connect');
 var concat = require('gulp-concat');
+var bowerFiles = require('main-bower-files');
 
 gulp.task('default', ['js', 'js-vendor', 'html', 'css']);
 gulp.task('deploy', ['js', 'js-vendor', 'html', 'css']);
@@ -19,15 +20,7 @@ gulp.task('js', function(){
 });
 
 gulp.task('js-vendor', function(){
-    gulp.src([
-            'app/vendor/**/*.js',
-            'bower_components/jquery/dist/jquery.js',
-            'bower_components/angular/angular.js',
-            'bower_components/angular/angular.js',
-            'bower_components/angular-bootstrap/ui-bootstrap.js',
-            'bower_components/angular-bootstrap/ui-bootstrap-tpls.js',
-            'bower_components/spin.js/spin.js'
-            ])
+    gulp.src(bowerFiles())
         .pipe(concat('vendor.js'))
         .pipe(gulp.dest('dist/scripts'));
 });
