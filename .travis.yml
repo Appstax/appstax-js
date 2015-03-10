@@ -1,18 +1,24 @@
 language: node_js
 node_js:
-  - '0.12'
+- '0.12'
 script:
-  - npm run-script test-ci
-  - npm run-script build-sdk
+- npm run-script test-ci
+- npm run-script build-sdk
 git:
   depth: 1
 deploy:
-  provider: releases
-  api_key:
-    secure: jUE2mYhPRhTQ87cDcSXIiI1ncoqTq1vNeKJBqb8wbpkYE6Fmp5S7/nBV+iXNwyoV9Ls3LvvEz6FLjecX7UI2eVrLtjLGZhro9HqCBKoWDX7H6usLR6WBFeycY+0xFTTMRTTE/0LfTpOrZrbs03wyt8WhlyvKHoSBpjN6UPBEDvs=
-  skip_cleanup: true
-  file:
-    - "build/appstax-js-sdk.zip"
-    - "build/appstax.js"
-  on:
-    tags: true
+  - provider: releases
+    api_key:
+      secure: jUE2mYhPRhTQ87cDcSXIiI1ncoqTq1vNeKJBqb8wbpkYE6Fmp5S7/nBV+iXNwyoV9Ls3LvvEz6FLjecX7UI2eVrLtjLGZhro9HqCBKoWDX7H6usLR6WBFeycY+0xFTTMRTTE/0LfTpOrZrbs03wyt8WhlyvKHoSBpjN6UPBEDvs=
+    skip_cleanup: true
+    file:
+      - "build/appstax-js-sdk.zip"
+      - "build/appstax.js"
+    on:
+      tags: true
+  - provider: npm
+    email: support@appstax.com
+    api_key:
+      secure: BlEoVoTi1S6FyoGT3lbKGTPposGazzbOdXoprFBYdnDFXcOWTCQWH85iMl9ufGJ8KPwvdQ7/ci9qRnJQcCubZY0jTIgBsqefOVpLQX5dCQeYACzk7oZv8ZkVvUF9BF7auWMjUIM7XVXNDxNNHgpdlHtRwtSBVW6nFaKQT9ykh1U=
+    on:
+      tags: true
