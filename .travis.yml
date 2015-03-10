@@ -10,6 +10,7 @@ deploy:
   provider: releases
   api_key:
     secure: jUE2mYhPRhTQ87cDcSXIiI1ncoqTq1vNeKJBqb8wbpkYE6Fmp5S7/nBV+iXNwyoV9Ls3LvvEz6FLjecX7UI2eVrLtjLGZhro9HqCBKoWDX7H6usLR6WBFeycY+0xFTTMRTTE/0LfTpOrZrbs03wyt8WhlyvKHoSBpjN6UPBEDvs=
+  skip_cleanup: true
   file:
     - "build/appstax-js-sdk.zip"
     - "build/appstax.js"
