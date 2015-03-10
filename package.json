@@ -1,6 +1,6 @@
 {
-  "name": "appstax-js",
-  "description": "AppStax JavaScript SDK",
+  "name": "appstax",
+  "description": "Appstax JavaScript SDK",
   "version": "0.9.4",
   "homepage": "https://appstax.com/",
   "author": "Appstax Technologies AS",
