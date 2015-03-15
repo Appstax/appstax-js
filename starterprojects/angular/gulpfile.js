@@ -9,35 +9,35 @@ gulp.task('deploy', ['js', 'js-vendor', 'html', 'css']);
 gulp.task('serve', ['deploy','server']);
 
 gulp.task('clean', function() {
-    return gulp.src('dist')
+    return gulp.src('public')
                .pipe(clean());
 });
 
 gulp.task('js', function(){
     gulp.src(['app/module.js', 'app/modules/**/*.js'])
         .pipe(concat('app.js'))
-        .pipe(gulp.dest('dist/scripts'));
+        .pipe(gulp.dest('public/scripts'));
 });
 
 gulp.task('js-vendor', function(){
-    gulp.src(bowerFiles())
+    gulp.src(bowerFiles('**/*.js'))
         .pipe(concat('vendor.js'))
-        .pipe(gulp.dest('dist/scripts'));
+        .pipe(gulp.dest('public/scripts'));
 });
 
 gulp.task('html', function(){
     gulp.src(['app/index.html', 'app/modules/**/*html'],{base: './app'})
-        .pipe(gulp.dest('dist'));
+        .pipe(gulp.dest('public'));
 });
 
 gulp.task('css', function(){
     gulp.src(['bower_components/**/*.css', 'app/styles/**/*.css'])
-        .pipe(gulp.dest('dist/styles'));
+        .pipe(gulp.dest('public/styles'));
 });
 
 gulp.task('server', function() {
     connect.server({
         port:9000,
-        root: ['.', 'dist']
+        root: ['.', 'public']
     });
 });
