@@ -67,7 +67,7 @@ gulp.task("bundle-uglify", ["bundle"], function() {
                .pipe(gulp.dest("./build/"));
 })
 
-gulp.task("sdk-assemble-bundle", ["bundle"], function() {
+gulp.task("sdk-assemble-bundle", ["bundle", "bundle-uglify"], function() {
     return gulp.src(["build/appstax.js","build/appstax.min.js"])
                .pipe(gulp.dest("build/appstax-js-sdk"))
                .pipe(gulp.dest("build/appstax-js-sdk/examples/notes/app/vendor"))
