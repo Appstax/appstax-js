@@ -69,10 +69,10 @@ gulp.task("bundle-uglify", ["bundle"], function() {
 
 gulp.task("sdk-assemble-bundle", ["bundle", "bundle-uglify"], function() {
     return gulp.src(["build/appstax.js","build/appstax.min.js"])
-               .pipe(gulp.dest("build/appstax-js-sdk"))
-               .pipe(gulp.dest("build/appstax-js-sdk/examples/notes/app/vendor"))
-               .pipe(gulp.dest("build/appstax-js-sdk/starterprojects/angular/app/vendor"))
-               .pipe(gulp.dest("build/appstax-js-sdk/starterprojects/basic/"));
+               .pipe(gulp.dest("build/appstax-js"))
+               .pipe(gulp.dest("build/appstax-js/examples/notes/app/vendor"))
+               .pipe(gulp.dest("build/appstax-js/starterprojects/angular/app/vendor"))
+               .pipe(gulp.dest("build/appstax-js/starterprojects/basic/"));
 });
 
 gulp.task("sdk-assemble-examples", ["bundle"], function() {
@@ -83,19 +83,19 @@ gulp.task("sdk-assemble-examples", ["bundle"], function() {
                      "!examples/mybox/{bower_components,bower_components/**}",
                      "!examples/mybox/{node_modules,node_modules/**}",
                      "!examples/mybox/{dist,dist/**}"])
-               .pipe(gulp.dest("build/appstax-js-sdk/examples"));
+               .pipe(gulp.dest("build/appstax-js/examples"));
 });
 
 gulp.task("sdk-assemble-starterprojects", ["bundle"], function() {
     return gulp.src(["starterprojects/**/*",
                      "!starterprojects/angular/{bower_components,bower_components/**}",
                      "!starterprojects/angular/{node_modules,node_modules/**}"])
-               .pipe(gulp.dest("build/appstax-js-sdk/starterprojects"));
+               .pipe(gulp.dest("build/appstax-js/starterprojects"));
 });
 
 gulp.task("sdk-zip", ["sdk-assemble-examples", "sdk-assemble-starterprojects", "sdk-assemble-bundle"], function() {
-    return gulp.src("build/appstax-js-sdk/**/*")
-               .pipe(zip("appstax-js-sdk.zip"))
+    return gulp.src("build/appstax-js/**/*")
+               .pipe(zip("appstax-js.zip"))
                .pipe(gulp.dest("build"));
 });
 
