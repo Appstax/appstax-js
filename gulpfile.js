@@ -94,7 +94,7 @@ gulp.task("sdk-assemble-starterprojects", ["bundle"], function() {
 });
 
 gulp.task("sdk-zip", ["sdk-assemble-examples", "sdk-assemble-starterprojects", "sdk-assemble-bundle"], function() {
-    return gulp.src("build/appstax-js/**/*")
+    return gulp.src("build/appstax-js/**/*", {base: "build"})
                .pipe(zip("appstax-js.zip"))
                .pipe(gulp.dest("build"));
 });
