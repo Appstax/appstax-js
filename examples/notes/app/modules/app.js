@@ -1,5 +1,5 @@
 
-appstax.init("WE8wZVZQc29tSkc0");
+appstax.init("NjE0M2Y0ODUtYTY5ZC00YmQwLTZlMTQtMWFjNTFmNzYxN2Rl");
 
 var app = angular.module("AppstaxNotes", ["ui.bootstrap","monospaced.elastic","angular-ladda"]);
 
