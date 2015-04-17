@@ -124,7 +124,7 @@ describe("API Client", function() {
 
     it("should url encode parameters", function() {
         apiClient.init({baseUrl:"http://localhost:1337/"});
-        expect(apiClient.url("/hello/:who", {who:"w ø r l d"})).to.equal("http://localhost:1337/hello/w+%C3%B8+r+l+d");
+        expect(apiClient.url("/hello/:who", {who:"w ø r l d"})).to.equal("http://localhost:1337/hello/w%20%C3%B8%20r%20l%20d");
     });
 
     it("should request url token", function() {

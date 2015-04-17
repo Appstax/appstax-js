@@ -60,7 +60,7 @@ describe("Object queries", function() {
         appstax.find("friends", "name like '%Jo%' and gender='female'");
         expect(requests).to.have.length(1);
         expect(requests[0].method).to.equal("GET");
-        expect(requests[0].url).to.equal("http://localhost:3000/objects/friends?filter=name+like+%27%25Jo%25%27+and+gender%3D%27female%27");
+        expect(requests[0].url).to.equal("http://localhost:3000/objects/friends?filter=name%20like%20%27%25Jo%25%27%20and%20gender%3D%27female%27");
     });
 
     it("should send query string from query object in filter parameter", function() {
@@ -69,7 +69,7 @@ describe("Object queries", function() {
         appstax.find("friends", query);
         expect(requests).to.have.length(1);
         expect(requests[0].method).to.equal("GET");
-        expect(requests[0].url).to.equal("http://localhost:3000/objects/friends?filter=name+like+%27%25lex%25%27+and+gender%3D%27male%27");
+        expect(requests[0].url).to.equal("http://localhost:3000/objects/friends?filter=name%20like%20%27%25lex%25%27%20and%20gender%3D%27male%27");
     });
 
     it("should send result from query function in filter parameter", function() {
@@ -79,28 +79,28 @@ describe("Object queries", function() {
         });
         expect(requests).to.have.length(1);
         expect(requests[0].method).to.equal("GET");
-        expect(requests[0].url).to.equal("http://localhost:3000/objects/friends?filter=name+like+%27%25ha%25%27+and+gender%3D%27female%27");
+        expect(requests[0].url).to.equal("http://localhost:3000/objects/friends?filter=name%20like%20%27%25ha%25%27%20and%20gender%3D%27female%27");
     });
 
     it("should send property query in filter parameter", function() {
         appstax.find("friends", {gender:"female", hometown:"New York"});
         expect(requests).to.have.length(1);
         expect(requests[0].method).to.equal("GET");
-        expect(requests[0].url).to.equal("http://localhost:3000/objects/friends?filter=gender%3D%27female%27+and+hometown%3D%27New+York%27");
+        expect(requests[0].url).to.equal("http://localhost:3000/objects/friends?filter=gender%3D%27female%27%20and%20hometown%3D%27New%20York%27");
     });
 
     it("should send property search in filter parameter", function() {
         appstax.search("notes", {title:"music", content:"music"});
         expect(requests).to.have.length(1);
         expect(requests[0].method).to.equal("GET");
-        expect(requests[0].url).to.equal("http://localhost:3000/objects/notes?filter=title+like+%27%25music%25%27+or+content+like+%27%25music%25%27");
+        expect(requests[0].url).to.equal("http://localhost:3000/objects/notes?filter=title%20like%20%27%25music%25%27%20or%20content%20like%20%27%25music%25%27");
     });
 
     it("should send multi-property search in filter parameter", function() {
         appstax.search("recipes", "burger", ["title", "description", "tags"]);
         expect(requests).to.have.length(1);
         expect(requests[0].method).to.equal("GET");
-        expect(requests[0].url).to.equal("http://localhost:3000/objects/recipes?filter=title+like+%27%25burger%25%27+or+description+like+%27%25burger%25%27+or+tags+like+%27%25burger%25%27");
+        expect(requests[0].url).to.equal("http://localhost:3000/objects/recipes?filter=title%20like%20%27%25burger%25%27%20or%20description%20like%20%27%25burger%25%27%20or%20tags%20like%20%27%25burger%25%27");
     });
 
     it("should fulfill promise with queried objects", function() {

@@ -35,7 +35,7 @@ function urlFromTemplate(template, parameters) {
 }
 
 function uriEncode(string) {
-    return encodeURIComponent(string).replace(/%20/g, "+").replace(/'/g, "%27");
+    return encodeURIComponent(string).replace(/'/g, "%27");
 }
 
 function request(method, url, data) {

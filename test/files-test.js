@@ -77,6 +77,18 @@ describe("Files", function() {
         */
     });
 
+    it("should encode file names with whitespace in url", function() {
+        apiClient.urlToken("4321");
+        var object = appstax.object("myobjects");
+        object.file1 = appstax.file(mockFile("file with space.png"));
+
+        var promise = object.save();
+        requests[0].respond(200, {}, JSON.stringify({sysObjectId:"id1234"}));
+
+        expect(requests[1].method).to.equal("PUT");
+        expect(requests[1].url).to.equal("http://localhost:3000/files/myobjects/id1234/file1/file%20with%20space.png?token=4321");
+    });
+
     it("should update status and fulfill save promise after all files finish saving", function() {
         var object = appstax.object("myobjects");
         object.info = appstax.file(mockFile("info.pdf"));
