@@ -40,6 +40,7 @@
     "gulp-watch": "^0.6.9",
     "gulp-webserver": "0.7.0",
     "gulp-zip": "2.0.1",
+    "jscs": "1.11.3",
     "karma": "0.12.16",
     "karma-browserify": "0.2.1",
     "karma-chai": "0.1.0",
