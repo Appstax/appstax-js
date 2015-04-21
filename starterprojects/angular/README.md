@@ -15,3 +15,7 @@ Then you build and run:
 	> gulp serve
 
 ... and point your browser to http://localhost:9000/
+
+### Learn more
+
+Read the guide at [appstax.com/docs](https://appstax.com/docs/JavaScript-SDK-Guide/) to learn all about our JavaScript API.
