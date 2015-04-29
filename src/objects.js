@@ -70,7 +70,7 @@ function createObject(collectionName, properties) {
                     sysValues[key] = value;
                 }
             } else if(typeof value.sysDatatype == "string") {
-                filteredProperties[key] = createPropertyWithDataType(value);
+                filteredProperties[key] = createPropertyWithDataType(key, value, object);
             } else {
                 filteredProperties[key] = value;
             }
@@ -83,11 +83,11 @@ function createObject(collectionName, properties) {
     return object;
 }
 
-function createPropertyWithDataType(value) {
+function createPropertyWithDataType(key, value, object) {
     switch(value.sysDatatype) {
         case "file": return files.create({
-            filename:value.Filename,
-            url: apiClient.url(value.url + "?token=:token", {token:apiClient.urlToken()})
+            filename: value.filename,
+            url: files.urlForFile(object.collectionName, object.id, key, value.filename)
         });
     }
     return null;

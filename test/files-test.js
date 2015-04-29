@@ -9,7 +9,7 @@ describe("Files", function() {
     var xhr, requests;
 
     beforeEach(function() {
-        appstax.init({baseUrl: "http://localhost:3000/", log:false});
+        appstax.init({appKey:"testappkey", baseUrl: "http://localhost:3000/", log:false});
         requests = [];
         xhr = sinon.useFakeXMLHttpRequest();
         xhr.onCreate = function(request) {
@@ -157,22 +157,43 @@ describe("Files", function() {
 
         requests[0].respond(200, {}, JSON.stringify({objects:[
             {   sysObjectId:"001",
-                profileImage:{sysDatatype:"file", url:"files/1", filename:"name1"},
-                backgroundImage:{sysDatatype:"file", url:"files/2", filename:"name2"}},
-            {   sysObjectId:"001",
-                profileImage:{sysDatatype:"file", url:"files/3", filename:"name3"},
-                backgroundImage:{sysDatatype:"file", url:"files/4", filename:"name4"}}
+                profileImage:{sysDatatype:"file", url:"files/profiles/001/profileImage/name1", filename:"name1"},
+                backgroundImage:{sysDatatype:"file", url:"files/profiles/001/backgroundImage/name2", filename:"name2"}},
+            {   sysObjectId:"002",
+                profileImage:{sysDatatype:"file", url:"files/profiles/002/profileImage/name3", filename:"name3"},
+                backgroundImage:{sysDatatype:"file", url:"files/profiles/002/backgroundImage/name4", filename:"name4"}}
         ]}));
 
         return promise.then(function(objects) {
-            expect(objects[0].profileImage.url).to.equal("http://localhost:3000/files/1?token=xyz");
-            expect(objects[1].profileImage.url).to.equal("http://localhost:3000/files/3?token=xyz");
-            expect(objects[0].backgroundImage.url).to.equal("http://localhost:3000/files/2?token=xyz");
-            expect(objects[1].backgroundImage.url).to.equal("http://localhost:3000/files/4?token=xyz");
+            expect(objects[0].profileImage.url).to.equal("http://localhost:3000/files/profiles/001/profileImage/name1?token=xyz");
+            expect(objects[1].profileImage.url).to.equal("http://localhost:3000/files/profiles/002/profileImage/name3?token=xyz");
+            expect(objects[0].backgroundImage.url).to.equal("http://localhost:3000/files/profiles/001/backgroundImage/name2?token=xyz");
+            expect(objects[1].backgroundImage.url).to.equal("http://localhost:3000/files/profiles/002/backgroundImage/name4?token=xyz");
             expect(appstax.files.status(objects[0].profileImage)).to.equal("saved");
             expect(appstax.files.status(objects[1].profileImage)).to.equal("saved");
             expect(appstax.files.status(objects[0].backgroundImage)).to.equal("saved");
             expect(appstax.files.status(objects[1].backgroundImage)).to.equal("saved");
+        });
+    });
+
+    it("should use appkey in file url when there is no url token", function() {
+        apiClient.urlToken("");
+        var promise = appstax.findAll("profiles");
+
+        requests[0].respond(200, {}, JSON.stringify({objects:[
+            {   sysObjectId:"001",
+                profileImage:{sysDatatype:"file", url:"files/profiles/001/profileImage/name1", filename:"name1"},
+                backgroundImage:{sysDatatype:"file", url:"files/profiles/001/backgroundImage/name2", filename:"name2"}},
+            {   sysObjectId:"002",
+                profileImage:{sysDatatype:"file", url:"files/profiles/002/profileImage/name3", filename:"name3"},
+                backgroundImage:{sysDatatype:"file", url:"files/profiles/002/backgroundImage/name4", filename:"name4"}}
+        ]}));
+
+        return promise.then(function(objects) {
+            expect(objects[0].profileImage.url).to.equal("http://localhost:3000/files/profiles/001/profileImage/name1?appkey=testappkey");
+            expect(objects[1].profileImage.url).to.equal("http://localhost:3000/files/profiles/002/profileImage/name3?appkey=testappkey");
+            expect(objects[0].backgroundImage.url).to.equal("http://localhost:3000/files/profiles/001/backgroundImage/name2?appkey=testappkey");
+            expect(objects[1].backgroundImage.url).to.equal("http://localhost:3000/files/profiles/002/backgroundImage/name4?appkey=testappkey");
         });
     });
 
@@ -226,16 +247,16 @@ describe("Files", function() {
 
         requests[0].respond(200, {}, JSON.stringify({objects:[
             {   sysObjectId:"001",
-                profileImage:{sysDatatype:"file", url:"files/filepath/filename.ext", filename:"name2"}}
+                profileImage:{sysDatatype:"file", url:"files/profiles/001/profileImage/name2", filename:"name2"}}
         ]}));
 
         return promise.then(function(objects) {
             var url1 = objects[0].profileImage.imageUrl("resize", {width:200});
             var url2 = objects[0].profileImage.imageUrl("resize", {height:300});
             var url3 = objects[0].profileImage.imageUrl("resize", {width:400, height:500});
-            expect(url1).to.equal("http://localhost:3000/images/resize/200/-/filepath/filename.ext?token=xyz");
-            expect(url2).to.equal("http://localhost:3000/images/resize/-/300/filepath/filename.ext?token=xyz");
-            expect(url3).to.equal("http://localhost:3000/images/resize/400/500/filepath/filename.ext?token=xyz");
+            expect(url1).to.equal("http://localhost:3000/images/resize/200/-/profiles/001/profileImage/name2?token=xyz");
+            expect(url2).to.equal("http://localhost:3000/images/resize/-/300/profiles/001/profileImage/name2?token=xyz");
+            expect(url3).to.equal("http://localhost:3000/images/resize/400/500/profiles/001/profileImage/name2?token=xyz");
         });
     });
 
@@ -245,16 +266,16 @@ describe("Files", function() {
 
         requests[0].respond(200, {}, JSON.stringify({objects:[
             {   sysObjectId:"001",
-                profileImage:{sysDatatype:"file", url:"files/filepath/filename.ext", filename:"name2"}}
+                profileImage:{sysDatatype:"file", url:"files/profiles/001/profileImage/name2", filename:"name2"}}
         ]}));
 
         return promise.then(function(objects) {
             var url1 = objects[0].profileImage.imageUrl("crop", {width:200});
             var url2 = objects[0].profileImage.imageUrl("crop", {height:300});
             var url3 = objects[0].profileImage.imageUrl("crop", {width:400, height:500});
-            expect(url1).to.equal("http://localhost:3000/images/crop/200/-/filepath/filename.ext?token=xyz");
-            expect(url2).to.equal("http://localhost:3000/images/crop/-/300/filepath/filename.ext?token=xyz");
-            expect(url3).to.equal("http://localhost:3000/images/crop/400/500/filepath/filename.ext?token=xyz");
+            expect(url1).to.equal("http://localhost:3000/images/crop/200/-/profiles/001/profileImage/name2?token=xyz");
+            expect(url2).to.equal("http://localhost:3000/images/crop/-/300/profiles/001/profileImage/name2?token=xyz");
+            expect(url3).to.equal("http://localhost:3000/images/crop/400/500/profiles/001/profileImage/name2?token=xyz");
         });
     });
 

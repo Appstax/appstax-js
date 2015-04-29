@@ -79,7 +79,7 @@ function saveFile(collectionName, objectId, propertyName, file) {
     var defer = Q.defer();
     var internal = getInternalFile(file);
     internal.status = "saving";
-    var url = urlForFile(collectionName, objectId, propertyName, file);
+    var url = urlForFile(collectionName, objectId, propertyName, file.filename);
     var data = new FormData();
     data.append("file", internal.nativeFile);
     apiClient.request("put", url, data).then(function(response) {
@@ -90,13 +90,20 @@ function saveFile(collectionName, objectId, propertyName, file) {
     return defer.promise;
 }
 
-function urlForFile(collectionName, objectId, propertyName, file) {
-    return apiClient.url("/files/:collectionName/:objectId/:propertyName/:filename?token=:token", {
+function urlForFile(collectionName, objectId, propertyName, filename) {
+    var tokenKey = "token";
+    var tokenValue = apiClient.urlToken();
+    if(tokenValue.length < 2) {
+        tokenKey = "appkey";
+        tokenValue = apiClient.appKey();
+    }
+    return apiClient.url("/files/:collectionName/:objectId/:propertyName/:filename?:tokenKey=:tokenValue", {
         collectionName: collectionName,
         objectId: objectId,
         propertyName: propertyName,
-        filename: file.filename,
-        token: apiClient.urlToken()
+        filename: filename,
+        tokenKey: tokenKey,
+        tokenValue: tokenValue
     })
 }
 
@@ -118,6 +125,7 @@ module.exports = {
     isFile: isFile,
     saveFile: saveFile,
     status: getFileStatus,
+    urlForFile: urlForFile,
     __global: {
         file: createFile
     }
