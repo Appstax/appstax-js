@@ -115,11 +115,16 @@ function hasSession() {
     return sessionId !== null && sessionId !== undefined;
 }
 
+function formData() {
+    return new FormData();
+}
+
 module.exports = {
     init: init,
     request: request,
     url: urlFromTemplate,
     errorFromXhr: errorFromXhr,
+    formData: formData,
     sessionId: function (id) { sessionId = (arguments.length > 0 ? id : sessionId); return sessionId; },
     urlToken: function(token) { urlToken = (arguments.length > 0 ? token : urlToken); return urlToken },
     appKey: function() { return config.appKey; },

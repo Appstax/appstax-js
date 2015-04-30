@@ -1,6 +1,7 @@
 
 var appstax = require("../src/appstax");
 var apiClient = require("../src/apiclient");
+var files = require("../src/files");
 var sinon = require("sinon");
 var Q = require("kew");
 
@@ -15,11 +16,29 @@ describe("Files", function() {
         xhr.onCreate = function(request) {
             requests.push(request);
         };
+        sinon.stub(apiClient, "formData", stubFormData);
     });
 
     afterEach(function() {
         xhr.restore();
+        apiClient.formData.restore();
     });
+
+    function stubFormData() {
+        var items = {};
+        var formData = new FormData();
+        formData.append = function(name, value, filename) {
+            items[name] = {
+                name: name,
+                value: value,
+                filename: filename
+            }
+        }
+        formData.get = function(name) {
+            return items[name];
+        }
+        return formData;
+    }
 
     function mockFile(filename) {
         var contents = "foo";
@@ -50,12 +69,14 @@ describe("Files", function() {
 
         object.save();
 
-        var data = JSON.parse(requests[0].requestBody);
-        expect(data.file1).to.have.property("sysDatatype", "file");
-        expect(data.file1).to.have.property("filename", "f0.ext");
+        var formData = requests[0].requestBody;
+        expect(formData).to.be.instanceOf(FormData);
+        var objectData = JSON.parse(formData.get("sysObjectData").value);
+        expect(objectData.file1).to.have.property("sysDatatype", "file");
+        expect(objectData.file1).to.have.property("filename", "f0.ext");
     });
 
-    it("should should PUT files after saving existing object", function() {
+    it("should should POST object with multipart files", function() {
         apiClient.urlToken("4321");
         var object = appstax.object("myobjects");
         object.file1 = appstax.file(mockFile("f1.pdf"));
@@ -66,20 +87,18 @@ describe("Files", function() {
         var promise = object.save();
         requests[0].respond(200, {}, JSON.stringify({sysObjectId:"id1234"}));
 
-        expect(requests.length).to.equal(3);
-        expect(requests[1].method).to.equal("PUT");
-        expect(requests[2].method).to.equal("PUT");
-        expect(requests[1].url).to.equal("http://localhost:3000/files/myobjects/id1234/file1/f1.pdf?token=4321");
-        expect(requests[2].url).to.equal("http://localhost:3000/files/myobjects/id1234/file2/f2.jpg?token=4321");
-        /* TODO: Find a way to setup test for this
-        expect(requests[1].requestHeaders["Content-Type"]).to.contain("multipart/form-data");
-        expect(requests[2].requestHeaders["Content-Type"]).to.contain("multipart/form-data");
-        */
+        expect(requests.length).to.equal(1);
+        expect(requests[0].method).to.equal("POST");
+        //expect(requests[0].requestHeaders["Content-Type"]).to.contain("multipart")
+        var formData = requests[0].requestBody;
+        expect(formData).to.be.instanceOf(FormData);
+        expect(formData.get("file1").value).to.equal(files.nativeFile(object.file1));
+        expect(formData.get("file2").value).to.equal(files.nativeFile(object.file2));
     });
 
     it("should encode file names with whitespace in url", function() {
         apiClient.urlToken("4321");
-        var object = appstax.object("myobjects");
+        var object = appstax.object("myobjects", {sysObjectId:"1234"});
         object.file1 = appstax.file(mockFile("file with space.png"));
 
         var promise = object.save();
@@ -90,7 +109,7 @@ describe("Files", function() {
     });
 
     it("should update status and fulfill save promise after all files finish saving", function() {
-        var object = appstax.object("myobjects");
+        var object = appstax.object("myobjects", {sysObjectId:"1234"});
         object.info = appstax.file(mockFile("info.pdf"));
         object.picture = appstax.file(mockFile("picture.jpg"));
 
@@ -116,7 +135,7 @@ describe("Files", function() {
 
     it("should have readonly url property with token", function() {
         apiClient.urlToken("abc12345");
-        var object = appstax.object("myobjects");
+        var object = appstax.object("myobjects", {sysObjectId:"1234"});
         object.picture = appstax.file(mockFile("profile120x200.jpg"));
 
         var promise = object.save();

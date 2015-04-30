@@ -137,19 +137,26 @@ function saveObject(object, defer) {
         return defer.promise;
     }
 
-    var url, method;
+    var url, method, data;
     if(object.id == null) {
         url = apiClient.url("/objects/:collection", {collection: object.collectionName});
         method = "post";
+        data = getDataForSaving(object)
     } else {
         url = apiClient.url("/objects/:collection/:id", {collection: object.collectionName, id: object.id});
         method = "put";
+        data = getPropertiesForSaving(object);
     }
     internal.status = "saving";
-    apiClient.request(method, url, getPropertiesForSaving(object))
+    apiClient.request(method, url, data)
              .then(function(response) {
                  internal.setId(response.sysObjectId);
                  internal.status = "saved";
+                 if(data instanceof FormData) {
+                     getFiles(object).forEach(function(file) {
+                         files.status(file, "saved");
+                     });
+                 }
                  defer.resolve(object);
              })
              .fail(function(xhr) {
@@ -242,6 +249,27 @@ function getProperties(object) {
     return data;
 }
 
+function getDataForSaving(object) {
+    var properties = getPropertiesForSaving(object);
+    var fileProperties = getFileProperties(object);
+    var hasFiles = false;
+    var formData = apiClient.formData();
+    Object.keys(fileProperties).forEach(function(key) {
+        var file = fileProperties[key];
+        var nativeFile = files.nativeFile(file);
+        if(nativeFile && files.status(file) !== "saved") {
+            hasFiles = true;
+            formData.append(key, nativeFile);
+        }
+    });
+    if(hasFiles) {
+        formData.append("sysObjectData", JSON.stringify(properties));
+        return formData;
+    } else {
+        return properties;
+    }
+}
+
 function getPropertiesForSaving(object) {
     var properties = getProperties(object);
     Object.keys(properties).forEach(function(key) {
@@ -266,6 +294,13 @@ function getFileProperties(object) {
         }
     });
     return fileProperties;
+}
+
+function getFiles(object) {
+    var fileProperties = getFileProperties(object);
+    return Object.keys(fileProperties).map(function(key) {
+        return fileProperties[key];
+    });
 }
 
 function createInternalId() {

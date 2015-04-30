@@ -107,16 +107,23 @@ function urlForFile(collectionName, objectId, propertyName, filename) {
     })
 }
 
-function isFile(file) {
-    for(var i = 0; i < internalFiles.length; i++) {
-        if(internalFiles[i].file === file) {
-            return true;
-        }
+function getNativeFile(file) {
+    var nativeFile = null;
+    var internal = getInternalFile(file);
+    if(internal != null) {
+        nativeFile = internal.nativeFile;
     }
-    return false;
+    return nativeFile;
 }
 
-function getFileStatus(file) {
+function isFile(file) {
+    return getInternalFile(file) != null;
+}
+
+function fileStatus(file, status) {
+    if(typeof status === "string") {
+        getInternalFile(file).status = status;
+    }
     return getInternalFile(file).status;
 }
 
@@ -124,8 +131,9 @@ module.exports = {
     create: createFile,
     isFile: isFile,
     saveFile: saveFile,
-    status: getFileStatus,
+    status: fileStatus,
     urlForFile: urlForFile,
+    nativeFile: getNativeFile,
     __global: {
         file: createFile
     }
