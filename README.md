@@ -2,7 +2,7 @@
 Appstax JavaScript SDK
 ======================
 
-This is the official SDK for [Appstax](http://appstax.com). Please read the [JavaScript Guide](http://appstax.com/docs/JavaScript-SDK-Guide.html) to get up and running.
+This is the official SDK for [Appstax](http://appstax.com). Please read the [JavaScript Guide](https://appstax.com/docs/JavaScript-SDK-Guide) to get up and running.
 
 Installing
 ----------
@@ -31,7 +31,7 @@ contact.email = "john@appleseed.com";
 contact.save();
 ```
 
-See the [JavaScript Guide](http://appstax.com/docs/Guides/JavaScript-SDK-Guide.html) for more info on how to set up your app and data model.
+See the [JavaScript Guide](https://appstax.com/docs/JavaScript-SDK-Guide) for more info on how to set up your app and data model.
 
 Building from source
 --------------------
