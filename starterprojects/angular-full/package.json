@@ -1,0 +1,23 @@
+{
+  "name": "myproject",
+  "version": "0.0.0",
+  "description": "My project ===================",
+  "main": "gulpfile.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+
+  "homepage": "",
+  "devDependencies": {
+    "gulp": "^3.8.7",
+    "gulp-concat": "^2.3.4",
+    "gulp-clean": "^0.3.1",
+    "gulp-connect": "^2.0.6",
+    "gulp-watch": "^0.6.9",                
+    "gulp-ruby-sass": "^0.7.1",
+    "gulp-sass": "^0.7.3",
+    "proxy-middleware": "^0.5.0"        
+  }
+}

@@ -1,0 +1,64 @@
+
+ <!-- Navigation -->
+ <section id="app">
+    <nav class="navbar navbar-custom navbar-fixed-top" role="navigation">
+      <div class="container-fluid">
+        <div class="col-lg-2 col-lg-offset-1">
+          <div class="navbar-header">
+            <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-main-collapse">
+              <i class="fa fa-bars"></i>
+            </button>
+            <a class="navbar-brand page-scroll" href="">
+              <i class="fa fa-play-circle"></i>&nbsp; MyApp
+            </a>
+          </div>
+        </div>
+
+        <div class="col-lg-8">
+          <!-- Collect the nav links, forms, and other content for toggling -->
+          <div class="collapse navbar-collapse navbar-right navbar-main-collapse">
+            <ul class="nav navbar-nav">
+              <!-- Hidden li included to remove active class from about link when scrolled up past about section -->
+              <li class="hidden">
+                <a href="#page-top"></a>
+              </li>
+              <li>
+                <a class="page-scroll" href="#section3">Section3</a>
+              </li>            
+              <li>
+                <a class="page-scroll" href="#section4">Section4</a>
+              </li>  
+              
+                <li class="dropdown">
+                  <a href="#" id="menu" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false"><i class="fa fa-bars"></i></a>
+                  <ul class="dropdown-menu" role="menu">
+                    <li><a href="" ng-click="logout()" >Log out</a></li>
+                  </ul>
+                </li>
+                        
+              <li ng-show="!currentUser">
+                <a role="button" class="" ui-sref="public.login">Login</a>
+              </li>
+              
+            </ul>
+          </div>
+          <!-- /.navbar-collapse -->
+        </div>
+     </div>
+    </nav>
+    <!-- End navigation-->
+</section>
+
+<section id="hero">
+    <div class="container-fluid">
+      <div class="row-fluid">
+        <div class="col-lg-8 col-lg-offset-2">
+          <h1 class="text-center animated rubberBand">Congratulations, you are now logged in!</h1>
+          <h2 class="text-center">Now, it's your turn, go create something great!</h2>
+        </div>
+      </div>
+    </div>
+</section>
+
+
+

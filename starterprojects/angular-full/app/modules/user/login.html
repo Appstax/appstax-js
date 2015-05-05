@@ -1,0 +1,41 @@
+<section id="form">
+  <div class="container ">	  
+		<div class="form-wrapper animated slideInDown">			  	
+		  	<form name="loginForm" novalidate ng-controller="UserCtrl">
+		  		<div class="panel panel-default">
+		  		<div class="panel-heading"><h2 class="text-center">Log in to {{conf.siteName}}</h2></div>
+		  		<div class="panel-body">
+		  		
+		  		<!-- EMAIL -->
+			  		<label>Your email:</label>
+			  		<div class="form-group" ng-class="{'has-error' : loginForm.email.$invalid && !loginForm.email.$pristine }">
+			  			<input focus-me="{{true}}" class="form-control input-lg" type="email" name="email" ng-model="email" ng-focus="email=''" placeholder="your username" reqired autofocus="autofocus">	
+			  			<p class ="help-block" ng-show="loginForm.email.$invalid && !loginForm.email.$pristine">Please enter a valid email address</p>
+			  		</div>
+
+			  		<!-- PASSWORD -->
+			  		<label>Enter a password:</label>
+			  		<div class="form-group">
+			  			<input class="form-control input-lg" type="password" name="password" ng-model="password" ng-focus="password=''" required placeholder="*******">	
+			  			
+			  		</div>
+		  		</div><!-- End panel body-->
+
+		  		<div class="panel-footer">
+			  			<!-- SUBMIT BUTTON -->
+			  		<button ng-click="login()" type="submit" class="btn btn-success" ng-disabled="loginForm.$invalid">
+			  		<i class="fa fa-arrow-circle-right"></i>&nbsp&nbspLog in
+			  		</button>
+			  		<!-- CANCEL BUTTON -->
+			  		<button ng-click="cancel()" type="submit" class="btn btn-default" style="height:40px">
+			  		Cancel
+			  		</button>
+		  		</div>
+		  	</form>
+		  	
+		  	<div ng-show="error" class="alert alert-danger" style="margin-top:10px">{{message}}</div>
+	  	</div><!-- LOGIN WRAPPER-->
+  </div><!-- END CONTAINER -->
+</section>
+
+<ui-view></ui-view>

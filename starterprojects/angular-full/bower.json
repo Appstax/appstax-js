@@ -1,0 +1,14 @@
+{
+  "name": "your_project_name",
+  "version": "0.0.0",
+  "dependencies": {
+    "angular": "latest",
+    "jquery": "latest",
+    "angular-sanitize": "latest",
+    "angular-ui-router": "latest",
+    "bootstrap": "latest",
+    "appstax": "latest",
+    "gdsmith-jquery-easing": "~1.3.1"
+  },
+  "devDependencies": {}
+}

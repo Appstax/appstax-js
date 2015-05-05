@@ -1,0 +1,163 @@
+
+    <!-- Navigation -->
+    <nav class="navbar navbar-custom navbar-fixed-top" role="navigation" id="navigation">
+      <div class="container-fluid">
+        <div class="col-lg-2 col-lg-offset-1">
+          <div class="navbar-header">
+            <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-main-collapse">
+              <i class="fa fa-bars"></i>
+            </button>
+            <a class="navbar-brand page-scroll" href="">
+              <i class="fa fa-play-circle"></i>&nbsp; MyApp
+            </a>
+          </div>
+        </div>
+
+        <div class="col-lg-8">
+          <!-- Collect the nav links, forms, and other content for toggling -->
+          <div class="collapse navbar-collapse navbar-right navbar-main-collapse">
+            <ul class="nav navbar-nav">
+              <!-- Hidden li included to remove active class from about link when scrolled up past about section -->
+              <li class="hidden">
+                <a href="#page-top"></a>
+              </li>
+              <li>
+                <a class="page-scroll" href="#section1">Section1</a>
+              </li>            
+              <li>
+                <a class="page-scroll" href="#section2">Section2</a>
+              </li>            
+              <li ng-show="!currentUser">
+                <a role="button" class="" ui-sref="public.login">Login</a>
+              </li>
+              
+            </ul>
+          </div>
+          <!-- /.navbar-collapse -->
+        </div>
+     </div>
+    </nav>
+    <!-- End navigation-->
+    
+    <!-- Intro Header -->
+    <header  id="intro">    
+        <div class="container-fluid">
+          <div class="row-fluid">
+            <div class="col-md-8 col-md-offset-2">
+              <!--<img src="../images/appicon.png" class="img-responsive">-->
+              <h1 class="animated fadeIn">Tada! Here is your app!</h1>
+              <p class="animated fadeIn">Engage your users with some some real good and to the point text!
+             </p>
+              
+              <div class="text-center">
+                <a ui-sref="public.signup" role="button" class="btn btn-lg btn-success">
+                  <i class="fa fa-arrow-circle-right"></i>&nbsp; Signup
+                </a>
+              </div>            
+              
+            </div>
+          </div>
+        </div>
+    </header>
+
+
+
+    <section id="section1" data-id="section1">
+      <div class="container-fluid">
+        <div class="row-fluid">
+          <div class="col-lg-6 col-md-8 col-sm-10 col-xs-12 col-lg-offset-3 col-md-offset-2 col-sm-offset-1 col-xs-offset-0">
+              <h1>What you must do</h1>
+              <hr>
+
+              <h2>Set the application key</h2>
+              <p>
+                This template uses the Appstax User Management module and provides user login and user signup out of the box. 
+              </p>
+              <p>
+                For this to work you must set the <code>appKey</code> in the <code>app.js</code> file. You'll find it in the top of the file.
+              </p>
+              <p>The app key can be found under <em>Settings</em> in the Appstax web user interface. You need to be logged in.</p>
+                           
+          </div>
+        </div>
+
+        <div class="row-fluid">
+          <div class="col-md-8 col-md-offset-2">
+            <img src="images/appstax-settings.png" class="img-responsive">
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="section2" data-id="section2">
+      <div class="container-fluid">
+        <div class="row-fluid">
+          <div class="col-lg-6 col-md-8 col-sm-10 col-xs-12 col-lg-offset-3 col-md-offset-2 col-sm-offset-1 col-xs-offset-0">
+              <h1>Important files for this template</h1>
+              <hr>
+
+              <h2>index.html</h2>
+              <p>
+                Main html file where AngularJS are initialized and started. You'll find all app dependencies here but not much else.
+              </p>
+
+              <h2>modules/app.js</h2>
+              <p>
+                The main Angular configuration file. Used for setting up routes using the <a href="https://github.com/angular-ui/ui-router">Angular UI Router</a>. If you want to add pages to your app use the following:
+                  <ol>
+                    <li>Create your html file and optionally your controller.</li>
+                    <li>Create a route in <code>app.js</code></li>
+                    <li>Access your site using the <code>ui-sref</code> directive.</li>                    
+                  </ol>                  
+              </p>
+
+
+              <h2>landingsite.html (this page)</h2>
+              <p>
+                Used for open content (user not logged in). Uses <a href="http://getbootstrap.com">Bootstrap grid</a> for layout. You'll find it here: <code>modules/main/landingsite.html</code>
+              </p>
+
+              <h2>styles/site.scss</h2>
+              <p>
+                Sass files that compiles to css. Used for styling the landing page. Read more about <a href="http://sass-lang.com">Sass</a>.
+              </p>
+
+              <h2>main.html</h2>
+              <p>
+                Used for tha main page after login. You'll find it here: <code>modules/main/main.html</code>
+              </p>
+
+              <h2>styles/app.scss</h2>
+              <p>
+                Styling of the logged in modules.
+              </p>
+             
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <footer id="footer">
+      <div class="row-fluid">
+        <div class="col-md-4 col-md-offset-2">
+          <ul>
+            <li class="heading">Heading column one</li>
+            <li><a href="">Link one</a></li>
+            <li><a href="">Link two</a></li>
+            <li><a href="">Link two</a></li>
+          </ul>
+        </div>
+
+        <div class="col-md-4 col-md-offset-2">
+          <ul>
+            <li class="heading">Heading column two</li>
+            <li><a href="">Link one</a></li>
+            <li><a href="">Link two</a></li>
+            <li><a href="">Link two</a></li>
+          </ul>
+        </div>
+
+      </div>
+
+    </footer>    
+<ui-view></ui-view>

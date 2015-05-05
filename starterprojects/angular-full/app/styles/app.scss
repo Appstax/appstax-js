@@ -1,0 +1,134 @@
+$brand-color: #555;
+
+$red:  #FF4442;
+$blue: #0097D7;
+$yellow: #FFC30D;
+$green: #65C873;
+$purple: rgb(143,131,202);
+
+#app {
+	.navbar-custom {
+		background:$brand-color;
+		a {
+			color: #fff;
+		}
+	}
+	.btn{
+		margin-top: 7px;
+		margin-left: 10px;
+		background-color:transparent;
+		color: #fff;
+	}
+
+	.dropdown {		
+		a {
+			color: $blue;
+		}
+		i {
+			color:#555;
+		}
+	}
+	.dropdown-toggle, button {				
+		i {
+			color:#fff;
+		}
+	}
+	
+}
+
+#hero {
+	padding-top:300px;
+	padding-bottom:300px;
+}
+
+#section3 {
+	padding-top:50px;
+	background:$blue;
+	padding-bottom:300px;
+	color:#fff;
+	h1 {
+		color:#fff;
+	}
+}
+
+#section4 {
+	padding-top:50px;
+	background:$green;
+	padding-bottom:300px;
+	color:#fff;
+	h1 {
+		color:#fff;
+	}
+}
+
+input {
+
+	border-color: rgb(240,240,240) !important;
+	box-shadow:none;	
+	-webkit-appearance: none !important;
+    -moz-appearance: none;
+    appearance: none;
+    font-weight: 400;
+}
+
+/* Remove any predefined styling on the email and password input fields*/
+input[type="email"], input[type="password"] {   
+   
+    /* Then Style */
+    border-radius: 3px;
+    padding: 10px;
+    line-height: 20px;    
+    background: transparent;      
+    box-shadow:none !important;
+}
+
+
+#form {
+	height:100vh;
+	background: url(../images/hero.jpg) no-repeat center center fixed; 
+	  -webkit-background-size: cover;
+	  -moz-background-size: cover;
+	  -o-background-size: cover;
+	  background-size: cover;
+
+	.form-wrapper {
+		padding-bottom: 50px;
+		margin:0 auto;
+		max-width: 400px;
+		margin-top: 20%;		
+		background: transparent;
+
+	}
+
+	.panel {
+		border-color:$brand-color;
+		background:transparent;
+	}
+
+	.panel-heading {
+		color:#eee;
+		border-color:#eee;
+		background:transparent;
+		background:rgba(10,10,10, .5);
+	}
+	.panel-body {
+		padding-top:50px;
+		padding-bottom:50px;		
+		background:rgba(250,250,250, 0.9);
+	}
+	.panel-footer {
+		border-color:#eee;
+		padding-top:20px;
+		padding-bottom:20px;
+		background:$brand-color;
+		.btn-default {
+			height: 35px !important;
+		}
+	}
+
+	label {
+		font-size: 18px;
+		font-weight: 400;
+		color: #333;
+	}
+}

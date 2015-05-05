@@ -1,0 +1,221 @@
+@import url(//fonts.googleapis.com/css?family=Open+Sans:200,400,300,600,700);
+
+
+$font-color-100: #333;
+$font-color-90: lighten($font-color-100, 10%);
+$font-color-80: lighten($font-color-100, 8%);
+$font-color-60: lighten($font-color-100, 6%);
+$font-color-40: lighten($font-color-100, 4%);
+$font-color-20: lighten($font-color-100, 2%);
+
+$red:  #FF4442;
+$blue: #0097D7;
+$yellow: #FFC30D;
+$green: #65C873;
+$purple: rgb(143,131,202);
+
+$brand-color: #555;
+$section-padding-top: 50px;
+$section-padding-bottom: 50px;
+
+html {
+  width: 100%;
+  height: 100%;
+}
+
+body {
+  width: 100%;
+  height: 100%;
+  font-family: "Open Sans","Helvetica Neue",Helvetica,Arial,sans-serif;
+  background-color: transparent;
+  background: rgb(255,255,255);
+  cursor:auto;
+
+}
+
+
+.container-fluid {
+  margin:0;
+  padding:0;
+}
+h1 {
+  font-size: 48px;
+  font-weight:200;
+  color: $font-color-100;
+}
+h2 {
+  font-size: 28px;
+  padding-top:10px;
+  padding-bottom:10px;
+  font-weight:400;  
+}
+
+p {
+  margin: 0 0 25px;
+  font-size: 18px;
+  line-height: 30px;
+}
+
+#navigation {
+  a {
+    font-weight: 600;
+    color: #fff;
+  }
+  .dropdown-toggle, button {     
+    color: #FFF;       
+  }
+}
+
+#intro {
+  height: 100vh;
+  background: $brand-color;
+  background: url(../images/hero.jpg) no-repeat center center fixed; 
+  -webkit-background-size: cover;
+  -moz-background-size: cover;
+  -o-background-size: cover;
+  background-size: cover;
+  padding-top: 300px;
+  padding-bottom: 200px;
+
+  .btn {
+    margin-top: 50px;
+  }
+
+  h1 {
+    font-weight: 700;
+    text-align: center;
+    color: #fff;
+    font-size: 66px;
+  }
+  p {
+    text-align: center;
+    color: #eee;
+    font-weight: 200;
+    font-size: 22px;
+  }
+  a {
+   text-align: center !important; 
+  }
+}
+
+
+#section1 {
+  padding-top: $section-padding-top;
+  padding-bottom: $section-padding-bottom;
+  h1 {
+    text-align: center;
+  }
+}
+
+#section2 {
+  padding-top: $section-padding-top;
+  padding-bottom: $section-padding-bottom;
+
+  background: rgb(245,245,245);
+  h1 {
+    text-align: center;
+  }
+  h2 {
+    color: $blue;
+    font-size: 20px;
+  }
+}
+
+#footer {
+  padding-top: $section-padding-top;
+  padding-bottom: 200px;
+  background: $brand-color;
+  color: #fff;
+  ul {
+    list-style-type: none;
+  }
+  .heading {
+    font-weight: 600;
+    padding-bottom:5px;
+  }
+}
+
+.btn {
+  -webkit-transition: background .3s ease-in-out;
+  -moz-transition: background .3s ease-in-out;
+  transition: background .3s ease-in-out;
+
+  text-transform: uppercase;
+  font-weight: 400;
+}
+
+.navbar-custom {
+  margin-bottom: 0;
+  border-bottom: 1px solid rgba(255,255,255,.3);
+  text-transform: uppercase;
+  background-color: #ddd;
+  padding-top:10px;
+  padding-bottom:10px;
+}
+
+.navbar-custom .navbar-brand {
+  font-weight: 700;
+
+}
+
+.navbar-custom .navbar-brand:focus {
+  outline: 0;
+}
+
+.navbar-custom .navbar-brand .navbar-toggle {
+  padding: 4px 6px;
+  font-size: 16px;
+  color: $font-color-100;
+}
+
+.navbar-custom .navbar-brand .navbar-toggle:focus,
+.navbar-custom .navbar-brand .navbar-toggle:active {
+  outline: 0;
+}
+
+.navbar-custom a {
+  color: $font-color-100;
+}
+
+.navbar-custom .nav li.active {
+  outline: nonte;
+  background-color: rgba(255,255,255,.3);
+}
+
+.navbar-custom .nav li a {
+  -webkit-transition: background .3s ease-in-out;
+  -moz-transition: background .3s ease-in-out;
+  transition: background .3s ease-in-out;
+}
+
+.navbar-custom .nav li a:hover,
+.navbar-custom .nav li a:focus,
+.navbar-custom .nav li a.active {
+  outline: 0;
+  background-color: rgba(255,255,255,.3);
+}
+
+@media(min-width:367px) {
+  .navbar {
+    border-bottom: 0;
+    letter-spacing: 1px;
+    background: 0 0;
+    -webkit-transition: background .5s ease-in-out,padding .5s ease-in-out;
+    -moz-transition: background .5s ease-in-out,padding .5s ease-in-out;
+    transition: background .5s ease-in-out,padding .5s ease-in-out;
+  }
+
+  .top-nav-collapse {
+    padding: 0;
+    background-color: rgba(0,0,0,0.85);
+     a {
+      color: #fff;
+    }
+  }
+
+  .navbar-custom.top-nav-collapse {
+    border-bottom: 1px solid rgba(255,255,255,0.1);
+  }
+}
+
+
