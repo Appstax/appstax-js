@@ -6,20 +6,20 @@ var connect = require('gulp-connect');
 var watch = require('gulp-watch');
 var sass = require('gulp-sass');
 
-// Delete the dist directory
+// Delete the public directory
 gulp.task('clean', function() {
- return gulp.src('dist')
+ return gulp.src('public')
  .pipe(clean());
 });
 
-//Concat and copy all local JavaScript to the dist dir
+//Concat and copy all local JavaScript to the public dir
 gulp.task('js', function(){
 	gulp.src(['app/module.js', 'app/modules/**/*.js'])
 		.pipe(concat('app.js'))
-		.pipe(gulp.dest('dist/scripts'));
+		.pipe(gulp.dest('public/scripts'));
 });
 
-//Concat and copy all other JavaScript to the dist dir
+//Concat and copy all other JavaScript to the public dir
 gulp.task('js-vendor', function(){
 	gulp.src([
 			'bower_components/jquery/dist/jquery.js',
@@ -31,35 +31,35 @@ gulp.task('js-vendor', function(){
 			'bower_components/appstax/appstax.js'
 			])
 		.pipe(concat('vendor.js'))
-		.pipe(gulp.dest('dist/scripts'));
+		.pipe(gulp.dest('public/scripts'));
 });
 
 gulp.task('html', function(){
 	gulp.src(['app/index.html', 'app/modules/**/*html'],{base: './app'})
-		.pipe(gulp.dest('dist'));
+		.pipe(gulp.dest('public'));
 });
 
 gulp.task('css', function(){
 	gulp.src(['app/styles/**/*.css'])
-		.pipe(gulp.dest('dist/styles'));
+		.pipe(gulp.dest('public/styles'));
 });
 
 //Compile and copy Sass files
 gulp.task('sass', function() {
 	gulp.src('app/styles/**/*.scss')
 		.pipe(sass())
-		.pipe(gulp.dest('dist/styles'));
+		.pipe(gulp.dest('public/styles'));
 });
 
 //Copy all images
 gulp.task('img', function(){
 	gulp.src(['app/images/**/*'])
-		.pipe(gulp.dest('dist/images'));
+		.pipe(gulp.dest('public/images'));
 });
 
 gulp.task('assets', function(){
 	gulp.src('app/bower_components/bootstrap/dist/fonts/**/*', {base: './app/bower_components'})
-		.pipe(gulp.dest('dist/styles'));
+		.pipe(gulp.dest('public/styles'));
 });
 
 //Starts the web server and watch for changes
@@ -68,7 +68,7 @@ gulp.task('server', function() {
   	port:9000,
   	
   	livereload: true,
-  	root: ['.', 'dist']
+  	root: ['public']
   });
 });
 
@@ -80,7 +80,7 @@ gulp.task('watch', function() {
 });
 
 gulp.task('livereload', function() {
-  gulp.src(['dist/styles/*.css', 'dist/scripts/*.js', 'dist/modules/**/*.html'])
+  gulp.src(['public/styles/*.css', 'public/scripts/*.js', 'public/modules/**/*.html'])
     .pipe(watch())
     .pipe(connect.reload());
 });

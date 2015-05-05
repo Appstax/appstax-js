@@ -13,6 +13,6 @@ Starting point for your new Angular projects
 
 1. npm install
 2. bower update
-3. gulp
+3. gulp serve
 
-Now, fire up your browser and head over to: http://127.0.0.1:9000/
+Now, fire up your browser and head over to: http://localhost:9000/

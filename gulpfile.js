@@ -88,8 +88,7 @@ gulp.task("sdk-assemble-examples", ["bundle"], function() {
 
 gulp.task("sdk-assemble-starterprojects", ["bundle"], function() {
     return gulp.src(["starterprojects/**/*",
-                     "!starterprojects/angular/{bower_components,bower_components/**}",
-                     "!starterprojects/angular/{node_modules,node_modules/**}"])
+                     "!starterprojects/{angular,angular-full}/{public,public/**,bower_components,bower_components/**,node_modules,node_modules/**}"])
                .pipe(gulp.dest("build/appstax-js/starterprojects"));
 });
 

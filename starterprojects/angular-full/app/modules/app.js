@@ -3,11 +3,7 @@
 //
 //  Initialize the Appstax app engine with your appkey
 //
-var options = {}
-options.baseUrl = "http://test.aws.appstax.com/api/latest";
-options.appKey="cVhkbDlPZmdkYVZ4"
-
-appstax.init(options);
+appstax.init('<<appstax-app-key>>');
 
 var module = angular.module('MyApp', [
     'ngSanitize',    
