@@ -3,6 +3,7 @@ var extend = require("extend");
 var objects = require("./objects");
 var users = require("./users");
 var files = require("./files");
+var collections = require("./collections");
 
 var apiClient = require("./apiclient");
 var config = {};
@@ -42,4 +43,4 @@ function log(level, message) {
 module.exports = {
     init: init
 };
-attachModules({objects:objects, users:users, files:files}, module.exports);
+attachModules({objects:objects, users:users, files:files, collections:collections}, module.exports);

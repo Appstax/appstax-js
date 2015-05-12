@@ -91,6 +91,9 @@ function saveFile(collectionName, objectId, propertyName, file) {
 }
 
 function urlForFile(collectionName, objectId, propertyName, filename) {
+    if(!filename) {
+        return "";
+    }
     var tokenKey = "token";
     var tokenValue = apiClient.urlToken();
     if(tokenValue.length < 2) {

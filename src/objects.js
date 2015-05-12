@@ -1,9 +1,10 @@
 
-var extend    = require("extend");
-var apiClient = require("./apiclient");
-var query     = require("./query");
-var files     = require("./files");
-var Q         = require("kew");
+var extend      = require("extend");
+var apiClient   = require("./apiclient");
+var query       = require("./query");
+var files       = require("./files");
+var collections = require("./collections");
+var Q           = require("kew");
 
 var internalIds = [];
 var internalObjects = {};
@@ -59,9 +60,20 @@ function createObject(collectionName, properties) {
     Object.defineProperty(object, "internalId", { writable: false, value: internal.internalId, enumerable:true });
     Object.defineProperty(object, "collectionName", { get: function() { return internal.collectionName; }, enumerable:true });
 
+    properties = extend({}, collections.defaultValues(collectionName), properties);
+    fillObjectWithValues(object, properties);
+
+    if(object.id !== null) {
+        internal.status = "saved";
+    }
+    return object;
+}
+
+function fillObjectWithValues(object, properties) {
+    var internal = getInternalObject(object);
     var filteredProperties = {};
     if(typeof properties === "object") {
-        var sysValues = getInternalObject(object).sysValues;
+        var sysValues = internal.sysValues;
         internal.setId(properties.sysObjectId);
         Object.keys(properties).forEach(function(key) {
             var value = properties[key];
@@ -77,10 +89,6 @@ function createObject(collectionName, properties) {
         });
     }
     extend(object, filteredProperties);
-    if(object.id !== null) {
-        internal.status = "saved";
-    }
-    return object;
 }
 
 function createPropertyWithDataType(key, value, object) {
