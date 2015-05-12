@@ -60,7 +60,7 @@ function request(method, url, data) {
     });
     promise.then(function(response) {
         var token = promise.request.getResponseHeader("x-appstax-urltoken");
-        if(typeof token === "string") {
+        if(typeof token === "string") {
             urlToken = token;
         }
         return response;
