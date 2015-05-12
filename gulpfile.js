@@ -10,6 +10,7 @@ var clean = require('gulp-clean');
 var uglify = require('gulp-uglify');
 var rename = require('gulp-rename');
 var karma = require('karma').server;
+var replace = require('gulp-replace');
 
 gulp.task("default", ["clean","bundle-uglify"]);
 gulp.task("sdk", ["bundle", "sdk-zip"]);
@@ -57,6 +58,7 @@ gulp.task("bundle", ["jscs"], function() {
                .pipe(browserify({
                    standalone: "appstax"
                }))
+               .pipe(replace(" "," ")) // replace non-breaking space with space
                .pipe(gulp.dest("./build/"));
 });
 
