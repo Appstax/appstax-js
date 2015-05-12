@@ -21,8 +21,9 @@ function fixBaseUrl() {
     }
 }
 
-function urlFromTemplate(template, parameters) {
+function urlFromTemplate(template, parameters, query) {
     var url = template;
+    var queryString = "";
     if(url.indexOf("/") == 0) {
         url = url.substr(1);
     }
@@ -30,6 +31,14 @@ function urlFromTemplate(template, parameters) {
         Object.keys(parameters).forEach(function(key) {
             url = url.replace(":" + key, uriEncode(parameters[key]));
         });
+    }
+    if(typeof query == "object") {
+        queryString = Object.keys(query).map(function(key) {
+            return key + "=" + uriEncode(query[key]);
+        }).join("&");
+    }
+    if(queryString != "") {
+        url += ((url.indexOf("?") == -1) ? "?" : "&") + queryString;
     }
     return config.baseUrl + url;
 }

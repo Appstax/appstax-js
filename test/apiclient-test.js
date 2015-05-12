@@ -127,6 +127,21 @@ describe("API Client", function() {
         expect(apiClient.url("/hello/:who", {who:"w ø r l d"})).to.equal("http://localhost:1337/hello/w%20%C3%B8%20r%20l%20d");
     });
 
+    it("should append query parameters", function() {
+        apiClient.init({baseUrl:"http://localhost:1337/"});
+        expect(apiClient.url("/hello/:who", {who:"world"}, {knock:"true"})).to.equal("http://localhost:1337/hello/world?knock=true");
+    });
+
+    it("should append query parameters to existing query", function() {
+        apiClient.init({baseUrl:"http://localhost:1337/"});
+        expect(apiClient.url("/hello/:who?woods=yes", {who:"world"}, {knock:"true"})).to.equal("http://localhost:1337/hello/world?woods=yes&knock=true");
+    });
+
+    it("should encode query parameters to existing query", function() {
+        apiClient.init({baseUrl:"http://localhost:1337/"});
+        expect(apiClient.url("/hello", {}, {who:"w ø r l d"})).to.equal("http://localhost:1337/hello?who=w%20%C3%B8%20r%20l%20d");
+    });
+
     it("should request url token", function() {
         apiClient.request("post", "http://example.com", {foo:"bar"});
         apiClient.request("put", "http://example.com", {foo:"bar"});

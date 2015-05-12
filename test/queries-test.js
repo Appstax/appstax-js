@@ -43,6 +43,29 @@ describe("Object queries", function() {
         expect(query.queryString()).equals("mooz like '%oo%'");
     });
 
+    it("should add 'object has relation' predicate for single object", function() {
+        var object = appstax.object("foo", {sysObjectId:"1234"});
+        query.relation("bar").has(object);
+        expect(query.queryString()).equals("bar has ('1234')")
+    });
+
+    it("should add 'object has relation' predicate for multiple objects", function() {
+        var object1 = appstax.object("foo", {sysObjectId:"1234"});
+        var object2 = appstax.object("foo", {sysObjectId:"5678"});
+        query.relation("bar").has([object1, object2]);
+        expect(query.queryString()).equals("bar has ('1234','5678')")
+    });
+
+    it("should add 'object has relation' predicate for single id", function() {
+        query.relation("bar").has("abc1234");
+        expect(query.queryString()).equals("bar has ('abc1234')")
+    });
+
+    it("should add 'object has relation' predicate for multiple ids", function() {
+        query.relation("bar").has(["abc1234", "def5678"]);
+        expect(query.queryString()).equals("bar has ('abc1234','def5678')")
+    });
+
     it("should join predicates with 'and' by default", function() {
         query.string("zoo").equals("baz");
         query.string("mooz").contains("oo");

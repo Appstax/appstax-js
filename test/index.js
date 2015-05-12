@@ -8,6 +8,7 @@ require("./queries-test");
 require("./permissions-test");
 require("./files-test");
 require("./collections-test");
+require("./relations-test");
 
 // Polyfill for f.bind()
 Function.prototype.bind = Function.prototype.bind || function (thisp) {

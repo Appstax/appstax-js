@@ -8,6 +8,7 @@ module.exports = function(options) {
     return {
         queryString: queryString,
         string: createStringPredicate,
+        relation: createRelationPredicate,
         operator: function(o) { operator = o; }
     };
 
@@ -29,6 +30,20 @@ module.exports = function(options) {
             contains: function(value) {
                 addPredicate(format("$ like '%$%'", property, value));
             }
+        }
+    }
+
+    function createRelationPredicate(property) {
+        return {
+            has: function(objectsOrIds) {
+                var ids = _getQuotedIds(objectsOrIds);
+                addPredicate(format("$ has ($)", property, ids.join(",")));
+            }
+        }
+        function _getQuotedIds(objectsOrIds) {
+            return [].concat(objectsOrIds).map(function(item) {
+                return "'" + (item.id || item) + "'";
+            });
         }
     }
 

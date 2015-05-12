@@ -9,9 +9,15 @@ function defineCollection(name, options) {
 function parseCollection(options) {
     var collection = {};
     Object.keys(options).forEach(function(key) {
+        var option = options[key];
         var column = {};
-        if(typeof options[key] === "string") {
-            column.type = options[key];
+        if(typeof option === "string") {
+            column.type = option;
+        } else if(typeof option === "object" && typeof option.type === "string") {
+            column.type = option.type;
+        }
+        if(column.type === "relation") {
+            column.relation = option.relation;
         }
         collection[key] = column;
     });
@@ -27,24 +33,26 @@ function defaultValues(collectionName) {
     var values = {};
     if(collection) {
         Object.keys(collection).forEach(function(key) {
-            values[key] = defaultValueForType(collection[key].type)
+            values[key] = defaultValueForColumn(collection[key])
         });
     }
     return values;
 }
 
-function defaultValueForType(type) {
-    switch(type) {
+function defaultValueForColumn(column) {
+    switch(column.type) {
         case "string": return "";
         case "number": return 0;
         case "array": return [];
         case "file": return {sysDatatype:"file", filename:"", url:""};
+        case "relation": return {sysDatatype:"relation", sysRelationType:column.relation, sysObjectIds:[]};
     }
     return undefined;
 }
 
 module.exports = {
     defaultValues: defaultValues,
+    get: getCollection,
     __global: {
         collection: function(c, p) { defineCollection(c, p); return getCollection(c); }
     }
