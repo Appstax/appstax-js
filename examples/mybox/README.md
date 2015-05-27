@@ -1,6 +1,6 @@
 
-Appstax starter project for angular.js
-======================================
+MyBox example project
+=====================
 
 ### Prerequisites
 

@@ -1,5 +1,5 @@
 
-Appstax Notes example
+Notes example project
 =====================
 
 ### Prerequisites
