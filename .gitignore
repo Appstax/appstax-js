@@ -5,3 +5,4 @@ npm-debug.log
 bower_components
 dist
 public
+!examples/photobooth/public
