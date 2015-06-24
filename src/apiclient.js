@@ -2,6 +2,7 @@
 var extend   = require("extend");
 var Q        = require("kew");
 var encoding = require("./encoding");
+var socket = require("./socket");
 
 var http = require("./http-browser");
 if(typeof window != "object") {
@@ -15,17 +16,20 @@ function createApiClient(options) {
     var sessionId = null;
     var sessionIdProvider = function() { return sessionId; }
     var urlToken = "";
+    var socketInstance;
 
     init();
-    return {
+    var self = {
         request: request,
         url: urlFromTemplate,
         formData: formData,
         sessionId: function (id) { setSessionId(id); return getSessionId(); },
         urlToken: function(token) { urlToken = (arguments.length > 0 ? token : urlToken); return urlToken },
         appKey: function() { return config.appKey; },
-        baseUrl: function() { return config.baseUrl; }
+        baseUrl: function() { return config.baseUrl; },
+        socket: getSocket
     }
+    return self;
 
     function init() {
         config = extend({}, config, options);
@@ -149,6 +153,13 @@ function createApiClient(options) {
 
     function getSessionId() {
         return sessionIdProvider();
+    }
+
+    function getSocket() {
+        if(!socketInstance) {
+            socketInstance = socket(self);
+        }
+        return socketInstance;
     }
 
     function formData() {

@@ -6,3 +6,5 @@ bower_components
 dist
 public
 !examples/photobooth/public
+!examples/drawing/public
+!examples/chat/public

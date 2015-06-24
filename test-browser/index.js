@@ -10,6 +10,8 @@ require("./files-test");
 require("./collections-test");
 require("./relations-test");
 require("./request-test");
+require("./socket-test");
+require("./channels-test");
 
 // Polyfill for f.bind()
 Function.prototype.bind = Function.prototype.bind || function (thisp) {

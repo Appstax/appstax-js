@@ -6,6 +6,7 @@ var files       = require("./files");
 var collections = require("./collections");
 var apiClient   = require("./apiclient");
 var request     = require("./request");
+var channels    = require("./channels");
 
 var defaults = {
     baseUrl: "https://appstax.com/api/latest/",
@@ -41,6 +42,7 @@ function createContext(options) {
         context.objects     = objects(context.apiClient, context.files, context.collections);
         context.users       = users(context.apiClient, context.objects);
         context.request     = request(context.apiClient)
+        context.channels    = channels(context.apiClient.socket());
 
         // expose shortcuts
         context.object      = context.objects.createObject;
@@ -55,6 +57,7 @@ function createContext(options) {
         context.collection  = context.collections.collection;
         context.file        = context.files.createFile;
         context.sessionId   = context.apiClient.sessionId;
+        context.channel     = context.channels.getChannel;
     }
 }
 
