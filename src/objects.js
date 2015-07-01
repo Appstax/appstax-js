@@ -4,6 +4,7 @@ var apiClient   = require("./apiclient");
 var query       = require("./query");
 var files       = require("./files");
 var collections = require("./collections");
+var failLogger  = require("./faillogger");
 var Q           = require("kew");
 
 var internalIds = [];
@@ -14,19 +15,20 @@ var prototype = {
         return failOnUnsavedRelations(this)
                 .then(saveObject)
                 .then(savePermissionChanges)
-                .then(saveFileProperties);
+                .then(saveFileProperties)
+                .fail(failLogger.log);
     },
     saveAll: function() {
-        return saveObjectsInGraph(this);
+        return saveObjectsInGraph(this).fail(failLogger.log);
     },
     remove: function() {
-        return removeObject(this);
+        return removeObject(this).fail(failLogger.log);
     },
     refresh: function() {
-        return refreshObject(this);
+        return refreshObject(this).fail(failLogger.log);
     },
     expand: function(options) {
-        return expandObject(this, options);
+        return expandObject(this, options).fail(failLogger.log);
     },
     grant: function(usernames, permissions) {
         if(typeof usernames === "string") {
