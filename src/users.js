@@ -5,58 +5,12 @@ var extend    = require("extend");
 var Q         = require("kew");
 
 var internalProperties = ["id", "username", "save"];
-var prototype = {
-    save: function() {
-        return saveUser(this);
-    },
-    refresh: function() {
-        return refreshUser(this);
-    }
-};
 var currentUser = null;
-var dataObjects = {};
 
 function createUser(username, properties) {
     var allProperties = extend({}, properties, {sysUsername:username});
-    var user = Object.create(prototype);
-    var id = "";
-    if(typeof properties === "object") {
-        id = properties.sysObjectId;
-        fillUser(user, properties);
-    }
-    Object.defineProperty(user, "username", { get:function() { return username; }, enumerable:true });
-    Object.defineProperty(user, "id", { get:function() { return id; }, enumerable:true });
-    dataObjects[id] = objects.create("Users", allProperties);
+    var user = objects.create("users", allProperties);
     return user;
-}
-
-function refreshUser(user) {
-    var object = dataObjects[user.id];
-    return object.refresh().then(function() {
-        fillUser(user, objects.getProperties(object));
-    });
-}
-
-function fillUser(user, properties) {
-    Object.keys(properties).forEach(function(key) {
-        if(key.indexOf("sys") !== 0) {
-            user[key] = properties[key];
-        }
-    });
-}
-
-function saveUser(user) {
-    var defer = Q.defer();
-    var object = dataObjects[user.id];
-    extend(object, getProperties(user));
-    object.save()
-        .then(function(object) {
-            defer.resolve(user);
-        })
-        .fail(function(error) {
-            defer.reject(error);
-        });
-    return defer.promise;
 }
 
 function signup(username, password, properties) {

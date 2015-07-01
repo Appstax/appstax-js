@@ -304,6 +304,9 @@ describe("DataStore", function() {
 
         return promise.then(function(object) {
             expect(object.bar).to.equal("bazz");
+            expect(object).to.not.have.property("sysObjectId");
+            expect(object).to.not.have.property("sysCreated");
+            expect(object).to.not.have.property("sysUpdated");
         });
     });
 

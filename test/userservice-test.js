@@ -66,6 +66,7 @@ describe("User service", function() {
         requests[0].respond(200, {}, JSON.stringify({}));
         return promise.then(function(user) {
             expect(user).to.have.property("username", "fred");
+            expect(user).to.have.property("collectionName", "users");
             expect(user).to.not.have.property("password");
         });
     });
@@ -88,6 +89,7 @@ describe("User service", function() {
         return promise.then(function(user) {
             expect(appstax.currentUser()).to.not.be.null;
             expect(appstax.currentUser()).to.have.property("username", "howard");
+            expect(appstax.currentUser()).to.have.property("collectionName", "users");
             expect(appstax.currentUser()).to.equal(user);
         });
     });
@@ -146,6 +148,7 @@ describe("User service", function() {
         requests[0].respond(200, {}, JSON.stringify({}));
         return promise.then(function(user) {
             expect(user).to.have.property("username", "fred");
+            expect(user).to.have.property("collectionName", "users");
             expect(user).to.not.have.property("password");
         });
     });
@@ -175,6 +178,7 @@ describe("User service", function() {
         return promise.then(function(user) {
             expect(appstax.currentUser()).to.not.be.null;
             expect(appstax.currentUser()).to.have.property("username", "howard");
+            expect(appstax.currentUser()).to.have.property("collectionName", "users");
             expect(appstax.currentUser()).to.equal(user);
         });
     });
@@ -239,6 +243,7 @@ describe("User service", function() {
         expect(apiClient.sessionId()).to.equal("my-session");
         expect(appstax.currentUser()).to.exist;
         expect(appstax.currentUser()).to.have.property("username", "theuser");
+        expect(appstax.currentUser()).to.have.property("collectionName", "users");
         expect(appstax.currentUser()).to.have.property("id", "a-user-id");
     });
 
@@ -251,7 +256,7 @@ describe("User service", function() {
         });
     });
 
-    it("should PUT to objects/Users when saving user", function() {
+    it("should PUT to objects/users when saving user", function() {
         _createUserSession("homer", "the-user-id", "the-session-id");
         var user = appstax.currentUser();
 
@@ -259,7 +264,7 @@ describe("User service", function() {
 
         expect(requests).to.have.length(1);
         expect(requests[0].method).to.equal("PUT");
-        expect(requests[0].url).to.equal("http://localhost:3000/objects/Users/the-user-id");
+        expect(requests[0].url).to.equal("http://localhost:3000/objects/users/the-user-id");
     });
 
     it("should PUT sysUsername + all custom properties", function() {
@@ -314,8 +319,21 @@ describe("User service", function() {
         return promise.then(function(object) {
             var user = appstax.currentUser();
             expect(user.fullName).to.equal("The Full Name");
-            expect(user).to.not.have.property("collectionName");
+            expect(user).to.have.property("collectionName", "users");
             expect(user).to.not.have.property("sysObjectId");
+        });
+    });
+
+    it("should add username property to objects from users collection", function() {
+        var promise = appstax.findAll("users");
+
+        requests[0].respond(200, {}, JSON.stringify({objects:[{sysObjectId:"a-user-id", sysUsername:"shortname", fullName:"The Full Name"}]}));
+
+        return promise.then(function(users) {
+            expect(users[0]).to.have.property("fullName", "The Full Name");
+            expect(users[0]).to.have.property("collectionName", "users");
+            expect(users[0]).to.have.property("id", "a-user-id");
+            expect(users[0]).to.have.property("username", "shortname");
         });
     });
 

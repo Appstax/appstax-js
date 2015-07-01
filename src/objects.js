@@ -66,6 +66,9 @@ function createObject(collectionName, properties) {
     Object.defineProperty(object, "id", { get: function() { return internal.id; }, enumerable:true });
     Object.defineProperty(object, "internalId", { writable: false, value: internal.internalId, enumerable:true });
     Object.defineProperty(object, "collectionName", { get: function() { return internal.collectionName; }, enumerable:true });
+    if(collectionName == "users") {
+        Object.defineProperty(object, "username", { get:function() { return internal.sysValues.sysUsername; }, enumerable:false });
+    }
 
     properties = extend({}, collections.defaultValues(collectionName), properties);
     fillObjectWithValues(object, properties);
@@ -164,7 +167,13 @@ function refreshObject(object) {
         defer.resolve(object);
     } else {
         findById(object.collectionName, object.id).then(function(updated) {
-            extend(object, getProperties(updated));
+            Object.keys(updated)
+                .filter(function(key) {
+                    return internalProperties.indexOf(key) == -1
+                })
+                .forEach(function(key) {
+                    object[key] = updated[key];
+                });
             defer.resolve(object);
         });
     }
