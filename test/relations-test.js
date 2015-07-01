@@ -394,6 +394,30 @@ describe("Object relations", function() {
         expect(changes.additions).to.contain("post-id-2");
     });
 
+    it("saveAll() should handle multiple relations", function() {
+        var blog  = appstax.object("blogs", {
+            title: "Zen",
+            sysObjectId:"1234",
+            posts: {
+                sysDatatype: "relation",
+                sysRelationType: "array",
+                sysObjects: ["post-1", "post-2"]
+            }
+        });
+
+        blog.author = appstax.object("users", {sysObjectId: "the-user-id"});
+        blog.saveAll();
+
+        expect(requests.length).to.equal(1);
+
+        expect(requests[0].method).to.equal("PUT");
+        expect(requests[0].url).to.equal("http://localhost:3000/objects/blogs/1234");
+        var changes = JSON.parse(requests[0].requestBody).author.sysRelationChanges;
+        expect(changes.additions).to.have.length(1);
+        expect(changes.additions).to.contain("the-user-id");
+        expect(changes.removals).to.have.length(0);
+    });
+
     it("save() should handle adding and removing objects in array relation", function() {
         var blog  = appstax.object("blogs",  {
             sysObjectId: "blog-1",

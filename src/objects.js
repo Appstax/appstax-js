@@ -350,7 +350,7 @@ function getObjectsInGraph(rootObject) {
         detectUndeclaredRelations(object);
         if(all[object.internalId] == null) {
             all[object.internalId] = object;
-            var allRelated = getRelatedObjects(object);
+            var allRelated = getRelatedObjects(object).filter(function(a) { return typeof a == "object" });
             allRelated.forEach(function(related) {
                 inbound[related.internalId] = related;
             });
@@ -432,15 +432,15 @@ function applyRelationChanges(object, savedData) {
 function detectUndeclaredRelations(object) {
     var collection = collections.get(object.collectionName);
     var relations = getInternalObject(object).relations;
-    if(collection || Object.keys(relations).length > 0) {
-        return;
-    }
 
     var properties = getProperties(object);
     Object.keys(properties).forEach(function(key) {
+        if(relations[key]) {
+            return;
+        }
         var property = properties[key]
         var relationType = "";
-        if(typeof property === "object") {
+        if(property !== null && typeof property === "object") {
             if(typeof property.length === "undefined") {
                 if(typeof property.collectionName === "string") {
                     relationType = "single"
