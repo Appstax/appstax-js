@@ -99,7 +99,7 @@ function fillObjectWithValues(object, properties) {
                     internal.relations[key] = {
                         type: value.sysRelationType,
                         ids: (value.sysObjects || []).map(function(object) {
-                            return object.id || object;
+                            return object.sysObjectId || object;
                         })
                     }
                 }

@@ -246,6 +246,34 @@ describe("Object relations", function() {
         expect(changes.removals).to.contain("customer-1");
     });
 
+    it("save() should handle replacing single expanded relation with other existing object", function() {
+        var invoice  = appstax.object("invoices",  {
+            amount: 149,
+            sysObjectId: "invoice-1",
+            customer: {
+                sysDatatype: "relation",
+                sysRelationType: "single",
+                sysObjects: [{
+                    sysObjectId: "customer-1",
+                    name: "Custer Customer"
+                }]
+            }
+        });
+
+        invoice.customer = appstax.object("customer", {sysObjectId:"customer-2"});
+        invoice.save();
+
+        expect(requests.length).to.equal(1);
+
+        expect(requests[0].method).to.equal("PUT");
+        expect(requests[0].url).to.equal("http://localhost:3000/objects/invoices/invoice-1");
+        var changes = JSON.parse(requests[0].requestBody).customer.sysRelationChanges;
+        expect(changes.additions).to.have.length(1);
+        expect(changes.additions).to.contain("customer-2");
+        expect(changes.removals).to.have.length(1);
+        expect(changes.removals).to.contain("customer-1");
+    });
+
     it("save() should only send new relation changes for single relation", function() {
         var invoice  = appstax.object("invoices",  {
             amount: 149,
@@ -424,7 +452,7 @@ describe("Object relations", function() {
             posts: {
                 sysDatatype: "relation",
                 sysRelationType: "array",
-                sysObjects: ["post-1", "post-2"]
+                sysObjects: ["post-1", {sysObjectId: "post-2"}]
             }
         });
 
