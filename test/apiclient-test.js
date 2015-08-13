@@ -1,10 +1,11 @@
 
-var apiClient = require("../src/apiclient");
+var createApiClient = require("../src/apiclient");
 var sinon = require("sinon");
 var encoding = require("../src/encoding");
 
 describe("API Client", function() {
 
+    var apiClient;
     var xhr, requests;
 
     beforeEach(function() {
@@ -13,7 +14,7 @@ describe("API Client", function() {
         xhr.onCreate = function(request) {
             requests.push(request);
         };
-        apiClient.sessionId(null);
+        apiClient = createApiClient();
     });
 
     afterEach(function() {
@@ -21,7 +22,7 @@ describe("API Client", function() {
     });
 
     it("should send appkey header", function() {
-        apiClient.init({appKey:"1001-1002-1003"});
+        apiClient = createApiClient({appKey:"1001-1002-1003"});
         apiClient.request("post", "http://example.com", {foo:"bar"});
         apiClient.request("post", "http://example.com", {foo:"bar"});
         apiClient.request("get", "http://example.com");
@@ -34,7 +35,6 @@ describe("API Client", function() {
     });
 
     it("should send sessionid header", function() {
-        apiClient.init();
         apiClient.sessionId("my-session");
         apiClient.request("post", "http://example.com", {foo:"bar"});
         apiClient.request("put", "http://example.com", {foo:"bar"});
@@ -48,7 +48,6 @@ describe("API Client", function() {
     });
 
     it("should not send sessionid header for anonymous users", function() {
-        apiClient.init();
         apiClient.request("post", "http://example.com", {foo:"bar"});
         apiClient.request("put", "http://example.com", {foo:"bar"});
         apiClient.request("get", "http://example.com");
@@ -64,7 +63,7 @@ describe("API Client", function() {
         var appKey64 = "NjRlNjQxYzktMzA2OS00ZDcxLTQ4OGItMWNiYzNiMjlhY2I1";
         var appKey32 = encoding.base32.encode(appKey64);
 
-        apiClient.init({appKey:appKey64});
+        apiClient = createApiClient({appKey:appKey64});
         apiClient.request("post", "http://example.com", {foo:"bar"});
         apiClient.request("put", "http://example.com", {foo:"bar"});
         apiClient.request("get", "http://example.com");
@@ -81,7 +80,7 @@ describe("API Client", function() {
         var appKey64 = "NjRlNjQxYzktMzA2OS00ZDcxLTQ4OGItMWNiYzNiMjlhY2I1";
         var appKey32 = encoding.base32.encode(appKey64);
 
-        apiClient.init({appKey:appKey64});
+        apiClient = createApiClient({appKey:appKey64});
         apiClient.sessionId("987654321");
         apiClient.request("post", "http://example.com", {foo:"bar"});
         apiClient.request("put", "http://example.com", {foo:"bar"});
@@ -108,37 +107,37 @@ describe("API Client", function() {
     });
 
     it("should create urls with baseUrl", function() {
-        apiClient.init({baseUrl:"http://localhost:1001/"});
+        apiClient = createApiClient({baseUrl:"http://localhost:1001/"});
         expect(apiClient.url("/knock/knock")).to.equal("http://localhost:1001/knock/knock");
     });
 
     it("should add trailing slash to baseUrl", function() {
-        apiClient.init({baseUrl:"http://localhost:1001"});
+        apiClient = createApiClient({baseUrl:"http://localhost:1001/"});
         expect(apiClient.baseUrl()).to.equal("http://localhost:1001/");
     });
 
     it("should create parametrized urls on top of baseUrl", function() {
-        apiClient.init({baseUrl:"http://localhost:1337/"});
+        apiClient = createApiClient({baseUrl:"http://localhost:1337/"});
         expect(apiClient.url("/hello/:who", {who:"world"})).to.equal("http://localhost:1337/hello/world");
     });
 
     it("should url encode parameters", function() {
-        apiClient.init({baseUrl:"http://localhost:1337/"});
+        apiClient = createApiClient({baseUrl:"http://localhost:1337/"});
         expect(apiClient.url("/hello/:who", {who:"w ø r l d"})).to.equal("http://localhost:1337/hello/w%20%C3%B8%20r%20l%20d");
     });
 
     it("should append query parameters", function() {
-        apiClient.init({baseUrl:"http://localhost:1337/"});
+        apiClient = createApiClient({baseUrl:"http://localhost:1337/"});
         expect(apiClient.url("/hello/:who", {who:"world"}, {knock:"true"})).to.equal("http://localhost:1337/hello/world?knock=true");
     });
 
     it("should append query parameters to existing query", function() {
-        apiClient.init({baseUrl:"http://localhost:1337/"});
+        apiClient = createApiClient({baseUrl:"http://localhost:1337/"});
         expect(apiClient.url("/hello/:who?woods=yes", {who:"world"}, {knock:"true"})).to.equal("http://localhost:1337/hello/world?woods=yes&knock=true");
     });
 
     it("should encode query parameters to existing query", function() {
-        apiClient.init({baseUrl:"http://localhost:1337/"});
+        apiClient = createApiClient({baseUrl:"http://localhost:1337/"});
         expect(apiClient.url("/hello", {}, {who:"w ø r l d"})).to.equal("http://localhost:1337/hello?who=w%20%C3%B8%20r%20l%20d");
     });
 

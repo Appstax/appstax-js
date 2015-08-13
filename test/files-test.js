@@ -1,16 +1,16 @@
 
 var appstax = require("../src/appstax");
-var apiClient = require("../src/apiclient");
-var files = require("../src/files");
 var sinon = require("sinon");
 var Q = require("kew");
 
 describe("Files", function() {
 
     var xhr, requests;
+    var apiClient;
 
     beforeEach(function() {
         appstax.init({appKey:"testappkey", baseUrl: "http://localhost:3000/", log:false});
+        apiClient = appstax.apiClient;
         requests = [];
         xhr = sinon.useFakeXMLHttpRequest();
         xhr.onCreate = function(request) {
@@ -92,8 +92,8 @@ describe("Files", function() {
         //expect(requests[0].requestHeaders["Content-Type"]).to.contain("multipart")
         var formData = requests[0].requestBody;
         expect(formData).to.be.instanceOf(FormData);
-        expect(formData.get("file1").value).to.equal(files.nativeFile(object.file1));
-        expect(formData.get("file2").value).to.equal(files.nativeFile(object.file2));
+        expect(formData.get("file1").value).to.equal(appstax.files.nativeFile(object.file1));
+        expect(formData.get("file2").value).to.equal(appstax.files.nativeFile(object.file2));
     });
 
     it("should encode file names with whitespace in url", function() {

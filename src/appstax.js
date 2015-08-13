@@ -1,37 +1,59 @@
 
-var extend = require("extend");
-var objects = require("./objects");
-var users = require("./users");
-var files = require("./files");
+var extend      = require("extend");
+var objects     = require("./objects");
+var users       = require("./users");
+var files       = require("./files");
 var collections = require("./collections");
+var apiClient   = require("./apiclient");
 
-var apiClient = require("./apiclient");
-var config = {};
 var defaults = {
     baseUrl: "https://appstax.com/api/latest/",
     log: log
 }
 
-function init(options) {
-    if(typeof options === "string") {
-        options = {appKey:options};
-    }
-    config = extend({}, defaults, config, options);
-    if(config.log === false) { config.log = function() {} }
-    apiClient.init({baseUrl: config.baseUrl, appKey: config.appKey, log: config.log});
-    users.restoreSession();
-}
+var mainContext = createContext(defaults);
+module.exports = mainContext;
+module.exports.app = createContext;
 
-function attachModules(modules, exports) {
-    Object.keys(modules).forEach(function(name) {
-        var mod = modules[name];
-        module.exports[name] = mod;
-        if(mod.__global) {
-            Object.keys(mod.__global).forEach(function(globalName) {
-                module.exports[globalName] = mod.__global[globalName];
-            });
+function createContext(options) {
+    var context = { init: init };
+    var config  = {};
+
+    init(options);
+    return context;
+
+    function init(options) {
+        if(options == null) {
+            return;
         }
-    });
+
+        if(typeof options === "string") {
+            options = {appKey:options};
+        }
+        config = extend({}, defaults, config, options);
+        if(config.log === false) { config.log = function() {} }
+
+        // init modules
+        context.apiClient   = apiClient({baseUrl: config.baseUrl, appKey: config.appKey, log: config.log});
+        context.files       = files(context.apiClient);
+        context.collections = collections();
+        context.objects     = objects(context.apiClient, context.files, context.collections);
+        context.users       = users(context.apiClient, context.objects);
+
+        // expose shortcuts
+        context.object      = context.objects.createObject;
+        context.status      = context.objects.getObjectStatus;
+        context.findAll     = context.objects.findAll;
+        context.find        = context.objects.find;
+        context.search      = context.objects.search;
+        context.signup      = context.users.signup;
+        context.login       = context.users.login;
+        context.logout      = context.users.logout;
+        context.currentUser = context.users.currentUser;
+        context.collection  = context.collections.collection;
+        context.file        = context.files.createFile;
+        context.sessionId   = context.apiClient.sessionId;
+    }
 }
 
 function log(level, message) {
@@ -40,7 +62,3 @@ function log(level, message) {
     }
 }
 
-module.exports = {
-    init: init
-};
-attachModules({objects:objects, users:users, files:files, collections:collections}, module.exports);

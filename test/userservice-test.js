@@ -1,6 +1,5 @@
 
 var appstax = require("../src/appstax");
-var apiClient = require("../src/apiclient");
 var sinon = require("sinon");
 var Q = require("kew");
 
@@ -10,10 +9,11 @@ describe("User service", function() {
     var setItemSpy;
     var appKey;
     var appKeyCounter = 0;
+    var apiClient;
 
     beforeEach(function() {
         appKey = "test-app-key-" + (appKeyCounter++);
-        appstax.init({appKey:appKey, baseUrl: "http://localhost:3000/", log:false});
+        _appstaxInit();
         requests = [];
         xhr = sinon.useFakeXMLHttpRequest();
         xhr.onCreate = function(request) {
@@ -28,6 +28,11 @@ describe("User service", function() {
         appstax.logout();
     });
 
+    function _appstaxInit() {
+        appstax.init({appKey:appKey, baseUrl: "http://localhost:3000/", log:false});
+        apiClient = appstax.apiClient;
+    }
+
     function _createUserSession(username, userId, sessionId) {
         var key = "appstax_session_" + appKey;
         localStorage.setItem(key, JSON.stringify({
@@ -35,7 +40,7 @@ describe("User service", function() {
             userId: userId,
             sessionId: sessionId
         }));
-        appstax.init();
+        _appstaxInit();
     }
 
     it("should POST signup", function() {

@@ -1,15 +1,16 @@
 
 var appstax = require("../src/appstax");
-var apiClient = require("../src/apiclient");
 var sinon = require("sinon");
 var Q = require("kew");
 
 describe("Collections", function() {
 
     var xhr, requests;
+    var apiClient;
 
     beforeEach(function() {
         appstax.init({baseUrl: "http://localhost:3000/", log:false});
+        apiClient = appstax.apiClient;
         apiClient.urlToken("4321");
         requests = [];
         xhr = sinon.useFakeXMLHttpRequest();
