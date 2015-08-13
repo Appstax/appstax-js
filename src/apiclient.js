@@ -1,6 +1,6 @@
 
 var extend = require("extend");
-var reqwest = require("reqwest");
+var http = require("./http-browser");
 var Q = require("kew");
 var encoding = require("./encoding");
 
@@ -15,7 +15,6 @@ function createApiClient(options) {
     return {
         request: request,
         url: urlFromTemplate,
-        errorFromXhr: errorFromXhr,
         formData: formData,
         sessionId: function (id) { sessionId = (arguments.length > 0 ? id : sessionId); return sessionId; },
         urlToken: function(token) { urlToken = (arguments.length > 0 ? token : urlToken); return urlToken },
@@ -67,6 +66,7 @@ function createApiClient(options) {
         options.url = url;
         options.method = method
         options.contentType = "application/json";
+        options.headers = getRequestHeaders();
         options.processData = true;
         options.data = data;
         if(typeof data == "object" && !(data instanceof FormData)) {
@@ -75,30 +75,23 @@ function createApiClient(options) {
             options.contentType = false;
             options.processData = false;
         }
-        var promise = ajax(options);
-        promise.fail(function(xhr) {
+        var promise = http.request(options);
+        promise.fail(function(error) {
             if(config.log) {
-                config.log("error", "Appstax Error: " + errorFromXhr(xhr).message);
+                config.log("error", "Appstax Error: " + error.message);
             }
-            return xhr;
+            return error;
         });
         promise.then(function(response) {
-            var token = promise.request.getResponseHeader("x-appstax-urltoken");
+            //console.log("response", response);
+            var token = response.responseHeaders["x-appstax-urltoken"];
+            //var token = promise.request.getResponseHeader("x-appstax-urltoken");
             if(typeof token === "string") {
                 urlToken = token;
             }
             return response;
         });
         return promise;
-    }
-
-    function ajax(options) {
-        return reqwest(extend({
-            type: "json",
-            contentType: "application/json",
-            headers: getRequestHeaders(),
-            crossOrigin: true
-        }, options));
     }
 
     function getRequestHeaders() {
@@ -128,11 +121,6 @@ function createApiClient(options) {
         function addUrlTokenHeader(headers) {
             headers["x-appstax-urltoken"] = "_";
         }
-    }
-
-    function errorFromXhr(xhr) {
-        var result = JSON.parse(xhr.responseText);
-        return new Error(result.errorMessage)
     }
 
     function hasSession() {

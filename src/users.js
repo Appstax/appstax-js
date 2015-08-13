@@ -38,8 +38,8 @@ function createUsersContext(apiClient, objects) {
                      handleSignupOrLoginSuccess(username, result);
                      defer.resolve(currentUser);
                  })
-                 .fail(function(xhr) {
-                     defer.reject(apiClient.errorFromXhr(xhr));
+                 .fail(function(error) {
+                     defer.reject(error);
                  });
         return defer.promise;
     }
@@ -52,8 +52,8 @@ function createUsersContext(apiClient, objects) {
                      handleSignupOrLoginSuccess(username, result);
                      defer.resolve(currentUser);
                  })
-                 .fail(function(xhr) {
-                     defer.reject(apiClient.errorFromXhr(xhr));
+                 .fail(function(error) {
+                     defer.reject(error);
                  });
         return defer.promise;
     }

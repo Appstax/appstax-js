@@ -5,7 +5,8 @@ module.exports = {
             if(error && error.message) {
                 console.error("Appstax Error: " + error.message, error);
             } else {
-                console.error("Appstax Error", error);
+                //console.error("Appstax Error", error);
+                console.error("Appstax Error");
             }
         }
     }

@@ -226,9 +226,9 @@ function createObjectsContext(apiClient, files, collections) {
                      }
                      defer.resolve(object);
                  })
-                 .fail(function(xhr) {
+                 .fail(function(error) {
                      internal.status = "error";
-                     defer.reject(apiClient.errorFromXhr(xhr));
+                     defer.reject(error);
                  });
         return defer.promise;
     }
@@ -240,8 +240,8 @@ function createObjectsContext(apiClient, files, collections) {
                  .then(function(response) {
                      defer.resolve();
                  })
-                 .fail(function(xhr) {
-                     defer.reject(apiClient.errorFromXhr(xhr));
+                 .fail(function(error) {
+                     defer.reject(error);
                  });
         return defer.promise;
     }
@@ -304,8 +304,8 @@ function createObjectsContext(apiClient, files, collections) {
                      .then(function(response) {
                          defer.resolve(object);
                      })
-                     .fail(function(xhr) {
-                         defer.reject(apiClient.errorFromXhr(xhr));
+                     .fail(function(error) {
+                         defer.reject(error);
                      });
         }
         return defer.promise;
@@ -582,8 +582,8 @@ function createObjectsContext(apiClient, files, collections) {
                  .then(function(result) {
                      defer.resolve(createObjectsFromFindResult(collectionName, result));
                  })
-                 .fail(function(xhr) {
-                     defer.reject(apiClient.errorFromXhr(xhr));
+                 .fail(function(error) {
+                     defer.reject(error);
                  });
         return defer.promise;
     }
@@ -614,8 +614,8 @@ function createObjectsContext(apiClient, files, collections) {
                  .then(function(result) {
                      defer.resolve(createObject(collectionName, result));
                  })
-                 .fail(function(xhr) {
-                     defer.reject(apiClient.errorFromXhr(xhr));
+                 .fail(function(error) {
+                     defer.reject(error);
                  });
         return defer.promise;
     }
@@ -629,9 +629,9 @@ function createObjectsContext(apiClient, files, collections) {
                  .then(function(result) {
                      defer.resolve(createObjectsFromFindResult(collectionName, result));
                  })
-                 .fail(function(xhr) {
-                     defer.reject(apiClient.errorFromXhr(xhr));
-                 });;
+                 .fail(function(error) {
+                     defer.reject(error);
+                 });
         return defer.promise;
     }
 
