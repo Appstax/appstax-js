@@ -24,7 +24,7 @@ describe("API Client", function() {
     it("should send appkey header", function() {
         apiClient = createApiClient({appKey:"1001-1002-1003"});
         apiClient.request("post", "http://example.com", {foo:"bar"});
-        apiClient.request("post", "http://example.com", {foo:"bar"});
+        apiClient.request("put", "http://example.com", {foo:"bar"});
         apiClient.request("get", "http://example.com");
         apiClient.request("delete", "http://example.com");
 
@@ -155,14 +155,14 @@ describe("API Client", function() {
 
     it("should pick up url token from response header", function() {
         apiClient.request("get", "http://example.com");
-        requests[0].respond(200, {"x-appstax-urltoken": "the-url-token"}, "");
+        requests[0].respond(200, {"x-appstax-urltoken": "the-url-token"}, "{}");
         expect(apiClient.urlToken()).to.equal("the-url-token");
     });
 
     it("should not overwrite with blank urltoken when no response header is present", function() {
         apiClient.urlToken("initial-url-token");
         apiClient.request("get", "http://example.com");
-        requests[0].respond(200, {}, "");
+        requests[0].respond(200, {}, "{}");
         expect(apiClient.urlToken()).to.equal("initial-url-token");
     });
 

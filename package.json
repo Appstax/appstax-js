@@ -25,16 +25,19 @@
   },
   "main": "./src/appstax.js",
   "dependencies": {
-    "reqwest": "git://github.com/keronsen/reqwest#c701dbc644d9766041d0b7f14ed12d9a3b46498e",
     "extend": "1.3.0",
-    "kew": "0.4.0"
+    "kew": "0.4.0",
+    "reqwest": "git://github.com/keronsen/reqwest#c701dbc644d9766041d0b7f14ed12d9a3b46498e",
+    "unirest": "^0.4.2"
   },
   "devDependencies": {
     "browserify": "4.x",
+    "chai": "^3.2.0",
     "gulp": "3.8.11",
     "gulp-browserify": "0.5.0",
     "gulp-clean": "^0.3.1",
     "gulp-jscs": "1.4.0",
+    "gulp-mocha": "^2.1.3",
     "gulp-rename": "1.2.0",
     "gulp-replace": "^0.5.3",
     "gulp-uglify": "1.0.1",
@@ -48,6 +51,8 @@
     "karma-junit-reporter": "0.2.2",
     "karma-mocha": "0.1.4",
     "karma-phantomjs-launcher": "0.1.4",
+    "mocha": "^2.2.5",
+    "nock": "^2.10.0",
     "phantomjs": "1.9.11",
     "proxy-middleware": "^0.5.0",
     "sinon": "git://github.com/bevacqua/Sinon.JS#111a75966b9dd6831ba5c6e373ddeef233846c59",

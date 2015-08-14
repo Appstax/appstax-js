@@ -80,6 +80,9 @@ function createUsersContext(apiClient, objects) {
     }
 
     function restoreSession() {
+        if(typeof localStorage == "undefined") {
+            return;
+        }
         var sessionData = localStorage.getItem("appstax_session_" + apiClient.appKey());
         if(sessionData) {
             var session = JSON.parse(sessionData);

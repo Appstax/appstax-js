@@ -1,8 +1,12 @@
 
-var extend = require("extend");
-var http = require("./http-browser");
-var Q = require("kew");
+var extend   = require("extend");
+var Q        = require("kew");
 var encoding = require("./encoding");
+
+var http = require("./http-browser");
+if(typeof window != "object") {
+    http = require("./http-node");
+}
 
 module.exports = createApiClient;
 
@@ -69,29 +73,31 @@ function createApiClient(options) {
         options.headers = getRequestHeaders();
         options.processData = true;
         options.data = data;
-        if(typeof data == "object" && !(data instanceof FormData)) {
-            options.data = JSON.stringify(data);
-        } else if(data instanceof FormData) {
+        if(typeof FormData != "undefined" && data instanceof FormData) {
             options.contentType = false;
             options.processData = false;
+        } else if(typeof data == "object") {
+            options.data = JSON.stringify(data);
         }
-        var promise = http.request(options);
-        promise.fail(function(error) {
-            if(config.log) {
-                config.log("error", "Appstax Error: " + error.message);
-            }
-            return error;
-        });
-        promise.then(function(response) {
-            //console.log("response", response);
-            var token = response.responseHeaders["x-appstax-urltoken"];
-            //var token = promise.request.getResponseHeader("x-appstax-urltoken");
-            if(typeof token === "string") {
-                urlToken = token;
-            }
-            return response;
-        });
-        return promise;
+
+        var defer = Q.defer();
+        http.request(options)
+            .fail(function(error) {
+                if(config.log) {
+                    config.log("error", "Appstax Error: " + error.message);
+                }
+                defer.reject(error);
+            })
+            .then(function(result) {
+                if(typeof result.request != "undefined") {
+                    var token = result.request.getResponseHeader("x-appstax-urltoken");
+                    if(typeof token === "string") {
+                        urlToken = token;
+                    }
+                }
+                defer.resolve(result.response);
+            });
+        return defer.promise;
     }
 
     function getRequestHeaders() {
@@ -128,6 +134,10 @@ function createApiClient(options) {
     }
 
     function formData() {
-        return new FormData();
+        if(typeof FormData != "undefined") {
+            return new FormData();
+        } else {
+            return null;
+        }
     }
 }

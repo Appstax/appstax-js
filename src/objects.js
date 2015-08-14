@@ -221,7 +221,7 @@ function createObjectsContext(apiClient, files, collections) {
                      internal.setId(response.sysObjectId);
                      internal.status = "saved";
                      applyRelationChanges(object, data);
-                     if(data instanceof FormData) {
+                     if(typeof FormData != "undefined" && data instanceof FormData) {
                          markFilesSaved(object);
                      }
                      defer.resolve(object);
