@@ -20,6 +20,6 @@ deploy:
   - provider: npm
     email: support@appstax.com
     api_key:
-      secure: BlEoVoTi1S6FyoGT3lbKGTPposGazzbOdXoprFBYdnDFXcOWTCQWH85iMl9ufGJ8KPwvdQ7/ci9qRnJQcCubZY0jTIgBsqefOVpLQX5dCQeYACzk7oZv8ZkVvUF9BF7auWMjUIM7XVXNDxNNHgpdlHtRwtSBVW6nFaKQT9ykh1U=
+      secure: TgRRjen2dVeZIHjnfiB0RMfvhoHFkE4k+UyF62ZJ6CU50a/Yhmy+C8/bjgpZ7MrFskk4YeFFy3/B4Ckw+WlxeHyEB4J4Pzwgx/Ib62kcdN97UtPym3/sj9Zma68BB05ruZ8WOS4SfQtgX8mjEejXyi9n3Z5gnnAdmaSnyI2TNmg=
     on:
       tags: true
