@@ -21,7 +21,7 @@ gulp.task('clean', function() {
                .pipe(clean());
 });
 
-gulp.task("test", ["test-build", "test-watch", "test-run"]);
+gulp.task("test", ["test-watch", "test-run"]);
 gulp.task("test-run", ["test-run-node", "test-run-browser"]);
 gulp.task("test-ci", ["test-run-browser-ci", "test-run-node"]);
 
@@ -30,7 +30,7 @@ gulp.task("test-run-node", function() {
             .pipe(mocha({reporter:"progress", bail:false}));
 });
 
-gulp.task("test-run-browser", ["test-build"], function(done) {
+gulp.task("test-run-browser", function(done) {
     console.log("\n* Running browser tests");
     karma.start({
         configFile: __dirname + '/karma.conf.js'
@@ -52,7 +52,7 @@ gulp.task("test-build", ["jscs"], function(done) {
         .on("end", done);
 });
 
-gulp.task("test-watch", function (done) {
+gulp.task("test-watch", ["test-build"], function () {
     gulp.watch("build/appstax-test.js", ["test-run"]);
     gulp.watch("src/**/*.js", ["test-build"]);
     gulp.watch("test-browser/**/*.js", ["test-build"]);
