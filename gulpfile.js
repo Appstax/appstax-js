@@ -23,21 +23,21 @@ gulp.task('clean', function() {
 
 gulp.task("test", ["test-build", "test-watch", "test-run"]);
 gulp.task("test-run", ["test-run-node", "test-run-browser"]);
-gulp.task("test-ci", ["test-build", "test-run-browser-ci", "test-run-node"]);
+gulp.task("test-ci", ["test-run-browser-ci", "test-run-node"]);
 
 gulp.task("test-run-node", function() {
     return gulp.src('test-node/*.js', {read: false})
             .pipe(mocha({reporter:"progress", bail:false}));
 });
 
-gulp.task("test-run-browser", function(done) {
+gulp.task("test-run-browser", ["test-build"], function(done) {
     console.log("\n* Running browser tests");
     karma.start({
         configFile: __dirname + '/karma.conf.js'
     }, done);
 });
 
-gulp.task("test-run-browser-ci", function(done) {
+gulp.task("test-run-browser-ci", ["test-build"], function(done) {
     console.log("\n* Running browser tests");
     karma.start({
         configFile: __dirname + '/karma.ci.conf.js'
