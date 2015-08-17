@@ -116,4 +116,16 @@ describe("API Client under node.js", function() {
         });
     });
 
+    it("should reject promise with returned error when request fails, ensure json parsing", function() {
+        nock("http://server").get("/data").reply(422, JSON.stringify({errorMessage:"No success!"}));
+
+        return apiClient.request("get", "http://server/data")
+        .then(function() {
+            throw("Not supposed to succeed!");
+        })
+        .fail(function(error) {
+            expect(error).to.have.property("message", "No success!");
+        });
+    });
+
 });

@@ -24,8 +24,12 @@ module.exports = {
 }
 
 function errorFromResponse(response) {
+    var message;
     if(typeof response.body == "object") {
-        return new Error(response.body.errorMessage);
+        message = response.body.errorMessage;
+    } else if(typeof response.body == "string") {
+        var body = JSON.parse(response.body);
+        message = body.errorMessage;
     }
-    return new Error();
+    return new Error(message);
 }
