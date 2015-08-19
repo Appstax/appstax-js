@@ -6,7 +6,7 @@ var Q           = require("kew");
 
 module.exports = createObjectsContext;
 
-var internalProperties = ["collectionName", "id", "internalId", "save", "saveAll", "remove", "grant", "revoke"];
+var internalProperties = ["collectionName", "id", "internalId", "username", "created", "updated", "save", "saveAll", "remove", "grant", "revoke"];
 
 function createObjectsContext(apiClient, files, collections) {
     var internalIds = [];
@@ -81,10 +81,10 @@ function createObjectsContext(apiClient, files, collections) {
         Object.defineProperty(object, "id", { get: function() { return internal.id; }, enumerable:true });
         Object.defineProperty(object, "internalId", { writable: false, value: internal.internalId, enumerable:true });
         Object.defineProperty(object, "collectionName", { get: function() { return internal.collectionName; }, enumerable:true });
-        Object.defineProperty(object, "created", { get: function() { return internal.created }});
-        Object.defineProperty(object, "updated", { get: function() { return internal.updated }});
+        Object.defineProperty(object, "created", { get: function() { return internal.created; }, enumerable:true });
+        Object.defineProperty(object, "updated", { get: function() { return internal.updated; }, enumerable:true });
         if(collectionName == "users") {
-            Object.defineProperty(object, "username", { get:function() { return internal.sysValues.sysUsername; }, enumerable:false });
+            Object.defineProperty(object, "username", { get:function() { return internal.sysValues.sysUsername; }, enumerable:true });
         }
 
         properties = extend({}, collections.defaultValues(collectionName), properties);
