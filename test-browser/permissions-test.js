@@ -98,9 +98,13 @@ describe("Object permissions", function() {
 
         requests[0].respond(200, {}, JSON.stringify({sysObjectId:"id1"}));
         requests[1].respond(422, {}, JSON.stringify({errorMessage:"Permission error"}));
-        return promise.fail(function(error) {
-            expect(error).to.have.property("message", "Permission error");
-        });
+        return promise
+            .then(function() {
+                throw new Error("Success handler should not be called!");
+            })
+            .fail(function(error) {
+                expect(error).to.have.property("message", "Permission error");
+            });
     });
 
     it("should not perform permission changes if save fails", function() {

@@ -157,9 +157,13 @@ describe("Object queries", function() {
 
         requests[0].respond(422, {}, JSON.stringify({errorMessage:"The query error"}));
 
-        return promise.fail(function(error) {
-            expect(error).to.have.property("message", "The query error");
-        });
+        return promise
+            .then(function() {
+                throw new Error("Success handler should not be called!");
+            })
+            .fail(function(error) {
+                expect(error).to.have.property("message", "The query error");
+            });
     });
 
 });

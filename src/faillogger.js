@@ -11,5 +11,6 @@ module.exports = {
                 console.error(error.stack);
             }
         }
+        throw error;
     }
 }

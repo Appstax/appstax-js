@@ -127,9 +127,11 @@ describe("User service", function() {
         var promise = appstax.signup("homer", "duff");
 
         requests[0].respond(422, {}, JSON.stringify({errorMessage:"The error"}));
-        return promise.then(
-            function() {},
-            function(error) {
+        return promise
+            .then(function() {
+                throw new Error("Success handler should not be called!");
+            })
+            .fail(function(error) {
                 expect(error).to.be.instanceOf(Error);
                 expect(error.message).to.equal("The error");
             });
@@ -216,9 +218,11 @@ describe("User service", function() {
         var promise = appstax.login("homer", "duff");
 
         requests[0].respond(422, {}, JSON.stringify({errorMessage:"The error"}));
-        return promise.then(
-            function() {},
-            function(error) {
+        return promise
+            .then(function() {
+                throw new Error("Success handler should not be called!");
+            })
+            .fail(function(error) {
                 expect(error).to.be.instanceOf(Error);
                 expect(error.message).to.equal("The error");
             });
@@ -309,9 +313,13 @@ describe("User service", function() {
         var promise = user.save();
         requests[0].respond(422, {}, JSON.stringify({errorMessage:"The user save error"}));
 
-        return promise.fail(function(error) {
-            expect(error).to.have.property("message", "The user save error");
-        });
+        return promise
+            .then(function() {
+                throw new Error("Success handler should not be called!");
+            })
+            .fail(function(error) {
+                expect(error).to.have.property("message", "The user save error");
+            });
     });
 
     it("should refresh a user object", function() {

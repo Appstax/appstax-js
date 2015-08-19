@@ -84,9 +84,13 @@ describe("DataStore", function() {
 
         requests[0].respond(422, {}, JSON.stringify({errorMessage:"The POST error"}));
 
-        return promise.fail(function(error) {
-            expect(error).to.have.property("message", "The POST error");
-        });
+        return promise
+            .then(function() {
+                throw new Error("Success handler should not be called!");
+            })
+            .fail(function(error) {
+                expect(error).to.have.property("message", "The POST error");
+            });
     });
 
     it("should set id when saving completes", function() {
@@ -142,9 +146,13 @@ describe("DataStore", function() {
 
         requests[0].respond(422, {}, JSON.stringify({errorMessage:"The PUT error"}));
 
-        return promise.fail(function(error) {
-            expect(error).to.have.property("message", "The PUT error");
-        });
+        return promise
+            .then(function() {
+                throw new Error("Success handler should not be called!");
+            })
+            .fail(function(error) {
+                expect(error).to.have.property("message", "The PUT error");
+            });
     });
 
     it("should put sysUpdated field with same value as received", function() {
@@ -186,9 +194,13 @@ describe("DataStore", function() {
 
         requests[0].respond(422, {}, JSON.stringify({errorMessage:"The remove error"}));
 
-        return promise.fail(function(error) {
-            expect(error).to.have.property("message", "The remove error");
-        });
+        return promise
+            .then(function() {
+                throw new Error("Success handler should not be called!");
+            })
+            .fail(function(error) {
+                expect(error).to.have.property("message", "The remove error");
+            });
     });
 
     it("should track object status", function() {
@@ -280,9 +292,13 @@ describe("DataStore", function() {
 
         requests[0].respond(422, {}, JSON.stringify({errorMessage:"The load all error"}));
 
-        return promise.fail(function(error) {
-            expect(error).to.have.property("message", "The load all error");
-        });
+        return promise
+            .then(function() {
+                throw new Error("Success handler should not be called!");
+            })
+            .fail(function(error) {
+                expect(error).to.have.property("message", "The load all error");
+            });
     });
 
     it("should load a single object from a collection", function() {
@@ -307,9 +323,13 @@ describe("DataStore", function() {
 
         requests[0].respond(422, {}, JSON.stringify({errorMessage:"The load single error"}));
 
-        return promise.fail(function(error) {
-            expect(error).to.have.property("message", "The load single error");
-        });
+        return promise
+            .then(function() {
+                throw new Error("Success handler should not be called!");
+            })
+            .fail(function(error) {
+                expect(error).to.have.property("message", "The load single error");
+            });
     });
 
     it("should refresh a previously loaded object", function() {
