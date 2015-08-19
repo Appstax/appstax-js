@@ -43,7 +43,7 @@ describe("DataStore", function() {
     });
 
     it("should POST all non-internal properties as data", function() {
-        var object = appstax.object("MyObjects", {property1: "value1"});
+        var object = appstax.object("MyObjects", {property1: "value1", sysCreated:"1", sysUpdated: "2"});
         object.property2 = "value2";
         object.save();
 
@@ -55,6 +55,8 @@ describe("DataStore", function() {
         expect(data).to.not.have.property("collectionName");
         expect(data).to.not.have.property("id");
         expect(data).to.not.have.property("internalId");
+        expect(data).to.not.have.property("sysCreated");
+        expect(data).to.not.have.property("sysUpdated");
     });
 
     it("should ignore properties not starting with a letter when saving", function() {
@@ -153,20 +155,6 @@ describe("DataStore", function() {
             .fail(function(error) {
                 expect(error).to.have.property("message", "The PUT error");
             });
-    });
-
-    it("should put sysUpdated field with same value as received", function() {
-        var promise = appstax.find("foobar", "1234-5678");
-        requests[0].respond(200, {}, JSON.stringify({sysObjectId:"3ac45e58-eba6-4ead-6f42-44042af923d3",
-                                                     sysCreated:"2014-09-09T14:41:28.430418034+02:00",
-                                                     sysUpdated:"2014-09-09T14:53:32.655640375+02:00",
-                                                     myProperty:"MyValue"}));
-
-        return promise.then(function(object) {
-            object.save();
-            var putData = JSON.parse(requests[1].requestBody);
-            expect(putData).to.have.property("sysCreated", "2014-09-09T14:41:28.430418034+02:00");
-        });
     });
 
     it("should DELETE when removing an object", function() {

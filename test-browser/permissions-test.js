@@ -248,4 +248,15 @@ describe("Object permissions", function() {
         expect(data.revokes[0]).to.have.deep.property("permissions[0]", "update");
     });
 
+    it("should expose current permissions", function() {
+        var object = appstax.object("post", {sysObjectId:"p1", sysPermissions:["read", "update"]});
+
+        expect(object.permissions).to.contain("read");
+        expect(object.permissions).to.contain("update");
+        expect(object.permissions).to.not.contain("delete");
+
+        expect(object.hasPermission("read")).to.be.true
+        expect(object.hasPermission("delete")).to.be.false
+    });
+
 });
