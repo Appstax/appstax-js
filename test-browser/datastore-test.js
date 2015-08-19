@@ -110,6 +110,22 @@ describe("DataStore", function() {
         expect(object).to.have.property("collectionName", "foo");
     });
 
+    it("should have read-only created/updated date properties", function() {
+        var object = appstax.object("foo", {
+            sysCreated: "2015-08-19T10:38:33.721658846Z",
+            sysUpdated: "2016-09-20T15:39:34.721658846Z"
+        });
+
+        expect(object.created).to.be.instanceof(Date);
+        expect(object.updated).to.be.instanceof(Date);
+
+        expect(function() { object.created = new Date() }).to.throw(Error);
+        expect(function() { object.updated = new Date() }).to.throw(Error);
+
+        expect(object.created.toUTCString()).to.equal("Wed, 19 Aug 2015 10:38:33 GMT");
+        expect(object.updated.toUTCString()).to.equal("Tue, 20 Sep 2016 15:39:34 GMT");
+    });
+
     it("should PUT when updating an already saved object", function() {
         var object = appstax.object("foo", {sysObjectId:"the-stored-id"});
 

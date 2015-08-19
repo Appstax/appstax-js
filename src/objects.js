@@ -81,6 +81,8 @@ function createObjectsContext(apiClient, files, collections) {
         Object.defineProperty(object, "id", { get: function() { return internal.id; }, enumerable:true });
         Object.defineProperty(object, "internalId", { writable: false, value: internal.internalId, enumerable:true });
         Object.defineProperty(object, "collectionName", { get: function() { return internal.collectionName; }, enumerable:true });
+        Object.defineProperty(object, "created", { get: function() { return internal.created }});
+        Object.defineProperty(object, "updated", { get: function() { return internal.updated }});
         if(collectionName == "users") {
             Object.defineProperty(object, "username", { get:function() { return internal.sysValues.sysUsername; }, enumerable:false });
         }
@@ -100,6 +102,12 @@ function createObjectsContext(apiClient, files, collections) {
         if(typeof properties === "object") {
             var sysValues = internal.sysValues;
             internal.setId(properties.sysObjectId);
+            if(properties.sysCreated) {
+                internal.created = new Date(properties.sysCreated)
+            }
+            if(properties.sysUpdated) {
+                internal.updated = new Date(properties.sysUpdated)
+            }
             Object.keys(properties).forEach(function(key) {
                 var value = properties[key];
                 if(key.indexOf("sys") === 0) {
@@ -160,6 +168,8 @@ function createObjectsContext(apiClient, files, collections) {
             collectionName: collectionName,
             sysValues: {},
             initialValues: {},
+            created: new Date(),
+            updated: new Date(),
             status: "new",
             grants: [],
             revokes: [],
