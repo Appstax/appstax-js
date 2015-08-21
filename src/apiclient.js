@@ -13,6 +13,7 @@ module.exports = createApiClient;
 function createApiClient(options) {
     var config = {};
     var sessionId = null;
+    var sessionIdProvider = function() { return sessionId; }
     var urlToken = "";
 
     init();
@@ -20,7 +21,7 @@ function createApiClient(options) {
         request: request,
         url: urlFromTemplate,
         formData: formData,
-        sessionId: function (id) { sessionId = (arguments.length > 0 ? id : sessionId); return sessionId; },
+        sessionId: function (id) { setSessionId(id); return getSessionId(); },
         urlToken: function(token) { urlToken = (arguments.length > 0 ? token : urlToken); return urlToken },
         appKey: function() { return config.appKey; },
         baseUrl: function() { return config.baseUrl; }
@@ -113,7 +114,7 @@ function createApiClient(options) {
         }
         function addSessionIdHeader(headers) {
             if(hasSession()) {
-                headers["x-appstax-sessionid"] = sessionId;
+                headers["x-appstax-sessionid"] = getSessionId();
             }
         }
         function addPreflightHeader(headers) {
@@ -130,7 +131,24 @@ function createApiClient(options) {
     }
 
     function hasSession() {
-        return sessionId !== null && sessionId !== undefined;
+        var s = getSessionId();
+        return s !== null && s !== undefined;
+    }
+
+    function setSessionId(s) {
+        switch(typeof s) {
+            case "string":
+            case "object":
+                sessionId = s;
+                break;
+            case "function":
+                sessionIdProvider = s;
+                break;
+        }
+    }
+
+    function getSessionId() {
+        return sessionIdProvider();
     }
 
     function formData() {

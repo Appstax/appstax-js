@@ -59,6 +59,21 @@ describe("API Client", function() {
         expect(requests[3].requestHeaders).to.not.contain.keys("x-appstax-sessionid");
     });
 
+    it("should use session if from a session id provider function", function() {
+        apiClient.sessionId(function() {
+            return "othersession"
+        });
+        apiClient.request("post", "http://example.com", {foo:"bar"});
+        apiClient.request("put", "http://example.com", {foo:"bar"});
+        apiClient.request("get", "http://example.com");
+        apiClient.request("delete", "http://example.com");
+
+        expect(requests[0].requestHeaders).has.property("x-appstax-sessionid", "othersession");
+        expect(requests[1].requestHeaders).has.property("x-appstax-sessionid", "othersession");
+        expect(requests[2].requestHeaders).has.property("x-appstax-sessionid", "othersession");
+        expect(requests[3].requestHeaders).has.property("x-appstax-sessionid", "othersession");
+    });
+
     it("should send extra header for preflight requests without session", function() {
         var appKey64 = "NjRlNjQxYzktMzA2OS00ZDcxLTQ4OGItMWNiYzNiMjlhY2I1";
         var appKey32 = encoding.base32.encode(appKey64);
