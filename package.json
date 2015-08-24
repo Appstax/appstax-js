@@ -12,12 +12,7 @@
     "mail": "support@appstax.com",
     "url": "http://github.com/appstax/appstax-js/issues"
   },
-  "licenses": [
-    {
-      "type": "MIT",
-      "url": "http://github.com/appstax/appstax-js/blob/master/LICENSE"
-    }
-  ],
+  "license": "MIT",
   "scripts": {
     "test": "gulp test",
     "test-ci": "gulp test-ci",
