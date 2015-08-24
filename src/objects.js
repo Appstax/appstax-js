@@ -7,8 +7,10 @@ var Q           = require("kew");
 module.exports = createObjectsContext;
 
 var internalProperties = ["collectionName", "id", "internalId", "username", "created", "updated", "permissions", "save", "saveAll", "remove", "grant", "revoke", "sysCreated", "sysUpdated", "sysPermissions"];
+var nextContextId = 0;
 
 function createObjectsContext(apiClient, files, collections) {
+    var contextId = nextContextId++;
     var internalIds = [];
     var internalObjects = {};
 
@@ -570,7 +572,7 @@ function createObjectsContext(apiClient, files, collections) {
     }
 
     function createInternalId() {
-        var id = "internal-id-" + internalIds.length;
+        var id = "internal-id-" + contextId + "-" + internalIds.length;
         internalIds.push(id);
         return id;
     }
