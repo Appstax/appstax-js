@@ -1,5 +1,6 @@
 
-var Q = require("kew");
+var Q  = require("kew");
+var WS = require("ws");
 
 module.exports = createSocket;
 
@@ -82,11 +83,19 @@ function createSocket(apiClient) {
     function connectSocket() {
         var url = apiClient.url("/messaging/realtime", {}, {rsession: realtimeSessionId});
         url = url.replace("http", "ws");
-        webSocket = new WebSocket(url);
+        webSocket = createWebSocket(url);
         webSocket.onopen = handleSocketOpen;
         webSocket.onerror = handleSocketError;
         webSocket.onmessage = handleSocketMessage;
         webSocket.onclose = handleSocketClose;
+    }
+
+    function createWebSocket(url) {
+        if(typeof WebSocket != "undefined") {
+            return new WebSocket(url);
+        } else if(typeof WS != "undefined") {
+            return new WS(url);
+        }
     }
 
     function handleSocketOpen(event) {

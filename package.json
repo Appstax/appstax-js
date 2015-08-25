@@ -23,7 +23,8 @@
     "extend": "1.3.0",
     "kew": "0.4.0",
     "reqwest": "git://github.com/keronsen/reqwest#c701dbc644d9766041d0b7f14ed12d9a3b46498e",
-    "unirest": "^0.4.2"
+    "unirest": "^0.4.2",
+    "ws": "^0.8.0"
   },
   "devDependencies": {
     "browserify": "4.x",
