@@ -5,6 +5,7 @@ var users       = require("./users");
 var files       = require("./files");
 var collections = require("./collections");
 var apiClient   = require("./apiclient");
+var request     = require("./request");
 
 var defaults = {
     baseUrl: "https://appstax.com/api/latest/",
@@ -39,6 +40,7 @@ function createContext(options) {
         context.collections = collections();
         context.objects     = objects(context.apiClient, context.files, context.collections);
         context.users       = users(context.apiClient, context.objects);
+        context.request     = request(context.apiClient)
 
         // expose shortcuts
         context.object      = context.objects.createObject;

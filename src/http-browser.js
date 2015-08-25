@@ -30,6 +30,13 @@ module.exports = {
 }
 
 function errorFromXhr(xhr) {
-    var result = JSON.parse(xhr.responseText);
-    return new Error(result.errorMessage)
+    try {
+        var result = JSON.parse(xhr.responseText);
+        if(typeof result.errorMessage == "string") {
+            return new Error(result.errorMessage);
+        } else {
+            return result;
+        }
+    } catch(e) {}
+    return xhr.responseText;
 }
