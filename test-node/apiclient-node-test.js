@@ -104,6 +104,22 @@ describe("API Client under node.js", function() {
         });
     });
 
+    it("should parse json string responses", function() {
+        nock("http://server").get("/data").reply(200, JSON.stringify({param:"value"}));
+
+        return apiClient.request("get", "http://server/data").then(function(response) {
+            expect(response).to.have.property("param", "value");
+        });
+    });
+
+    it("should not parse regular string response", function() {
+        nock("http://server").get("/data").reply(200, "foo");
+
+        return apiClient.request("get", "http://server/data").then(function(response) {
+            expect(response).to.equal("foo");
+        });
+    });
+
     it("should reject promise with returned error when request fails", function() {
         nock("http://server").get("/data").reply(422, {errorMessage:"No success!"});
 

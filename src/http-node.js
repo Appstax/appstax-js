@@ -13,7 +13,7 @@ module.exports = {
         request.send(options.data);
         request.end(function(response) {
             if(response.statusType == 2) {
-                defer.resolve({response:response.body});
+                defer.resolve({response:parseResponseBody(response)});
             } else {
                 defer.reject(errorFromResponse(response));
             }
@@ -21,6 +21,16 @@ module.exports = {
 
         return defer.promise;
     }
+}
+
+function parseResponseBody(response) {
+    var body = response.body;
+    if(typeof body == "string") {
+        try {
+            body = JSON.parse(response.body);
+        } catch(e) {}
+    }
+    return body;
 }
 
 function errorFromResponse(response) {
