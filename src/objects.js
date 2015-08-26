@@ -281,8 +281,12 @@ function createObjectsContext(apiClient, files, collections) {
     }
 
     function markFilesSaved(object) {
-        getFiles(object).forEach(function(file) {
+        var fileProperties = getFileProperties(object);
+        return Object.keys(fileProperties).map(function(key) {
+            var file = fileProperties[key];
+            var url  = files.urlForFile(object.collectionName, object.id, key, file.filename);
             files.status(file, "saved");
+            files.setUrl(file, url);
         });
     }
 
@@ -562,13 +566,6 @@ function createObjectsContext(apiClient, files, collections) {
             }
         });
         return fileProperties;
-    }
-
-    function getFiles(object) {
-        var fileProperties = getFileProperties(object);
-        return Object.keys(fileProperties).map(function(key) {
-            return fileProperties[key];
-        });
     }
 
     function createInternalId() {

@@ -133,7 +133,22 @@ describe("Files", function() {
         });
     });
 
-    it("should have readonly url property with token", function() {
+    it("should have readonly url property with token after saving new object", function() {
+        apiClient.urlToken("abc12345");
+        var object = appstax.object("myobjects");
+        object.picture = appstax.file(mockFile("me120x200.jpg"));
+
+        var promise = object.save();
+        requests[0].respond(200, {}, JSON.stringify({sysObjectId:"id1"}));
+
+        return promise.then(function(promisedObject) {
+            var url = "http://localhost:3000/files/myobjects/id1/picture/me120x200.jpg?token=abc12345";
+            expect(object.picture.url).to.equal(url);
+            expect(function() { object.picture.url = "foo" }).to.throw(Error);
+        });
+    });
+
+    it("should have readonly url property with token after updating object (PUT file request)", function() {
         apiClient.urlToken("abc12345");
         var object = appstax.object("myobjects", {sysObjectId:"1234"});
         object.picture = appstax.file(mockFile("profile120x200.jpg"));
@@ -154,9 +169,6 @@ describe("Files", function() {
         object.picture = appstax.file(mockFile("profile120x200.jpg"));
 
         window.setTimeout(function() {
-            expect(object.picture.url).to.equal("") // during file save
-            var promise = object.save();
-            requests[0].respond(200, {});
             expect(object.picture.url).to.equal("") // during file save
             done();
         }, 100);

@@ -12,6 +12,7 @@ function createFilesContext(apiClient) {
         isFile: isFile,
         saveFile: saveFile,
         status: fileStatus,
+        setUrl: setUrl,
         urlForFile: urlForFile,
         nativeFile: getNativeFile,
         createFile: createFile
@@ -140,5 +141,12 @@ function createFilesContext(apiClient) {
             getInternalFile(file).status = status;
         }
         return getInternalFile(file).status;
+    }
+
+    function setUrl(file, url) {
+        var internal = getInternalFile(file);
+        if(internal) {
+            internal.url = url;
+        }
     }
 }
