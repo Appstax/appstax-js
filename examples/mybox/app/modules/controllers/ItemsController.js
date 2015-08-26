@@ -17,7 +17,9 @@ app.controller("ItemsController", function($scope, $state, $window, $timeout, $m
     function updateView(items) {
         $window.scrollTo(0,0)
         $timeout(function() {
-            $scope.items = items.slice().reverse();
+            $scope.items = items.slice().sort(function(a, b) {
+                return b.created.getTime() - a.created.getTime();
+            });
         },1);
     }
 
