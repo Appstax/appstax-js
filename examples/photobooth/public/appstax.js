@@ -4,79 +4,79 @@ var toString = Object.prototype.toString;
 var undefined;
 
 var isPlainObject = function isPlainObject(obj) {
-	"use strict";
-	if (!obj || toString.call(obj) !== '[object Object]' || obj.nodeType || obj.setInterval) {
-		return false;
-	}
+  "use strict";
+  if (!obj || toString.call(obj) !== '[object Object]' || obj.nodeType || obj.setInterval) {
+    return false;
+  }
 
-	var has_own_constructor = hasOwn.call(obj, 'constructor');
-	var has_is_property_of_method = obj.constructor && obj.constructor.prototype && hasOwn.call(obj.constructor.prototype, 'isPrototypeOf');
-	// Not own constructor property must be Object
-	if (obj.constructor && !has_own_constructor && !has_is_property_of_method) {
-		return false;
-	}
+  var has_own_constructor = hasOwn.call(obj, 'constructor');
+  var has_is_property_of_method = obj.constructor && obj.constructor.prototype && hasOwn.call(obj.constructor.prototype, 'isPrototypeOf');
+  // Not own constructor property must be Object
+  if (obj.constructor && !has_own_constructor && !has_is_property_of_method) {
+    return false;
+  }
 
-	// Own properties are enumerated firstly, so to speed up,
-	// if last one is own, then all properties are own.
-	var key;
-	for (key in obj) {}
+  // Own properties are enumerated firstly, so to speed up,
+  // if last one is own, then all properties are own.
+  var key;
+  for (key in obj) {}
 
-	return key === undefined || hasOwn.call(obj, key);
+  return key === undefined || hasOwn.call(obj, key);
 };
 
 module.exports = function extend() {
-	"use strict";
-	var options, name, src, copy, copyIsArray, clone,
-		target = arguments[0],
-		i = 1,
-		length = arguments.length,
-		deep = false;
+  "use strict";
+  var options, name, src, copy, copyIsArray, clone,
+    target = arguments[0],
+    i = 1,
+    length = arguments.length,
+    deep = false;
 
-	// Handle a deep copy situation
-	if (typeof target === "boolean") {
-		deep = target;
-		target = arguments[1] || {};
-		// skip the boolean and the target
-		i = 2;
-	} else if (typeof target !== "object" && typeof target !== "function" || target == undefined) {
-			target = {};
-	}
+  // Handle a deep copy situation
+  if (typeof target === "boolean") {
+    deep = target;
+    target = arguments[1] || {};
+    // skip the boolean and the target
+    i = 2;
+  } else if (typeof target !== "object" && typeof target !== "function" || target == undefined) {
+      target = {};
+  }
 
-	for (; i < length; ++i) {
-		// Only deal with non-null/undefined values
-		if ((options = arguments[i]) != null) {
-			// Extend the base object
-			for (name in options) {
-				src = target[name];
-				copy = options[name];
+  for (; i < length; ++i) {
+    // Only deal with non-null/undefined values
+    if ((options = arguments[i]) != null) {
+      // Extend the base object
+      for (name in options) {
+        src = target[name];
+        copy = options[name];
 
-				// Prevent never-ending loop
-				if (target === copy) {
-					continue;
-				}
+        // Prevent never-ending loop
+        if (target === copy) {
+          continue;
+        }
 
-				// Recurse if we're merging plain objects or arrays
-				if (deep && copy && (isPlainObject(copy) || (copyIsArray = Array.isArray(copy)))) {
-					if (copyIsArray) {
-						copyIsArray = false;
-						clone = src && Array.isArray(src) ? src : [];
-					} else {
-						clone = src && isPlainObject(src) ? src : {};
-					}
+        // Recurse if we're merging plain objects or arrays
+        if (deep && copy && (isPlainObject(copy) || (copyIsArray = Array.isArray(copy)))) {
+          if (copyIsArray) {
+            copyIsArray = false;
+            clone = src && Array.isArray(src) ? src : [];
+          } else {
+            clone = src && isPlainObject(src) ? src : {};
+          }
 
-					// Never move original objects, clone them
-					target[name] = extend(deep, clone, copy);
+          // Never move original objects, clone them
+          target[name] = extend(deep, clone, copy);
 
-				// Don't bring in undefined values
-				} else if (copy !== undefined) {
-					target[name] = copy;
-				}
-			}
-		}
-	}
+        // Don't bring in undefined values
+        } else if (copy !== undefined) {
+          target[name] = copy;
+        }
+      }
+    }
+  }
 
-	// Return the modified object
-	return target;
+  // Return the modified object
+  return target;
 };
 
 
@@ -1486,139 +1486,427 @@ module.exports = {
 
 },{}],5:[function(_dereq_,module,exports){
 
-var extend = _dereq_("extend");
-var reqwest = _dereq_("reqwest");
-var Q = _dereq_("kew");
+/**
+ * Module dependencies.
+ */
+
+var global = (function() { return this; })();
+
+/**
+ * WebSocket constructor.
+ */
+
+var WebSocket = global.WebSocket || global.MozWebSocket;
+
+/**
+ * Module exports.
+ */
+
+module.exports = WebSocket ? ws : null;
+
+/**
+ * WebSocket constructor.
+ *
+ * The third `opts` options object gets ignored in web browsers, since it's
+ * non-standard, and throws a TypeError if passed to the constructor.
+ * See: https://github.com/einaros/ws/issues/227
+ *
+ * @param {String} uri
+ * @param {Array} protocols (optional)
+ * @param {Object) opts (optional)
+ * @api public
+ */
+
+function ws(uri, protocols, opts) {
+  var instance;
+  if (protocols) {
+    instance = new WebSocket(uri, protocols);
+  } else {
+    instance = new WebSocket(uri);
+  }
+  return instance;
+}
+
+if (WebSocket) ws.prototype = WebSocket.prototype;
+
+},{}],6:[function(_dereq_,module,exports){
+
+var extend   = _dereq_("extend");
+var Q        = _dereq_("kew");
 var encoding = _dereq_("./encoding");
+var socket = _dereq_("./socket");
 
-var config = {};
-var sessionId = null;
-var urlToken = null;
-
-function init(options) {
-    config = extend({}, config, options);
-    fixBaseUrl();
-    try { config.appKeyBase32 = encoding.base32.encode(config.appKey); } catch(e) {}
+var http = _dereq_("./http-browser");
+if(typeof window != "object") {
+    http = _dereq_("./http-node");
 }
 
-function fixBaseUrl() {
-    var u = config.baseUrl;
-    if(u.lastIndexOf("/") != u.length - 1) {
-        config.baseUrl = u + "/";
+module.exports = createApiClient;
+
+function createApiClient(options) {
+    var config = {};
+    var sessionId = null;
+    var sessionIdProvider = function() { return sessionId; }
+    var urlToken = "";
+    var socketInstance;
+
+    init();
+    var self = {
+        request: request,
+        url: urlFromTemplate,
+        formData: formData,
+        sessionId: function (id) { setSessionId(id); return getSessionId(); },
+        urlToken: function(token) { urlToken = (arguments.length > 0 ? token : urlToken); return urlToken },
+        appKey: function() { return config.appKey; },
+        baseUrl: function() { return config.baseUrl; },
+        socket: getSocket
+    }
+    return self;
+
+    function init() {
+        config = extend({}, config, options);
+        fixBaseUrl();
+        try { config.appKeyBase32 = encoding.base32.encode(config.appKey); } catch(e) {}
+    }
+
+    function fixBaseUrl() {
+        var u = config.baseUrl;
+        if(typeof u == "string" && u.lastIndexOf("/") != u.length - 1) {
+            config.baseUrl = u + "/";
+        }
+    }
+
+    function urlFromTemplate(template, parameters, query) {
+        var url = template;
+        var queryString = "";
+        if(url.indexOf("/") == 0) {
+            url = url.substr(1);
+        }
+        if(typeof parameters == "object") {
+            Object.keys(parameters).forEach(function(key) {
+                url = url.replace(":" + key, uriEncode(parameters[key]));
+            });
+        }
+        if(typeof query == "object") {
+            queryString = Object.keys(query).map(function(key) {
+                return key + "=" + uriEncode(query[key]);
+            }).join("&");
+        }
+        if(queryString != "") {
+            url += ((url.indexOf("?") == -1) ? "?" : "&") + queryString;
+        }
+        return config.baseUrl + url;
+    }
+
+    function uriEncode(string) {
+        return encodeURIComponent(string).replace(/'/g, "%27");
+    }
+
+    function request(method, url, data) {
+        var options = {};
+        options.url = url;
+        options.method = method
+        options.contentType = "application/json";
+        options.headers = getRequestHeaders();
+        options.processData = true;
+        options.data = data;
+        if(typeof FormData != "undefined" && data instanceof FormData) {
+            options.contentType = false;
+            options.processData = false;
+        } else if(typeof data == "object") {
+            options.data = JSON.stringify(data);
+        }
+
+        var defer = Q.defer();
+        http.request(options)
+            .fail(function(error) {
+                if(config.log) {
+                    config.log("error", "Appstax Error: " + error.message);
+                }
+                defer.reject(error);
+            })
+            .then(function(result) {
+                if(typeof result.request != "undefined") {
+                    var token = result.request.getResponseHeader("x-appstax-urltoken");
+                    if(typeof token === "string") {
+                        urlToken = token;
+                    }
+                }
+                defer.resolve(result.response);
+            });
+        return defer.promise;
+    }
+
+    function getRequestHeaders() {
+        var h = {};
+        addAppKeyHeader(h);
+        addSessionIdHeader(h);
+        addPreflightHeader(h);
+        addUrlTokenHeader(h);
+        return h;
+
+        function addAppKeyHeader(headers) {
+            headers["x-appstax-appkey"] = config.appKey;
+        }
+        function addSessionIdHeader(headers) {
+            if(hasSession()) {
+                headers["x-appstax-sessionid"] = getSessionId();
+            }
+        }
+        function addPreflightHeader(headers) {
+            var header = [
+                "x-appstax-x",
+                hasSession() ? "u" : "n",
+                config.appKeyBase32
+            ].join("");
+            headers[header] = header;
+        }
+        function addUrlTokenHeader(headers) {
+            headers["x-appstax-urltoken"] = "_";
+        }
+    }
+
+    function hasSession() {
+        var s = getSessionId();
+        return s !== null && s !== undefined;
+    }
+
+    function setSessionId(s) {
+        switch(typeof s) {
+            case "string":
+            case "object":
+                sessionId = s;
+                break;
+            case "function":
+                sessionIdProvider = s;
+                break;
+        }
+    }
+
+    function getSessionId() {
+        return sessionIdProvider();
+    }
+
+    function getSocket() {
+        if(!socketInstance) {
+            socketInstance = socket(self);
+        }
+        return socketInstance;
+    }
+
+    function formData() {
+        if(typeof FormData != "undefined") {
+            return new FormData();
+        } else {
+            return null;
+        }
     }
 }
 
-function urlFromTemplate(template, parameters) {
-    var url = template;
-    if(url.indexOf("/") == 0) {
-        url = url.substr(1);
+},{"./encoding":9,"./http-browser":13,"./socket":18,"extend":1,"kew":3}],7:[function(_dereq_,module,exports){
+
+module.exports = createChannelsContext;
+
+function createChannelsContext(socket) {
+    var channels;
+    var handlers;
+    var idCounter = 0;
+
+    init();
+    return {
+        getChannel: getChannel
+    };
+
+    function init() {
+        socket.on("open", handleSocketOpen);
+        socket.on("error", handleSocketError);
+        socket.on("message", handleSocketMessage);
+        channels = {};
+        handlers = [];
     }
-    if(typeof parameters == "object") {
-        Object.keys(parameters).forEach(function(key) {
-            url = url.replace(":" + key, uriEncode(parameters[key]));
+
+    function createChannel(channelName, usernames) {
+        var nameParts = channelName.split("/");
+        var channel = {
+            type: nameParts[0],
+            wildcard: channelName.indexOf("*") != -1,
+            on: function(eventName, handler) {
+                addHandler(channelName, eventName, handler)
+            },
+            send: function(message) {
+                sendPacket({
+                    channel:channelName,
+                    command:"publish",
+                    message: message
+                });
+            },
+            grant: function(username, permissions) {
+                sendPermission(channelName, "grant", [username], permissions);
+            },
+            revoke: function(username, permissions) {
+                sendPermission(channelName, "revoke", [username], permissions);
+            }
+        };
+        if(channel.type == "private" && !channel.wildcard) {
+            sendPacket({channel:channelName, command:"channel.create"});
+            if(usernames && usernames.length > 0) {
+                sendPermission(channelName, "grant", usernames, ["read", "write"]);
+            }
+        } else {
+            sendPacket({channel:channelName, command:"subscribe"});
+        }
+        return channel;
+    }
+
+    function sendPermission(channelName, change, usernames, permissions) {
+        permissions.forEach(function(permission) {
+            sendPacket({
+                channel: channelName,
+                command: change + "." + permission,
+                data: usernames
+            })
         });
     }
-    return config.baseUrl + url;
-}
 
-function uriEncode(string) {
-    return encodeURIComponent(string).replace(/'/g, "%27");
-}
-
-function request(method, url, data) {
-    var options = {};
-    options.url = url;
-    options.method = method
-    options.contentType = "application/json";
-    options.processData = true;
-    options.data = data;
-    if(typeof data == "object" && !(data instanceof FormData)) {
-        options.data = JSON.stringify(data);
-    } else if(data instanceof FormData) {
-        options.contentType = false;
-        options.processData = false;
-    }
-    var promise = ajax(options);
-    promise.fail(function(xhr) {
-        if(config.log) {
-            config.log("error", "Appstax Error: " + errorFromXhr(xhr).message);
+    function getChannel(name, permissions) {
+        var channel = channels[name];
+        if(!channel) {
+            channels[name] = channel = createChannel(name, permissions);
         }
-        return xhr;
-    });
-    promise.then(function(response) {
-        var token = promise.request.getResponseHeader("x-appstax-urltoken");
-        if(typeof token === "string") {
-            urlToken = token;
+        return channel;
+    }
+
+    function sendPacket(packet) {
+        packet.id = String(idCounter++);
+        socket.send(packet);
+    }
+
+    function notifyHandlers(channelName, eventName, event) {
+        getHandlers(channelName, eventName).forEach(function(handler) {
+            handler(event);
+        });
+    }
+
+    function getHandlers(channelName, eventName) {
+        var filtered = [];
+        if(channelName == "*") {
+            filtered = handlers.filter(function(handler) {
+                return handler.eventName == eventName;
+            });
+        } else {
+            filtered = handlers.filter(function(handler) {
+                return handler.eventName == eventName &&
+                       handler.regexp.test(channelName)
+            });
         }
-        return response;
-    });
-    return promise;
-}
-
-function ajax(options) {
-    return reqwest(extend({
-        type: "json",
-        contentType: "application/json",
-        headers: getRequestHeaders(),
-        crossOrigin: true
-    }, options));
-}
-
-function getRequestHeaders() {
-    var h = {};
-    addAppKeyHeader(h);
-    addSessionIdHeader(h);
-    addPreflightHeader(h);
-    addUrlTokenHeader(h);
-    return h;
-
-    function addAppKeyHeader(headers) {
-        headers["x-appstax-appkey"] = config.appKey;
+        return filtered.map(function(handler) {
+            return handler.fn;
+        });
     }
-    function addSessionIdHeader(headers) {
-        if(hasSession()) {
-            headers["x-appstax-sessionid"] = sessionId;
+
+    function addHandler(channelPattern, eventName, handler) {
+        var regexp;
+        if(channelPattern.lastIndexOf("*") == channelPattern.length - 1) {
+            regexp = new RegExp("^" + channelPattern.replace("*", ""));
+        } else {
+            regexp = new RegExp("^" + channelPattern + "$");
+        }
+        handlers.push({
+            regexp: regexp,
+            eventName: eventName,
+            fn: handler
+        });
+    }
+
+    function handleSocketOpen(event) {
+        notifyHandlers("*", "open");
+    }
+
+    function handleSocketError(event) {
+        notifyHandlers("*", "error", {
+            type:"error",
+            error: new Error("Error connecting to realtime service")
+        });
+    }
+
+    function handleSocketMessage(event) {
+        var data = {};
+        try {
+            data = JSON.parse(event.data);
+        } catch(e) {}
+
+        if(typeof data.channel === "string" &&
+           typeof data.event   === "string") {
+            notifyHandlers(data.channel, data.event, data);
         }
     }
-    function addPreflightHeader(headers) {
-        var header = [
-            "x-appstax-x",
-            hasSession() ? "u" : "n",
-            config.appKeyBase32
-        ].join("");
-        headers[header] = header;
+}
+
+
+},{}],8:[function(_dereq_,module,exports){
+
+module.exports = createCollectionsContext;
+
+function createCollectionsContext() {
+    var collections = {};
+
+    return {
+        defaultValues: defaultValues,
+        get: getCollection,
+        collection: function(c, p) { defineCollection(c, p); return getCollection(c); }
     }
-    function addUrlTokenHeader(headers) {
-        headers["x-appstax-urltoken"] = "_";
+
+    function defineCollection(name, options) {
+        collection = parseCollection(options);
+        collections["$" + name] = collection;
+    }
+
+    function parseCollection(options) {
+        var collection = {};
+        Object.keys(options).forEach(function(key) {
+            var option = options[key];
+            var column = {};
+            if(typeof option === "string") {
+                column.type = option;
+            } else if(typeof option === "object" && typeof option.type === "string") {
+                column.type = option.type;
+            }
+            if(column.type === "relation") {
+                column.relation = option.relation;
+            }
+            collection[key] = column;
+        });
+        return collection;
+    }
+
+    function getCollection(name) {
+        return collections["$" + name];
+    }
+
+    function defaultValues(collectionName) {
+        var collection = getCollection(collectionName);
+        var values = {};
+        if(collection) {
+            Object.keys(collection).forEach(function(key) {
+                values[key] = defaultValueForColumn(collection[key])
+            });
+        }
+        return values;
+    }
+
+    function defaultValueForColumn(column) {
+        switch(column.type) {
+            case "string": return "";
+            case "number": return 0;
+            case "array": return [];
+            case "file": return {sysDatatype:"file", filename:"", url:""};
+            case "relation": return {sysDatatype:"relation", sysRelationType:column.relation, sysObjectIds:[]};
+        }
+        return undefined;
     }
 }
 
-function errorFromXhr(xhr) {
-    var result = JSON.parse(xhr.responseText);
-    return new Error(result.errorMessage)
-}
-
-function hasSession() {
-    return sessionId !== null && sessionId !== undefined;
-}
-
-function formData() {
-    return new FormData();
-}
-
-module.exports = {
-    init: init,
-    request: request,
-    url: urlFromTemplate,
-    errorFromXhr: errorFromXhr,
-    formData: formData,
-    sessionId: function (id) { sessionId = (arguments.length > 0 ? id : sessionId); return sessionId; },
-    urlToken: function(token) { urlToken = (arguments.length > 0 ? token : urlToken); return urlToken },
-    appKey: function() { return config.appKey; },
-    baseUrl: function() { return config.baseUrl; }
-}
-
-},{"./encoding":6,"extend":1,"kew":3,"reqwest":4}],6:[function(_dereq_,module,exports){
+},{}],9:[function(_dereq_,module,exports){
 
 var nibbler = _dereq_("./nibbler");
 
@@ -1644,40 +1932,86 @@ module.exports = {
     }
 }
 
-},{"./nibbler":9}],7:[function(_dereq_,module,exports){
+},{"./nibbler":14}],10:[function(_dereq_,module,exports){
 
-var extend = _dereq_("extend");
-var objects = _dereq_("./objects");
-var users = _dereq_("./users");
-var files = _dereq_("./files");
+module.exports = {
+    log: function(error) {
+        if(console && console.error) {
+            if(error && error.message) {
+                console.error("Appstax Error: " + error.message, error);
+            } else {
+                console.error("Appstax Error");
+            }
+            if(error && error.stack) {
+                console.error(error.stack);
+            }
+        }
+        throw error;
+    }
+}
 
-var apiClient = _dereq_("./apiclient");
-var config = {};
+},{}],11:[function(_dereq_,module,exports){
+
+var extend      = _dereq_("extend");
+var objects     = _dereq_("./objects");
+var users       = _dereq_("./users");
+var files       = _dereq_("./files");
+var collections = _dereq_("./collections");
+var apiClient   = _dereq_("./apiclient");
+var request     = _dereq_("./request");
+var channels    = _dereq_("./channels");
+
 var defaults = {
     baseUrl: "https://appstax.com/api/latest/",
     log: log
 }
 
-function init(options) {
-    if(typeof options === "string") {
-        options = {appKey:options};
-    }
-    config = extend({}, defaults, config, options);
-    if(config.log === false) { config.log = function() {} }
-    apiClient.init({baseUrl: config.baseUrl, appKey: config.appKey, log: config.log});
-    users.restoreSession();
-}
+var mainContext = createContext(defaults);
+module.exports = mainContext;
+module.exports.app = createContext;
 
-function attachModules(modules, exports) {
-    Object.keys(modules).forEach(function(name) {
-        var mod = modules[name];
-        module.exports[name] = mod;
-        if(mod.__global) {
-            Object.keys(mod.__global).forEach(function(globalName) {
-                module.exports[globalName] = mod.__global[globalName];
-            });
+function createContext(options) {
+    var context = { init: init };
+    var config  = {};
+
+    init(options);
+    return context;
+
+    function init(options) {
+        if(options == null) {
+            return;
         }
-    });
+
+        if(typeof options === "string") {
+            options = {appKey:options};
+        }
+        config = extend({}, defaults, config, options);
+        if(config.log === false) { config.log = function() {} }
+
+        // init modules
+        context.apiClient   = apiClient({baseUrl: config.baseUrl, appKey: config.appKey, log: config.log});
+        context.files       = files(context.apiClient);
+        context.collections = collections();
+        context.objects     = objects(context.apiClient, context.files, context.collections);
+        context.users       = users(context.apiClient, context.objects);
+        context.request     = request(context.apiClient)
+        context.channels    = channels(context.apiClient.socket());
+
+        // expose shortcuts
+        context.object      = context.objects.createObject;
+        context.status      = context.objects.getObjectStatus;
+        context.findAll     = context.objects.findAll;
+        context.find        = context.objects.find;
+        context.search      = context.objects.search;
+        context.signup      = context.users.signup;
+        context.login       = context.users.login;
+        context.logout      = context.users.logout;
+        context.currentUser = context.users.currentUser;
+        context.collection  = context.collections.collection;
+        context.file        = context.files.createFile;
+        context.sessionId   = context.apiClient.sessionId;
+        context.channel     = context.channels.getChannel;
+    }
 }
 
 function log(level, message) {
@@ -1686,154 +2020,206 @@ function log(level, message) {
     }
 }
 
-module.exports = {
-    init: init
-};
-attachModules({objects:objects, users:users, files:files}, module.exports);
 
-},{"./apiclient":5,"./files":8,"./objects":10,"./users":12,"extend":1}],8:[function(_dereq_,module,exports){
+},{"./apiclient":6,"./channels":7,"./collections":8,"./files":12,"./objects":15,"./request":17,"./users":19,"extend":1}],12:[function(_dereq_,module,exports){
 
-var apiClient = _dereq_("./apiclient");
 var Q         = _dereq_("kew");
 var extend    = _dereq_("extend");
 
-var internalFiles = [];
+module.exports = createFilesContext;
 
-function createFile(options) {
-    var file = Object.create({});
-    var internal;
+function createFilesContext(apiClient) {
+    var internalFiles = [];
 
-    if(options instanceof Blob) {
-        var nativeFile = options;
-        internal = createInternalFile(file, {
-            filename: nativeFile.name,
-            nativeFile: nativeFile
-        });
-    } else {
-        internal = createInternalFile(file, options);
-        internal.status = "saved";
+    return {
+        create: createFile,
+        isFile: isFile,
+        saveFile: saveFile,
+        status: fileStatus,
+        setUrl: setUrl,
+        urlForFile: urlForFile,
+        nativeFile: getNativeFile,
+        createFile: createFile
     }
 
-    if(file && internal) {
-        Object.defineProperty(file, "filename", { get: function() { return internal.filename; }, enumerable:true });
-        Object.defineProperty(file, "url", { get: function() { return internal.url; }, enumerable:true });
-        Object.defineProperty(file, "preview", { value: function() { return previewFile(internal); }});
-        Object.defineProperty(file, "imageUrl", { value: function(operation, options) { return imageUrl(internal, operation, options); }});
-    } else {
-        throw new Error("Invalid file options");
-    }
-    return file;
-}
+    function createFile(options) {
+        var file = Object.create({});
+        var internal;
 
-function createInternalFile(file, options) {
-    var internal = {
-        file: file,
-        filename: options.filename,
-        nativeFile: options.nativeFile,
-        url: options.url || "",
-        status: "new"
-    }
-    internalFiles.push(internal);
-    return internal;
-}
+        if(options instanceof Blob) {
+            var nativeFile = options;
+            internal = createInternalFile(file, {
+                filename: nativeFile.name,
+                nativeFile: nativeFile
+            });
+        } else {
+            internal = createInternalFile(file, options);
+            internal.status = "saved";
+        }
 
-function previewFile(internalFile) {
-    if(!internalFile.previewPromise) {
+        if(file && internal) {
+            Object.defineProperty(file, "filename", { get: function() { return internal.filename; }, enumerable:true });
+            Object.defineProperty(file, "url", { get: function() { return internal.url; }, enumerable:true });
+            Object.defineProperty(file, "preview", { value: function() { return previewFile(internal); }});
+            Object.defineProperty(file, "imageUrl", { value: function(operation, options) { return imageUrl(internal, operation, options); }});
+        } else {
+            throw new Error("Invalid file options");
+        }
+        return file;
+    }
+
+    function createInternalFile(file, options) {
+        var internal = {
+            file: file,
+            filename: options.filename,
+            nativeFile: options.nativeFile,
+            url: options.url || "",
+            status: "new"
+        }
+        internalFiles.push(internal);
+        return internal;
+    }
+
+    function previewFile(internalFile) {
+        if(!internalFile.previewPromise) {
+            var defer = Q.defer();
+            var reader = new FileReader();
+            reader.onload = function(event) {
+                internalFile.url = event.target.result;
+                defer.resolve(internalFile.file);
+            }
+            reader.readAsDataURL(internalFile.nativeFile);
+            internalFile.previewPromise = defer.promise;
+        }
+        return internalFile.previewPromise;
+    }
+
+    function imageUrl(internalFile, operation, options) {
+        var o = extend({
+            width: "-",
+            height: "-"
+        }, options);
+
+        return internalFile.url.replace("/files/", "/images/" + operation + "/" + o.width + "/" + o.height + "/");
+    }
+
+    function getInternalFile(file) {
+        for(var i = 0; i < internalFiles.length; i++) {
+            if(internalFiles[i].file == file) {
+                return internalFiles[i];
+            }
+        }
+        return null;
+    }
+
+    function saveFile(collectionName, objectId, propertyName, file) {
         var defer = Q.defer();
-        var reader = new FileReader();
-        reader.onload = function(event) {
-            internalFile.url = event.target.result;
-            defer.resolve(internalFile.file);
+        var internal = getInternalFile(file);
+        internal.status = "saving";
+        var url = urlForFile(collectionName, objectId, propertyName, file.filename);
+        var data = new FormData();
+        data.append("file", internal.nativeFile);
+        apiClient.request("put", url, data).then(function(response) {
+            internal.status = "saved";
+            internal.url = url;
+            defer.resolve(file);
+        });
+        return defer.promise;
+    }
+
+    function urlForFile(collectionName, objectId, propertyName, filename) {
+        if(!filename) {
+            return "";
         }
-        reader.readAsDataURL(internalFile.nativeFile);
-        internalFile.previewPromise = defer.promise;
+        var tokenKey = "token";
+        var tokenValue = apiClient.urlToken();
+        if(tokenValue.length < 2) {
+            tokenKey = "appkey";
+            tokenValue = apiClient.appKey();
+        }
+        return apiClient.url("/files/:collectionName/:objectId/:propertyName/:filename?:tokenKey=:tokenValue", {
+            collectionName: collectionName,
+            objectId: objectId,
+            propertyName: propertyName,
+            filename: filename,
+            tokenKey: tokenKey,
+            tokenValue: tokenValue
+        })
     }
-    return internalFile.previewPromise;
-}
 
-function imageUrl(internalFile, operation, options) {
-    var o = extend({
-        width: "-",
-        height: "-"
-    }, options);
+    function getNativeFile(file) {
+        var nativeFile = null;
+        var internal = getInternalFile(file);
+        if(internal != null) {
+            nativeFile = internal.nativeFile;
+        }
+        return nativeFile;
+    }
 
-    return internalFile.url.replace("/files/", "/images/" + operation + "/" + o.width + "/" + o.height + "/");
-}
+    function isFile(file) {
+        return getInternalFile(file) != null;
+    }
 
-function getInternalFile(file) {
-    for(var i = 0; i < internalFiles.length; i++) {
-        if(internalFiles[i].file == file) {
-            return internalFiles[i];
+    function fileStatus(file, status) {
+        if(typeof status === "string") {
+            getInternalFile(file).status = status;
+        }
+        return getInternalFile(file).status;
+    }
+
+    function setUrl(file, url) {
+        var internal = getInternalFile(file);
+        if(internal) {
+            internal.url = url;
         }
     }
-    return null;
 }
 
-function saveFile(collectionName, objectId, propertyName, file) {
-    var defer = Q.defer();
-    var internal = getInternalFile(file);
-    internal.status = "saving";
-    var url = urlForFile(collectionName, objectId, propertyName, file.filename);
-    var data = new FormData();
-    data.append("file", internal.nativeFile);
-    apiClient.request("put", url, data).then(function(response) {
-        internal.status = "saved";
-        internal.url = url;
-        defer.resolve(file);
-    });
-    return defer.promise;
-}
+},{"extend":1,"kew":3}],13:[function(_dereq_,module,exports){
 
-function urlForFile(collectionName, objectId, propertyName, filename) {
-    var tokenKey = "token";
-    var tokenValue = apiClient.urlToken();
-    if(tokenValue.length < 2) {
-        tokenKey = "appkey";
-        tokenValue = apiClient.appKey();
-    }
-    return apiClient.url("/files/:collectionName/:objectId/:propertyName/:filename?:tokenKey=:tokenValue", {
-        collectionName: collectionName,
-        objectId: objectId,
-        propertyName: propertyName,
-        filename: filename,
-        tokenKey: tokenKey,
-        tokenValue: tokenValue
-    })
-}
-
-function getNativeFile(file) {
-    var nativeFile = null;
-    var internal = getInternalFile(file);
-    if(internal != null) {
-        nativeFile = internal.nativeFile;
-    }
-    return nativeFile;
-}
-
-function isFile(file) {
-    return getInternalFile(file) != null;
-}
-
-function fileStatus(file, status) {
-    if(typeof status === "string") {
-        getInternalFile(file).status = status;
-    }
-    return getInternalFile(file).status;
+var extend  = _dereq_("extend");
+var Q       = _dereq_("kew");
+var reqwest = null;
+if(typeof window == "object") {
+    reqwest = _dereq_("reqwest");
 }
 
 module.exports = {
-    create: createFile,
-    isFile: isFile,
-    saveFile: saveFile,
-    status: fileStatus,
-    urlForFile: urlForFile,
-    nativeFile: getNativeFile,
-    __global: {
-        file: createFile
-    }
-};
+    request: function(options) {
+        var defer = Q.defer();
 
-},{"./apiclient":5,"extend":1,"kew":3}],9:[function(_dereq_,module,exports){
+        var r = reqwest(extend({
+                type: "json",
+                contentType: "application/json",
+                crossOrigin: true
+            }, options))
+            .then(function(response) {
+                defer.resolve({
+                    response: response,
+                    request: r.request
+                });
+            })
+            .fail(function(xhr) {
+                defer.reject(errorFromXhr(xhr));
+            });
+
+        return defer.promise;
+    }
+}
+
+function errorFromXhr(xhr) {
+    try {
+        var result = JSON.parse(xhr.responseText);
+        if(typeof result.errorMessage == "string") {
+            return new Error(result.errorMessage);
+        } else {
+            return result;
+        }
+    } catch(e) {}
+    return xhr.responseText;
+}
+
+},{"extend":1,"kew":3,"reqwest":4}],14:[function(_dereq_,module,exports){
 /*
 Copyright (c) 2010-2013 Thomas Peri
 http://www.tumuski.com/
@@ -1859,7 +2245,7 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
 /*jslint white: true, browser: true, onevar: true, undef: true, nomen: true,
-	eqeqeq: true, plusplus: true, regexp: true, newcap: true, immed: true */
+  eqeqeq: true, plusplus: true, regexp: true, newcap: true, immed: true */
 // (good parts minus bitwise and strict, plus white.)
 
 /**
@@ -1897,610 +2283,892 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
 module.exports = {
-	create: function(options) {
-		return new Nibbler(options);
-	}
+  create: function(options) {
+    return new Nibbler(options);
+  }
 }
 
 
 var Nibbler = function (options) {
-	"use strict";
+  "use strict";
 
-	// Code quality tools like jshint warn about bitwise operators,
-	// because they're easily confused with other more common operators,
-	// and because they're often misused for doing arithmetic.  Nibbler uses
-	// them properly, though, for moving individual bits, so turn off the warning.
-	/*jshint bitwise:false */
+  // Code quality tools like jshint warn about bitwise operators,
+  // because they're easily confused with other more common operators,
+  // and because they're often misused for doing arithmetic.  Nibbler uses
+  // them properly, though, for moving individual bits, so turn off the warning.
+  /*jshint bitwise:false */
 
-	var construct,
+  var construct,
 
-		// options
-		pad, dataBits, codeBits, keyString, arrayData,
+    // options
+    pad, dataBits, codeBits, keyString, arrayData,
 
-		// private instance variables
-		mask, group, max,
+    // private instance variables
+    mask, group, max,
 
-		// private methods
-		gcd, translate,
+    // private methods
+    gcd, translate,
 
-		// public methods
-		encode, decode;
+    // public methods
+    encode, decode;
 
-	// pseudo-constructor
-	construct = function () {
-		var i, mag, prev;
+  // pseudo-constructor
+  construct = function () {
+    var i, mag, prev;
 
-		// options
-		pad = options.pad || '';
-		dataBits = options.dataBits;
-		codeBits = options.codeBits;
-		keyString = options.keyString;
-		arrayData = options.arrayData;
+    // options
+    pad = options.pad || '';
+    dataBits = options.dataBits;
+    codeBits = options.codeBits;
+    keyString = options.keyString;
+    arrayData = options.arrayData;
 
-		// bitmasks
-		mag = Math.max(dataBits, codeBits);
-		prev = 0;
-		mask = [];
-		for (i = 0; i < mag; i += 1) {
-			mask.push(prev);
-			prev += prev + 1;
-		}
-		max = prev;
+    // bitmasks
+    mag = Math.max(dataBits, codeBits);
+    prev = 0;
+    mask = [];
+    for (i = 0; i < mag; i += 1) {
+      mask.push(prev);
+      prev += prev + 1;
+    }
+    max = prev;
 
-		// ouput code characters in multiples of this number
-		group = dataBits / gcd(dataBits, codeBits);
-	};
+    // ouput code characters in multiples of this number
+    group = dataBits / gcd(dataBits, codeBits);
+  };
 
-	// greatest common divisor
-	gcd = function (a, b) {
-		var t;
-		while (b !== 0) {
-			t = b;
-			b = a % b;
-			a = t;
-		}
-		return a;
-	};
+  // greatest common divisor
+  gcd = function (a, b) {
+    var t;
+    while (b !== 0) {
+      t = b;
+      b = a % b;
+      a = t;
+    }
+    return a;
+  };
 
-	// the re-coder
-	translate = function (input, bitsIn, bitsOut, decoding) {
-		var i, len, chr, byteIn,
-			buffer, size, output,
-			write;
+  // the re-coder
+  translate = function (input, bitsIn, bitsOut, decoding) {
+    var i, len, chr, byteIn,
+      buffer, size, output,
+      write;
 
-		// append a byte to the output
-		write = function (n) {
-			if (!decoding) {
-				output.push(keyString.charAt(n));
-			} else if (arrayData) {
-				output.push(n);
-			} else {
-				output.push(String.fromCharCode(n));
-			}
-		};
+    // append a byte to the output
+    write = function (n) {
+      if (!decoding) {
+        output.push(keyString.charAt(n));
+      } else if (arrayData) {
+        output.push(n);
+      } else {
+        output.push(String.fromCharCode(n));
+      }
+    };
 
-		buffer = 0;
-		size = 0;
-		output = [];
+    buffer = 0;
+    size = 0;
+    output = [];
 
-		len = input.length;
-		for (i = 0; i < len; i += 1) {
-			// the new size the buffer will be after adding these bits
-			size += bitsIn;
+    len = input.length;
+    for (i = 0; i < len; i += 1) {
+      // the new size the buffer will be after adding these bits
+      size += bitsIn;
 
-			// read a character
-			if (decoding) {
-				// decode it
-				chr = input.charAt(i);
-				byteIn = keyString.indexOf(chr);
-				if (chr === pad) {
-					break;
-				} else if (byteIn < 0) {
-					throw 'the character "' + chr + '" is not a member of ' + keyString;
-				}
-			} else {
-				if (arrayData) {
-					byteIn = input[i];
-				} else {
-					byteIn = input.charCodeAt(i);
-				}
-				if ((byteIn | max) !== max) {
-					throw byteIn + " is outside the range 0-" + max;
-				}
-			}
+      // read a character
+      if (decoding) {
+        // decode it
+        chr = input.charAt(i);
+        byteIn = keyString.indexOf(chr);
+        if (chr === pad) {
+          break;
+        } else if (byteIn < 0) {
+          throw 'the character "' + chr + '" is not a member of ' + keyString;
+        }
+      } else {
+        if (arrayData) {
+          byteIn = input[i];
+        } else {
+          byteIn = input.charCodeAt(i);
+        }
+        if ((byteIn | max) !== max) {
+          throw byteIn + " is outside the range 0-" + max;
+        }
+      }
 
-			// shift the buffer to the left and add the new bits
-			buffer = (buffer << bitsIn) | byteIn;
+      // shift the buffer to the left and add the new bits
+      buffer = (buffer << bitsIn) | byteIn;
 
-			// as long as there's enough in the buffer for another output...
-			while (size >= bitsOut) {
-				// the new size the buffer will be after an output
-				size -= bitsOut;
+      // as long as there's enough in the buffer for another output...
+      while (size >= bitsOut) {
+        // the new size the buffer will be after an output
+        size -= bitsOut;
 
-				// output the part that lies to the left of that number of bits
-				// by shifting the them to the right
-				write(buffer >> size);
+        // output the part that lies to the left of that number of bits
+        // by shifting the them to the right
+        write(buffer >> size);
 
-				// remove the bits we wrote from the buffer
-				// by applying a mask with the new size
-				buffer &= mask[size];
-			}
-		}
+        // remove the bits we wrote from the buffer
+        // by applying a mask with the new size
+        buffer &= mask[size];
+      }
+    }
 
-		// If we're encoding and there's input left over, pad the output.
-		// Otherwise, leave the extra bits off, 'cause they themselves are padding
-		if (!decoding && size > 0) {
+    // If we're encoding and there's input left over, pad the output.
+    // Otherwise, leave the extra bits off, 'cause they themselves are padding
+    if (!decoding && size > 0) {
 
-			// flush the buffer
-			write(buffer << (bitsOut - size));
+      // flush the buffer
+      write(buffer << (bitsOut - size));
 
-			// add padding string for the remainder of the group
-			while (output.length % group > 0) {
-				output.push(pad);
-			}
-		}
+      // add padding string for the remainder of the group
+      while (output.length % group > 0) {
+        output.push(pad);
+      }
+    }
 
-		// string!
-		return (arrayData && decoding) ? output : output.join('');
-	};
+    // string!
+    return (arrayData && decoding) ? output : output.join('');
+  };
 
-	/**
-	 * Encode.  Input and output are strings.
-	 */
-	encode = function (input) {
-		return translate(input, dataBits, codeBits, false);
-	};
+  /**
+   * Encode.  Input and output are strings.
+   */
+  encode = function (input) {
+    return translate(input, dataBits, codeBits, false);
+  };
 
-	/**
-	 * Decode.  Input and output are strings.
-	 */
-	decode = function (input) {
-		return translate(input, codeBits, dataBits, true);
-	};
+  /**
+   * Decode.  Input and output are strings.
+   */
+  decode = function (input) {
+    return translate(input, codeBits, dataBits, true);
+  };
 
-	this.encode = encode;
-	this.decode = decode;
-	construct();
+  this.encode = encode;
+  this.decode = decode;
+  construct();
 };
 
-},{}],10:[function(_dereq_,module,exports){
+},{}],15:[function(_dereq_,module,exports){
 
-var extend    = _dereq_("extend");
-var apiClient = _dereq_("./apiclient");
-var query     = _dereq_("./query");
-var files     = _dereq_("./files");
-var Q         = _dereq_("kew");
+var extend      = _dereq_("extend");
+var query       = _dereq_("./query");
+var failLogger  = _dereq_("./faillogger");
+var Q           = _dereq_("kew");
 
-var internalIds = [];
-var internalObjects = {};
-var internalProperties = ["collectionName", "id", "internalId", "save", "remove", "grant", "revoke"];
-var prototype = {
-    save: function() {
-        return saveObject(this)
-                .then(savePermissionChanges)
-                .then(saveFileProperties);
-    },
-    remove: function() {
-        return removeObject(this);
-    },
-    refresh: function() {
-        return refreshObject(this);
-    },
-    grant: function(usernames, permissions) {
-        if(typeof usernames === "string") {
-            usernames = [usernames];
-        }
-        var internal = getInternalObject(this);
-        usernames.forEach(function(username) {
-            internal.grants.push({
-                username: username,
-                permissions: permissions
-            });
-        });
-    },
-    revoke: function(usernames, permissions) {
-        if(typeof usernames === "string") {
-            usernames = [usernames];
-        }
-        var internal = getInternalObject(this);
-        usernames.forEach(function(username) {
-            internal.revokes.push({
-                username: username,
-                permissions: permissions
-            });
-        });
-    },
-    grantPublic: function(permissions) {
-        this.grant("*", permissions);
-    },
-    revokePublic: function(permissions) {
-        this.revoke("*", permissions);
-    }
-};
+module.exports = createObjectsContext;
 
-function createObject(collectionName, properties) {
-    var internal = createInternalObject(collectionName);
-    var object = Object.create(prototype);
-    Object.defineProperty(object, "id", { get: function() { return internal.id; }, enumerable:true });
-    Object.defineProperty(object, "internalId", { writable: false, value: internal.internalId, enumerable:true });
-    Object.defineProperty(object, "collectionName", { get: function() { return internal.collectionName; }, enumerable:true });
+var internalProperties = ["collectionName", "id", "internalId", "username", "created", "updated", "permissions", "save", "saveAll", "remove", "grant", "revoke", "sysCreated", "sysUpdated", "sysPermissions"];
+var nextContextId = 0;
 
-    var filteredProperties = {};
-    if(typeof properties === "object") {
-        var sysValues = getInternalObject(object).sysValues;
-        internal.setId(properties.sysObjectId);
-        Object.keys(properties).forEach(function(key) {
-            var value = properties[key];
-            if(key.indexOf("sys") === 0) {
-                if(key !== "sysPermissions") {
-                    sysValues[key] = value;
-                }
-            } else if(typeof value.sysDatatype == "string") {
-                filteredProperties[key] = createPropertyWithDataType(key, value, object);
-            } else {
-                filteredProperties[key] = value;
+function createObjectsContext(apiClient, files, collections) {
+    var contextId = nextContextId++;
+    var internalIds = [];
+    var internalObjects = {};
+
+    var prototype = {
+        save: function() {
+            return failOnUnsavedRelations(this)
+                    .then(saveObject)
+                    .then(savePermissionChanges)
+                    .then(saveFileProperties)
+                    .fail(failLogger.log);
+        },
+        saveAll: function() {
+            return saveObjectsInGraph(this).fail(failLogger.log);
+        },
+        remove: function() {
+            return removeObject(this).fail(failLogger.log);
+        },
+        refresh: function() {
+            return refreshObject(this).fail(failLogger.log);
+        },
+        expand: function(options) {
+            return expandObject(this, options).fail(failLogger.log);
+        },
+        grant: function(usernames, permissions) {
+            if(typeof usernames === "string") {
+                usernames = [usernames];
             }
-        });
-    }
-    extend(object, filteredProperties);
-    if(object.id !== null) {
-        internal.status = "saved";
-    }
-    return object;
-}
-
-function createPropertyWithDataType(key, value, object) {
-    switch(value.sysDatatype) {
-        case "file": return files.create({
-            filename: value.filename,
-            url: files.urlForFile(object.collectionName, object.id, key, value.filename)
-        });
-    }
-    return null;
-}
-
-function createInternalObject(collectionName) {
-    var object = {
-        id: null,
-        internalId: createInternalId(),
-        collectionName: collectionName,
-        sysValues: {},
-        status: "new",
-        grants: [],
-        revokes: [],
-        setId: function(id) { if(id) { this.id = id; }},
-        resetPermissions: function() { this.grants = []; this.revokes = []; }
-    }
-    internalObjects[object.internalId] = object;
-    return object;
-}
-
-function getInternalObject(object) {
-    return internalObjects[object.internalId];
-}
-
-function refreshObject(object) {
-    var defer = Q.defer();
-    var internal = getInternalObject(object);
-    if(internal.status === "new") {
-        defer.resolve(object);
-    } else {
-        findById(object.collectionName, object.id).then(function(updated) {
-            extend(object, getProperties(updated));
-            defer.resolve(object);
-        });
-    }
-    return defer.promise;
-}
-
-function saveObject(object, defer) {
-    var internal = getInternalObject(object)
-    var defer = defer || Q.defer();
-    if(internal.status === "saving") {
-        setTimeout(function() {
-            saveObject(object, defer);
-        }, 100);
-        return defer.promise;
-    }
-
-    var url, method, data;
-    if(object.id == null) {
-        url = apiClient.url("/objects/:collection", {collection: object.collectionName});
-        method = "post";
-        data = getDataForSaving(object)
-    } else {
-        url = apiClient.url("/objects/:collection/:id", {collection: object.collectionName, id: object.id});
-        method = "put";
-        data = getPropertiesForSaving(object);
-    }
-    internal.status = "saving";
-    apiClient.request(method, url, data)
-             .then(function(response) {
-                 internal.setId(response.sysObjectId);
-                 internal.status = "saved";
-                 if(data instanceof FormData) {
-                     getFiles(object).forEach(function(file) {
-                         files.status(file, "saved");
-                     });
-                 }
-                 defer.resolve(object);
-             })
-             .fail(function(xhr) {
-                 internal.status = "error";
-                 defer.reject(apiClient.errorFromXhr(xhr));
-             });
-    return defer.promise;
-}
-
-function removeObject(object) {
-    var defer = Q.defer();
-    var url = apiClient.url("/objects/:collection/:id", {collection: object.collectionName, id: object.id});
-    apiClient.request("DELETE", url)
-             .then(function(response) {
-                 defer.resolve();
-             })
-             .fail(function(xhr) {
-                 defer.reject(apiClient.errorFromXhr(xhr));
-             });
-    return defer.promise;
-}
-
-function saveFileProperties(object) {
-    var fileProperties = getFileProperties(object);
-    var keys = Object.keys(fileProperties);
-    var promises = [];
-    keys.forEach(function(key) {
-        var file = fileProperties[key];
-        if(files.status(file) !== "saved") {
-            var promise = files.saveFile(object.collectionName, object.id, key, file)
-            promises.push(promise);
-        }
-    });
-    return Q.all(promises).then(function() {
-        return Q.resolve(object)
-    });
-}
-
-function savePermissionChanges(object) {
-    var defer = Q.defer();
-    var url = apiClient.url("/permissions");
-    var internal = getInternalObject(object);
-    var grants = internal.grants.map(convertChange);
-    var revokes = internal.revokes.map(convertChange);
-    internal.resetPermissions();
-
-    if(grants.length + revokes.length === 0) {
-        defer.resolve(object);
-    } else {
-        var data = {grants:grants, revokes:revokes};
-        apiClient.request("POST", url, data)
-                 .then(function(response) {
-                     defer.resolve(object);
-                 })
-                 .fail(function(xhr) {
-                     defer.reject(apiClient.errorFromXhr(xhr));
-                 });
-    }
-    return defer.promise;
-
-    function convertChange(change) {
-        return {
-            sysObjectId: object.id,
-            username: change.username,
-            permissions: change.permissions
-        }
-    }
-}
-
-function getPropertyNames(object) {
-    var keys = Object.keys(object);
-    internalProperties.forEach(function(internal) {
-        var index = keys.indexOf(internal);
-        if(index >= 0) {
-            keys.splice(index, 1);
-        }
-    });
-    return keys;
-}
-
-function getProperties(object) {
-    if(!isObject(object)) { return {}; }
-    var data = {};
-    getPropertyNames(object).forEach(function(key) {
-        if(/^[a-zA-Z]/.test(key)) {
-            data[key] = object[key];
-        }
-    });
-    extend(data, getInternalObject(object).sysValues);
-    return data;
-}
-
-function getDataForSaving(object) {
-    var properties = getPropertiesForSaving(object);
-    var fileProperties = getFileProperties(object);
-    var hasFiles = false;
-    var formData = apiClient.formData();
-    Object.keys(fileProperties).forEach(function(key) {
-        var file = fileProperties[key];
-        var nativeFile = files.nativeFile(file);
-        if(nativeFile && files.status(file) !== "saved") {
-            hasFiles = true;
-            formData.append(key, nativeFile);
-        }
-    });
-    if(hasFiles) {
-        formData.append("sysObjectData", JSON.stringify(properties));
-        return formData;
-    } else {
-        return properties;
-    }
-}
-
-function getPropertiesForSaving(object) {
-    var properties = getProperties(object);
-    Object.keys(properties).forEach(function(key) {
-        var property = properties[key];
-        if(files.isFile(property)) {
-            properties[key] = {
-                sysDatatype: "file",
-                filename: property.filename
+            var internal = getInternalObject(this);
+            usernames.forEach(function(username) {
+                internal.grants.push({
+                    username: username,
+                    permissions: permissions
+                });
+            });
+        },
+        revoke: function(usernames, permissions) {
+            if(typeof usernames === "string") {
+                usernames = [usernames];
             }
+            var internal = getInternalObject(this);
+            usernames.forEach(function(username) {
+                internal.revokes.push({
+                    username: username,
+                    permissions: permissions
+                });
+            });
+        },
+        grantPublic: function(permissions) {
+            this.grant("*", permissions);
+        },
+        revokePublic: function(permissions) {
+            this.revoke("*", permissions);
+        },
+        hasPermission: function(permission) {
+            return this.permissions.indexOf(permission) != -1;
         }
-    });
-    return properties;
-}
+    };
 
-function getFileProperties(object) {
-    var properties = getProperties(object);
-    var fileProperties = {};
-    Object.keys(properties).forEach(function(key) {
-        var property = properties[key];
-        if(files.isFile(property)) {
-            fileProperties[key] = property;
-        }
-    });
-    return fileProperties;
-}
-
-function getFiles(object) {
-    var fileProperties = getFileProperties(object);
-    return Object.keys(fileProperties).map(function(key) {
-        return fileProperties[key];
-    });
-}
-
-function createInternalId() {
-    var id = "internal-id-" + internalIds.length;
-    internalIds.push(id);
-    return id;
-}
-
-function findAll(collectionName) {
-    var defer = Q.defer();
-    var url = apiClient.url("/objects/:collection", {collection: collectionName});
-    apiClient.request("get", url)
-             .then(function(result) {
-                 defer.resolve(createObjectsFromFindResult(collectionName, result));
-             })
-             .fail(function(xhr) {
-                 defer.reject(apiClient.errorFromXhr(xhr));
-             });
-    return defer.promise;
-}
-
-function find(collectionName) {
-    if(arguments.length < 2) { return; }
-    var a1 = arguments[1];
-    if(typeof a1 === "string" && a1.indexOf("=") == -1) {
-        return findById(collectionName, a1);
-    } else if(typeof a1 === "string") {
-        return findByQueryString(collectionName, a1);
-    } else if(typeof a1 === "object" && typeof a1.queryString === "function") {
-        return findByQueryObject(collectionName, a1);
-    } else if(typeof a1 === "object") {
-        return findByPropertyValues(collectionName, a1);
-    } else if(typeof a1 === "function") {
-        return findByQueryFunction(collectionName, a1);
-    }
-}
-
-function findById(collectionName, id) {
-    var defer = Q.defer();
-    var url = apiClient.url("/objects/:collection/:id", {collection: collectionName, id: id});
-    apiClient.request("get", url)
-             .then(function(result) {
-                 defer.resolve(createObject(collectionName, result));
-             })
-             .fail(function(xhr) {
-                 defer.reject(apiClient.errorFromXhr(xhr));
-             });
-    return defer.promise;
-}
-
-function findByQueryString(collectionName, queryString) {
-    var defer = Q.defer();
-    var url = apiClient.url("/objects/:collection?filter=:queryString",
-                            {collection: collectionName, queryString: queryString});
-    apiClient.request("get", url)
-             .then(function(result) {
-                 defer.resolve(createObjectsFromFindResult(collectionName, result));
-             })
-             .fail(function(xhr) {
-                 defer.reject(apiClient.errorFromXhr(xhr));
-             });;
-    return defer.promise;
-}
-
-function findByQueryObject(collectionName, queryObject) {
-    return findByQueryString(collectionName, queryObject.queryString());
-}
-
-function findByQueryFunction(collectionName, queryFunction) {
-    var queryObject = createQuery();
-    queryFunction(queryObject);
-    return findByQueryString(collectionName, queryObject.queryString());
-}
-
-function findByPropertyValues(collectionName, propertyValues) {
-    return findByQueryFunction(collectionName, function(query) {
-        Object.keys(propertyValues).forEach(function(property) {
-            var value = propertyValues[property];
-            query.string(property).equals(value);
-        });
-    });
-}
-
-function search(collectionName) {
-    var propertyValues = arguments[1];
-    if(arguments.length === 3) {
-        propertyValues = {};
-        var searchString = arguments[1]
-        Array.prototype.forEach.call(arguments[2], function(property) {
-            propertyValues[property] = searchString;
-        });
-    }
-    return find(collectionName, function(query) {
-        query.operator("or");
-        Object.keys(propertyValues).forEach(function(property) {
-            var value = propertyValues[property];
-            query.string(property).contains(value);
-        });
-    });
-}
-
-function createObjectsFromFindResult(collectionName, result) {
-    return result.objects.map(function(properties) {
-        return createObject(collectionName, properties);
-    });
-}
-
-function createQuery(options) {
-    return query(options);
-}
-
-function getObjectStatus(object) {
-    var internal = getInternalObject(object);
-    return internal ? internal.status : undefined;
-}
-
-function isObject(object) {
-    return object !== undefined && object !== null;
-}
-
-module.exports = {
-    create: createObject,
-    createQuery: createQuery,
-    getProperties: getProperties,
-    __global: {
-        object: createObject,
-        status: getObjectStatus,
+    return {
+        create: createObject,
+        createQuery: createQuery,
+        getProperties: getProperties,
+        createObject: createObject,
+        getObjectStatus: getObjectStatus,
         findAll: findAll,
         find: find,
         search: search
-    }
-};
+    };
 
-},{"./apiclient":5,"./files":8,"./query":11,"extend":1,"kew":3}],11:[function(_dereq_,module,exports){
+    function createObject(collectionName, properties) {
+        var internal = createInternalObject(collectionName);
+        var object = Object.create(prototype);
+        Object.defineProperty(object, "id", { get: function() { return internal.id; }, enumerable:true });
+        Object.defineProperty(object, "internalId", { writable: false, value: internal.internalId, enumerable:true });
+        Object.defineProperty(object, "collectionName", { get: function() { return internal.collectionName; }, enumerable:true });
+        Object.defineProperty(object, "created", { get: function() { return internal.created; }, enumerable:true });
+        Object.defineProperty(object, "updated", { get: function() { return internal.updated; }, enumerable:true });
+        Object.defineProperty(object, "permissions", { get: function() { return internal.sysValues.sysPermissions; }, enumerable: true });
+        if(collectionName == "users") {
+            Object.defineProperty(object, "username", { get:function() { return internal.sysValues.sysUsername; }, enumerable:true });
+        }
+
+        properties = extend({}, collections.defaultValues(collectionName), properties);
+        fillObjectWithValues(object, properties);
+
+        if(object.id !== null) {
+            internal.status = "saved";
+        }
+        return object;
+    }
+
+    function fillObjectWithValues(object, properties) {
+        var internal = getInternalObject(object);
+        var filteredProperties = {};
+        if(typeof properties === "object") {
+            var sysValues = internal.sysValues;
+            internal.setId(properties.sysObjectId);
+            if(properties.sysCreated) {
+                internal.created = new Date(properties.sysCreated)
+            }
+            if(properties.sysUpdated) {
+                internal.updated = new Date(properties.sysUpdated)
+            }
+            Object.keys(properties).forEach(function(key) {
+                var value = properties[key];
+                if(key.indexOf("sys") === 0) {
+                    sysValues[key] = value;
+                } else if(typeof value.sysDatatype == "string") {
+                    filteredProperties[key] = createPropertyWithDatatype(key, value, object);
+                    if(value.sysDatatype == "relation") {
+                        internal.relations[key] = {
+                            type: value.sysRelationType,
+                            ids: (value.sysObjects || []).map(function(object) {
+                                return object.sysObjectId || object;
+                            })
+                        }
+                    }
+                } else {
+                    filteredProperties[key] = value;
+                }
+            });
+        }
+        extend(object, filteredProperties);
+    }
+
+    function createPropertyWithDatatype(key, value, object) {
+        switch(value.sysDatatype) {
+            case "relation": return _createRelationProperty(value);
+            case "file": return files.create({
+                filename: value.filename,
+                url: files.urlForFile(object.collectionName, object.id, key, value.filename)
+            });
+        }
+        return null;
+
+        function _createRelationProperty(value) {
+            var results = [];
+            if(typeof value.sysObjects !== "undefined") {
+                results = value.sysObjects.map(function(object) {
+                    if(typeof object === "string") {
+                        return object
+                    } else {
+                        return createObject(value.sysCollection, object);
+                    }
+                });
+            }
+            if("single" === value.sysRelationType) {
+                return results[0];
+            } else {
+                return results;
+            }
+        }
+    }
+
+    function createInternalObject(collectionName) {
+        var object = {
+            id: null,
+            internalId: createInternalId(),
+            collectionName: collectionName,
+            sysValues: {},
+            initialValues: {},
+            created: new Date(),
+            updated: new Date(),
+            status: "new",
+            grants: [],
+            revokes: [],
+            relations: {},
+            setId: function(id) { if(id) { this.id = id; }},
+            resetPermissions: function() { this.grants = []; this.revokes = []; }
+        }
+        internalObjects[object.internalId] = object;
+        return object;
+    }
+
+    function getInternalObject(object) {
+        return internalObjects[object.internalId];
+    }
+
+    function refreshObject(object) {
+        var defer = Q.defer();
+        var internal = getInternalObject(object);
+        if(internal.status === "new") {
+            defer.resolve(object);
+        } else {
+            findById(object.collectionName, object.id).then(function(updated) {
+                Object.keys(updated)
+                    .filter(function(key) {
+                        return internalProperties.indexOf(key) == -1
+                    })
+                    .forEach(function(key) {
+                        object[key] = updated[key];
+                    });
+                defer.resolve(object);
+            });
+        }
+        return defer.promise;
+    }
+
+    function saveObject(object, defer) {
+        var internal = getInternalObject(object)
+        var defer = typeof defer == "object" ? defer : Q.defer();
+        if(internal.status === "saving") {
+            setTimeout(function() {
+                saveObject(object, defer);
+            }, 100);
+            return defer.promise;
+        }
+
+        var url, method, data;
+        if(object.id == null) {
+            url = apiClient.url("/objects/:collection", {collection: object.collectionName});
+            method = "post";
+            data = getDataForSaving(object)
+        } else {
+            url = apiClient.url("/objects/:collection/:id", {collection: object.collectionName, id: object.id});
+            method = "put";
+            data = getPropertiesForSaving(object);
+        }
+        internal.status = "saving";
+        apiClient.request(method, url, data)
+                 .then(function(response) {
+                     internal.setId(response.sysObjectId);
+                     internal.status = "saved";
+                     applyRelationChanges(object, data);
+                     if(typeof FormData != "undefined" && data instanceof FormData) {
+                         markFilesSaved(object);
+                     }
+                     defer.resolve(object);
+                 })
+                 .fail(function(error) {
+                     internal.status = "error";
+                     defer.reject(error);
+                 });
+        return defer.promise;
+    }
+
+    function removeObject(object) {
+        var defer = Q.defer();
+        var url = apiClient.url("/objects/:collection/:id", {collection: object.collectionName, id: object.id});
+        apiClient.request("DELETE", url)
+                 .then(function(response) {
+                     defer.resolve();
+                 })
+                 .fail(function(error) {
+                     defer.reject(error);
+                 });
+        return defer.promise;
+    }
+
+    function expandObject(object, options) {
+        if(isUnsaved(object)) {
+            throw new Error("Error calling expand() on unsaved object.")
+        }
+        var defer = Q.defer();
+        var depth = 1;
+        if(typeof options === "number") {
+            depth = options;
+        }
+        findById(object.collectionName, object.id, {expand:depth}).then(function(expanded) {
+            var internal = getInternalObject(object);
+            var relations = Object.keys(internal.relations);
+            relations.forEach(function(relation) {
+                object[relation] = expanded[relation];
+            });
+            defer.resolve(object);
+        });
+        return defer.promise;
+    }
+
+    function markFilesSaved(object) {
+        var fileProperties = getFileProperties(object);
+        return Object.keys(fileProperties).map(function(key) {
+            var file = fileProperties[key];
+            var url  = files.urlForFile(object.collectionName, object.id, key, file.filename);
+            files.status(file, "saved");
+            files.setUrl(file, url);
+        });
+    }
+
+    function saveFileProperties(object) {
+        var fileProperties = getFileProperties(object);
+        var keys = Object.keys(fileProperties);
+        var promises = [];
+        keys.forEach(function(key) {
+            var file = fileProperties[key];
+            if(files.status(file) !== "saved") {
+                var promise = files.saveFile(object.collectionName, object.id, key, file)
+                promises.push(promise);
+            }
+        });
+        return Q.all(promises).then(function() {
+            return Q.resolve(object)
+        });
+    }
+
+    function savePermissionChanges(object) {
+        var defer = Q.defer();
+        var url = apiClient.url("/permissions");
+        var internal = getInternalObject(object);
+        var grants = internal.grants.map(_convertChange);
+        var revokes = internal.revokes.map(_convertChange);
+        internal.resetPermissions();
+
+        if(grants.length + revokes.length === 0) {
+            defer.resolve(object);
+        } else {
+            var data = {grants:grants, revokes:revokes};
+            apiClient.request("POST", url, data)
+                     .then(function(response) {
+                         defer.resolve(object);
+                     })
+                     .fail(function(error) {
+                         defer.reject(error);
+                     });
+        }
+        return defer.promise;
+
+        function _convertChange(change) {
+            return {
+                sysObjectId: object.id,
+                username: change.username,
+                permissions: change.permissions
+            }
+        }
+    }
+
+    function failOnUnsavedRelations(object) {
+        detectUndeclaredRelations(object);
+        var related = getRelatedObjects(object);
+        if(related.some(isUnsaved)) {
+            throw new Error("Error saving object. Found unsaved related objects. Save related objects first or consider using saveAll().")
+        } else {
+            return Q.resolve(object);
+        }
+    }
+
+    function saveObjectsInGraph(rootObject) {
+        var objects = getObjectsInGraph(rootObject);
+        var unsavedInbound = objects.inbound.filter(isUnsaved);
+        var outbound = objects.outbound;
+        var remaining = objects.inbound.filter(function(o) { return !isUnsaved(o) });
+
+        if(0 == outbound.length + unsavedInbound.length + remaining.length) {
+            return rootObject.save();
+        } else {
+            return _saveUnsavedInbound().then(_saveOutbound).then(_saveRemaining);
+        }
+
+        function _saveUnsavedInbound() {
+            return Q.all(unsavedInbound.map(saveObject));
+        }
+        function _saveOutbound() {
+            return Q.all(outbound.map(saveObject));
+        }
+        function _saveRemaining() {
+            return Q.all(remaining.map(saveObject));
+        }
+    }
+
+    function getObjectsInGraph(rootObject) {
+        var queue = [rootObject];
+        var all      = {};
+        var inbound  = {};
+        var outbound = {};
+
+        while(queue.length > 0) {
+            var object = queue.shift();
+            detectUndeclaredRelations(object);
+            if(all[object.internalId] == null) {
+                all[object.internalId] = object;
+                var allRelated = getRelatedObjects(object).filter(function(a) { return typeof a == "object" });
+                allRelated.forEach(function(related) {
+                    inbound[related.internalId] = related;
+                });
+                if(allRelated.length > 0) {
+                    outbound[object.internalId] = object;
+                    queue = queue.concat(allRelated);
+                }
+            }
+        }
+
+        return {
+            all:      _mapToArray(all),
+            inbound:  _mapToArray(inbound),
+            outbound: _mapToArray(outbound)
+        }
+
+        function _mapToArray(map) {
+            return Object.keys(map).map(_objectForKey);
+        }
+
+        function _objectForKey(key) {
+            return all[key];
+        }
+    }
+
+    function getRelatedObjects(object) {
+        var related = [];
+        var internal = getInternalObject(object);
+        Object.keys(internal.relations).forEach(function(key) {
+            var property = object[key];
+            if(property == null) {
+                return;
+            }
+            related = related.concat(property);
+        });
+        return related;
+    }
+
+    function getRelationChanges(object, propertyName) {
+        var internal = getInternalObject(object);
+        var relation = internal.relations[propertyName];
+        var changes = {
+            additions: [],
+            removals: []
+        }
+
+        if(relation) {
+            var property = object[propertyName];
+            var objects = [];
+            if(property) {
+                objects = (relation.type == "array") ? property : [property];
+            }
+            var currentIds = objects.map(function(o) { return o.id || o; })
+                                    .filter(function(id) { return typeof id === "string"; });
+            changes.additions = currentIds.filter(function(id) {
+                return id != null && relation.ids.indexOf(id) == -1;
+            });
+            changes.removals = relation.ids.filter(function(id) {
+                return id != null && currentIds.indexOf(id) == -1;
+            });
+        }
+
+        return changes;
+    }
+
+    function applyRelationChanges(object, savedData) {
+        var internal = getInternalObject(object);
+        Object.keys(internal.relations).forEach(function(key) {
+            var relation = internal.relations[key];
+            var changes = savedData[key].sysRelationChanges;
+            relation.ids = relation.ids
+                .concat(changes.additions)
+                .filter(function(id) {
+                    return changes.removals.indexOf(id) == -1;
+                });
+        });
+    }
+
+    function detectUndeclaredRelations(object) {
+        var collection = collections.get(object.collectionName);
+        var relations = getInternalObject(object).relations;
+
+        var properties = getProperties(object);
+        Object.keys(properties).forEach(function(key) {
+            if(relations[key]) {
+                return;
+            }
+            var property = properties[key]
+            var relationType = "";
+            if(property !== null && typeof property === "object") {
+                if(typeof property.length === "undefined") {
+                    if(typeof property.collectionName === "string") {
+                        relationType = "single"
+                    }
+                } else {
+                    property.some(function(item) {
+                        if(typeof item.collectionName === "string") {
+                            relationType = "array"
+                            return true;
+                        }
+                        return false;
+                    })
+                }
+            }
+            if(relationType !== "") {
+                relations[key] = { type:relationType, ids:[] };
+            }
+        });
+    }
+
+    function getPropertyNames(object) {
+        var keys = Object.keys(object);
+        return keys.filter(function(key) {
+            return internalProperties.indexOf(key) == -1;
+        });
+    }
+
+    function getProperties(object) {
+        if(!isObject(object)) { return {}; }
+        var data = {};
+        getPropertyNames(object).forEach(function(key) {
+            if(/^[a-zA-Z]/.test(key)) {
+                data[key] = object[key];
+            }
+        });
+        var sysValues = getInternalObject(object).sysValues;
+        Object.keys(sysValues).forEach(function(key) {
+            if(internalProperties.indexOf(key) == -1) {
+                data[key] = sysValues[key];
+            }
+        });
+        return data;
+    }
+
+    function getDataForSaving(object) {
+        var properties = getPropertiesForSaving(object);
+        var fileProperties = getFileProperties(object);
+        var hasFiles = false;
+        var formData = apiClient.formData();
+        Object.keys(fileProperties).forEach(function(key) {
+            var file = fileProperties[key];
+            var nativeFile = files.nativeFile(file);
+            if(nativeFile && files.status(file) !== "saved") {
+                hasFiles = true;
+                formData.append(key, nativeFile);
+            }
+        });
+        if(hasFiles) {
+            formData.append("sysObjectData", JSON.stringify(properties));
+            return formData;
+        } else {
+            return properties;
+        }
+    }
+
+    function getPropertiesForSaving(object) {
+        var internal = getInternalObject(object);
+        var properties = getProperties(object);
+        Object.keys(properties).forEach(function(key) {
+            var property = properties[key];
+            if(files.isFile(property)) {
+                properties[key] = {
+                    sysDatatype: "file",
+                    filename: property.filename
+                }
+            } else if(typeof internal.relations[key] === "object") {
+                properties[key] = {
+                    sysRelationChanges: getRelationChanges(object, key)
+                }
+            }
+        });
+        return properties;
+    }
+
+    function getFileProperties(object) {
+        var properties = getProperties(object);
+        var fileProperties = {};
+        Object.keys(properties).forEach(function(key) {
+            var property = properties[key];
+            if(files.isFile(property)) {
+                fileProperties[key] = property;
+            }
+        });
+        return fileProperties;
+    }
+
+    function createInternalId() {
+        var id = "internal-id-" + contextId + "-" + internalIds.length;
+        internalIds.push(id);
+        return id;
+    }
+
+    function queryParametersFromQueryOptions(options) {
+        if(!options) { return; }
+        var parameters = {};
+        if(typeof options.expand === "number") {
+            parameters.expanddepth = options.expand;
+        } else if(options.expand === true) {
+            parameters.expanddepth = 1;
+        }
+        return parameters;
+    }
+
+    function findAll(collectionName, options) {
+        var defer = Q.defer();
+        var url = apiClient.url("/objects/:collection",
+                                {collection: collectionName},
+                                queryParametersFromQueryOptions(options));
+        apiClient.request("get", url)
+                 .then(function(result) {
+                     defer.resolve(createObjectsFromFindResult(collectionName, result));
+                 })
+                 .fail(function(error) {
+                     defer.reject(error);
+                 });
+        return defer.promise;
+    }
+
+    function find(collectionName) {
+        if(arguments.length < 2) { return; }
+        var a1 = arguments[1];
+        var a2 = arguments[2];
+        if(typeof a1 === "string" && a1.indexOf("=") == -1) {
+            return findById(collectionName, a1, a2);
+        } else if(typeof a1 === "string") {
+            return findByQueryString(collectionName, a1, a2);
+        } else if(typeof a1 === "object" && typeof a1.queryString === "function") {
+            return findByQueryObject(collectionName, a1, a2);
+        } else if(typeof a1 === "object") {
+            return findByPropertyValues(collectionName, a1, a2);
+        } else if(typeof a1 === "function") {
+            return findByQueryFunction(collectionName, a1, a2);
+        }
+    }
+
+    function findById(collectionName, id, options) {
+        var defer = Q.defer();
+        var url = apiClient.url("/objects/:collection/:id",
+                                {collection: collectionName, id: id},
+                                queryParametersFromQueryOptions(options));
+        apiClient.request("get", url)
+                 .then(function(result) {
+                     defer.resolve(createObject(collectionName, result));
+                 })
+                 .fail(function(error) {
+                     defer.reject(error);
+                 });
+        return defer.promise;
+    }
+
+    function findByQueryString(collectionName, queryString, options) {
+        var defer = Q.defer();
+        var url = apiClient.url("/objects/:collection?filter=:queryString",
+                                {collection: collectionName, queryString: queryString},
+                                queryParametersFromQueryOptions(options));
+        apiClient.request("get", url)
+                 .then(function(result) {
+                     defer.resolve(createObjectsFromFindResult(collectionName, result));
+                 })
+                 .fail(function(error) {
+                     defer.reject(error);
+                 });
+        return defer.promise;
+    }
+
+    function findByQueryObject(collectionName, queryObject, options) {
+        return findByQueryString(collectionName, queryObject.queryString(), options);
+    }
+
+    function findByQueryFunction(collectionName, queryFunction, options) {
+        var queryObject = createQuery();
+        queryFunction(queryObject);
+        return findByQueryString(collectionName, queryObject.queryString(), options);
+    }
+
+    function findByPropertyValues(collectionName, propertyValues, options) {
+        return findByQueryFunction(collectionName, function(query) {
+            Object.keys(propertyValues).forEach(function(property) {
+                var value = propertyValues[property];
+                if(typeof value === "object" && typeof value.id === "string") {
+                    query.relation(property).has(value);
+                } else {
+                    query.string(property).equals(value);
+                }
+            });
+        }, options);
+    }
+
+    function search(collectionName) {
+        var propertyValues = arguments[1];
+        var options = arguments[2];
+        if(arguments.length >= 3 && typeof arguments[1] === "string") {
+            propertyValues = {};
+            var searchString = arguments[1]
+            Array.prototype.forEach.call(arguments[2], function(property) {
+                propertyValues[property] = searchString;
+            });
+            if(arguments.length == 4) {
+                options = arguments[3];
+            }
+        }
+        return find(collectionName, function(query) {
+            query.operator("or");
+            Object.keys(propertyValues).forEach(function(property) {
+                var value = propertyValues[property];
+                query.string(property).contains(value);
+            });
+        }, options);
+    }
+
+    function createObjectsFromFindResult(collectionName, result) {
+        return result.objects.map(function(properties) {
+            return createObject(collectionName, properties);
+        });
+    }
+
+    function createQuery(options) {
+        return query(options);
+    }
+
+    function getObjectStatus(object) {
+        var internal = getInternalObject(object);
+        return internal ? internal.status : undefined;
+    }
+
+    function isUnsaved(object) {
+        return getObjectStatus(object) === "new";
+    }
+
+    function isObject(object) {
+        return object !== undefined && object !== null;
+    }
+}
+
+},{"./faillogger":10,"./query":16,"extend":1,"kew":3}],16:[function(_dereq_,module,exports){
 
 module.exports = function(options) {
 
@@ -2511,6 +3179,7 @@ module.exports = function(options) {
     return {
         queryString: queryString,
         string: createStringPredicate,
+        relation: createRelationPredicate,
         operator: function(o) { operator = o; }
     };
 
@@ -2535,6 +3204,20 @@ module.exports = function(options) {
         }
     }
 
+    function createRelationPredicate(property) {
+        return {
+            has: function(objectsOrIds) {
+                var ids = _getQuotedIds(objectsOrIds);
+                addPredicate(format("$ has ($)", property, ids.join(",")));
+            }
+        }
+        function _getQuotedIds(objectsOrIds) {
+            return [].concat(objectsOrIds).map(function(item) {
+                return "'" + (item.id || item) + "'";
+            });
+        }
+    }
+
     function queryString() {
         return predicates.join(format(" $ ", operator));
     }
@@ -2550,157 +3233,262 @@ module.exports = function(options) {
 
 };
 
-},{}],12:[function(_dereq_,module,exports){
+},{}],17:[function(_dereq_,module,exports){
 
-var apiClient = _dereq_("./apiclient");
-var objects   = _dereq_("./objects");
+
+module.exports = createRequestContext;
+
+function createRequestContext(apiClient) {
+    return request;
+
+    function request(method, url, data) {
+        url = apiClient.url("/server" + url);
+        return apiClient.request(method, url, data);
+    }
+}
+
+},{}],18:[function(_dereq_,module,exports){
+
+var Q  = _dereq_("kew");
+var WS = _dereq_("ws");
+
+module.exports = createSocket;
+
+function createSocket(apiClient) {
+    var queue = [];
+    var realtimeSessionPromise = null;
+    var realtimeSessionId = "";
+    var webSocket = null;
+    var connectionIntervalId = null;
+    var handlers = {
+        open: [],
+        message: [],
+        error: [],
+        close: []
+    };
+
+    return {
+        connect: connect,
+        send: send,
+        on: on
+    }
+
+    function send(packet) {
+        if(typeof packet == "object") {
+            packet = JSON.stringify(packet);
+        }
+        if(webSocket && webSocket.readyState == 1) {
+            sendQueue();
+            webSocket.send(packet);
+        } else {
+            queue.push(packet);
+            connect();
+        }
+    }
+
+    function sendQueue() {
+        while(queue.length > 0) {
+            if(webSocket && webSocket.readyState == 1) {
+                var packet = queue.shift();
+                webSocket.send(packet);
+            } else {
+                connect();
+                break;
+            }
+        }
+    }
+
+    function on(event, handler) {
+        handlers[event].push(handler);
+    }
+
+    function connect() {
+        if(!realtimeSessionPromise) {
+            connectSession();
+        }
+        if(!connectionIntervalId) {
+            connectionIntervalId = setInterval(function() {
+                if(!webSocket || webSocket.readyState > 1) {
+                    realtimeSessionPromise.then(connectSocket);
+                }
+            }, 100);
+        }
+    }
+
+    function connectSession() {
+        var defer = Q.defer();
+        realtimeSessionPromise = defer.promise;
+        var url = apiClient.url("/messaging/realtime/sessions");
+        apiClient.request("post", url)
+                 .then(function(response) {
+                     realtimeSessionId = response.realtimeSessionId;
+                     defer.resolve();
+                 })
+                 .fail(function(error) {
+                     notifyHandlers("error", {error:error});
+                 });
+        return realtimeSessionPromise;
+    }
+
+    function connectSocket() {
+        var url = apiClient.url("/messaging/realtime", {}, {rsession: realtimeSessionId});
+        url = url.replace("http", "ws");
+        webSocket = createWebSocket(url);
+        webSocket.onopen = handleSocketOpen;
+        webSocket.onerror = handleSocketError;
+        webSocket.onmessage = handleSocketMessage;
+        webSocket.onclose = handleSocketClose;
+    }
+
+    function createWebSocket(url) {
+        if(typeof WebSocket != "undefined") {
+            return new WebSocket(url);
+        } else if(typeof WS != "undefined") {
+            return new WS(url);
+        }
+    }
+
+    function handleSocketOpen(event) {
+        sendQueue();
+        notifyHandlers("open", event);
+    }
+
+    function handleSocketError(event) {
+        notifyHandlers("error", event);
+    }
+
+    function handleSocketMessage(event) {
+        notifyHandlers("message", event);
+    }
+
+    function handleSocketClose(event) {
+        notifyHandlers("close", event);
+    }
+
+    function notifyHandlers(eventName, event) {
+        handlers[eventName].forEach(function(handler) {
+            handler(event);
+        });
+    }
+
+}
+
+},{"kew":3,"ws":5}],19:[function(_dereq_,module,exports){
+
 var extend    = _dereq_("extend");
 var Q         = _dereq_("kew");
 
+module.exports = createUsersContext;
+
 var internalProperties = ["id", "username", "save"];
-var prototype = {
-    save: function() {
-        return saveUser(this);
-    },
-    refresh: function() {
-        return refreshUser(this);
-    }
-};
-var currentUser = null;
-var dataObjects = {};
 
-function createUser(username, properties) {
-    var allProperties = extend({}, properties, {sysUsername:username});
-    var user = Object.create(prototype);
-    var id = "";
-    if(typeof properties === "object") {
-        id = properties.sysObjectId;
-        fillUser(user, properties);
-    }
-    Object.defineProperty(user, "username", { get:function() { return username; }, enumerable:true });
-    Object.defineProperty(user, "id", { get:function() { return id; }, enumerable:true });
-    dataObjects[id] = objects.create("Users", allProperties);
-    return user;
-}
+function createUsersContext(apiClient, objects) {
 
-function refreshUser(user) {
-    var object = dataObjects[user.id];
-    return object.refresh().then(function() {
-        fillUser(user, objects.getProperties(object));
-    });
-}
+    var currentUser = null;
 
-function fillUser(user, properties) {
-    Object.keys(properties).forEach(function(key) {
-        if(key.indexOf("sys") !== 0) {
-            user[key] = properties[key];
-        }
-    });
-}
-
-function saveUser(user) {
-    var defer = Q.defer();
-    var object = dataObjects[user.id];
-    extend(object, getProperties(user));
-    object.save()
-        .then(function(object) {
-            defer.resolve(user);
-        })
-        .fail(function(error) {
-            defer.reject(error);
-        });
-    return defer.promise;
-}
-
-function signup(username, password, properties) {
-    var defer = Q.defer();
-    var url = apiClient.url("/users");
-    var data = extend({sysUsername:username, sysPassword:password}, properties);
-    apiClient.request("post", url, data)
-             .then(function(result) {
-                 handleSignupOrLoginSuccess(username, result);
-                 defer.resolve(currentUser);
-             })
-             .fail(function(xhr) {
-                 defer.reject(apiClient.errorFromXhr(xhr));
-             });
-    return defer.promise;
-}
-
-function login(username, password) {
-    var defer = Q.defer();
-    var url = apiClient.url("/sessions");
-    apiClient.request("post", url, {sysUsername:username, sysPassword:password})
-             .then(function(result) {
-                 handleSignupOrLoginSuccess(username, result);
-                 defer.resolve(currentUser);
-             })
-             .fail(function(xhr) {
-                 defer.reject(apiClient.errorFromXhr(xhr));
-             });
-    return defer.promise;
-}
-
-function handleSignupOrLoginSuccess(username, result) {
-    var id = result.user ? result.user.sysObjectId : null;
-    storeSession(result.sysSessionId, username, id);
-    currentUser = createUser(username, result.user);
-}
-
-function logout() {
-    currentUser = null;
-    apiClient.sessionId(null);
-    localStorage.removeItem("appstax_session_" + apiClient.appKey());
-}
-
-function storeSession(sessionId, username, id) {
-    apiClient.sessionId(sessionId);
-    localStorage.setItem("appstax_session_" + apiClient.appKey(), JSON.stringify({
-        username: username,
-        sessionId: sessionId,
-        userId: id
-    }));
-}
-
-function restoreSession() {
-    var sessionData = localStorage.getItem("appstax_session_" + apiClient.appKey());
-    if(sessionData) {
-        var session = JSON.parse(sessionData);
-        apiClient.sessionId(session.sessionId);
-        currentUser = createUser(session.username,
-                                 {sysObjectId:session.userId});
-    }
-}
-
-function getPropertyNames(user) {
-    var keys = Object.keys(user);
-    internalProperties.forEach(function(internal) {
-        var index = keys.indexOf(internal);
-        if(index >= 0) {
-            keys.splice(index, 1);
-        }
-    });
-    return keys;
-}
-
-function getProperties(user) {
-    var data = {};
-    getPropertyNames(user).forEach(function(key) {
-        data[key] = user[key];
-    });
-    return data;
-}
-
-module.exports = {
-    restoreSession: restoreSession,
-    __global: {
+    init();
+    return {
+        restoreSession: restoreSession,
         signup: signup,
         login: login,
         logout: logout,
         currentUser: function() { return currentUser; }
-    }
-};
+    };
 
-},{"./apiclient":5,"./objects":10,"extend":1,"kew":3}]},{},[7])
-(7)
+    function init() {
+        restoreSession();
+    }
+
+    function createUser(username, properties) {
+        var allProperties = extend({}, properties, {sysUsername:username});
+        var user = objects.create("users", allProperties);
+        return user;
+    }
+
+    function signup(username, password, properties) {
+        var defer = Q.defer();
+        var url = apiClient.url("/users");
+        var data = extend({sysUsername:username, sysPassword:password}, properties);
+        apiClient.request("post", url, data)
+                 .then(function(result) {
+                     handleSignupOrLoginSuccess(username, result);
+                     defer.resolve(currentUser);
+                 })
+                 .fail(function(error) {
+                     defer.reject(error);
+                 });
+        return defer.promise;
+    }
+
+    function login(username, password) {
+        var defer = Q.defer();
+        var url = apiClient.url("/sessions");
+        apiClient.request("post", url, {sysUsername:username, sysPassword:password})
+                 .then(function(result) {
+                     handleSignupOrLoginSuccess(username, result);
+                     defer.resolve(currentUser);
+                 })
+                 .fail(function(error) {
+                     defer.reject(error);
+                 });
+        return defer.promise;
+    }
+
+    function handleSignupOrLoginSuccess(username, result) {
+        var id = result.user ? result.user.sysObjectId : null;
+        storeSession(result.sysSessionId, username, id);
+        currentUser = createUser(username, result.user);
+    }
+
+    function logout() {
+        currentUser = null;
+        apiClient.sessionId(null);
+        localStorage.removeItem("appstax_session_" + apiClient.appKey());
+    }
+
+    function storeSession(sessionId, username, id) {
+        apiClient.sessionId(sessionId);
+        localStorage.setItem("appstax_session_" + apiClient.appKey(), JSON.stringify({
+            username: username,
+            sessionId: sessionId,
+            userId: id
+        }));
+    }
+
+    function restoreSession() {
+        if(typeof localStorage == "undefined") {
+            return;
+        }
+        var sessionData = localStorage.getItem("appstax_session_" + apiClient.appKey());
+        if(sessionData) {
+            var session = JSON.parse(sessionData);
+            apiClient.sessionId(session.sessionId);
+            currentUser = createUser(session.username,
+                                     {sysObjectId:session.userId});
+        }
+    }
+
+    function getPropertyNames(user) {
+        var keys = Object.keys(user);
+        internalProperties.forEach(function(internal) {
+            var index = keys.indexOf(internal);
+            if(index >= 0) {
+                keys.splice(index, 1);
+            }
+        });
+        return keys;
+    }
+
+    function getProperties(user) {
+        var data = {};
+        getPropertyNames(user).forEach(function(key) {
+            data[key] = user[key];
+        });
+        return data;
+    }
+}
+
+
+},{"extend":1,"kew":3}]},{},[11])
+(11)
 });

@@ -75,7 +75,10 @@ function loadSnapshots() {
 function renderSnapshots(snapshots) {
   var list = document.querySelector("#snapshots ul");
   list.innerHTML = "";
-  snapshots.reverse().forEach(function(snapshot) {
+  snapshots.sort(function(a, b) {
+    return b.created.getTime() - a.created.getTime();
+  });
+  snapshots.forEach(function(snapshot) {
     var url = snapshot.image.imageUrl("resize", {width:120});
     list.innerHTML += "<li><img src='" + url + "'/></li>"
   });
