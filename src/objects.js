@@ -219,23 +219,24 @@ function createObjectsContext(apiClient, files, collections) {
             return defer.promise;
         }
 
-        var url, method, data;
+        var url, method, objectData, formData;
         if(object.id == null) {
             url = apiClient.url("/objects/:collection", {collection: object.collectionName});
             method = "post";
-            data = getDataForSaving(object)
+            formData = getDataForSaving(object)
+            objectData = getPropertiesForSaving(object);
         } else {
             url = apiClient.url("/objects/:collection/:id", {collection: object.collectionName, id: object.id});
             method = "put";
-            data = getPropertiesForSaving(object);
+            objectData = getPropertiesForSaving(object);
         }
         internal.status = "saving";
-        apiClient.request(method, url, data)
+        apiClient.request(method, url, formData || objectData)
                  .then(function(response) {
                      internal.setId(response.sysObjectId);
                      internal.status = "saved";
-                     applyRelationChanges(object, data);
-                     if(typeof FormData != "undefined" && data instanceof FormData) {
+                     applyRelationChanges(object, objectData);
+                     if(typeof FormData != "undefined" && formData instanceof FormData) {
                          markFilesSaved(object);
                      }
                      defer.resolve(object);

@@ -28,6 +28,22 @@ describe("Object relations", function() {
         appstax.collection("posts", {title:"string"})
     }
 
+    function mockFile(filename) {
+        var contents = "foo";
+        var mimeType = "text/plain";
+        var file;
+        try {
+            file = new File([contents], filename, {type: mimeType});
+        } catch (e) {
+            var BlobBuilder = window.WebKitBlobBuilder || window.MozBlobBuilder;
+            var builder = new BlobBuilder();
+            builder.append(contents);
+            file = builder.getBlob(filename, mimeType);
+        }
+        file.name = filename;
+        return file;
+    }
+
     it("should have object ids as values for unexpanded properties", function() {
         var object = appstax.object("foo", {
             prop1: {
@@ -285,13 +301,13 @@ describe("Object relations", function() {
             }
         });
 
-        invoice.customer = appstax.object("customer", {sysObjectId:"customer-2"});
+        invoice.customer = appstax.object("customers", {sysObjectId:"customer-2"});
         var promise = invoice.save();
 
         requests[0].respond(200, {}, "");
 
         return promise.then(function() {
-            invoice.customer = appstax.object("customer", {sysObjectId:"customer-3"});
+            invoice.customer = appstax.object("customers", {sysObjectId:"customer-3"});
             invoice.save();
 
             expect(requests.length).to.equal(2);
@@ -303,6 +319,41 @@ describe("Object relations", function() {
             expect(changes.additions).to.contain("customer-3");
             expect(changes.removals).to.have.length(1);
             expect(changes.removals).to.contain("customer-2");
+        });
+    });
+
+    it("save() should only send new relation changes for single relation (starting with a multipart object/file save)", function() {
+        var invoice  = appstax.object("invoices");
+        invoice.amount = 149;
+        invoice.attachment = appstax.file(mockFile("foo.txt"))
+        invoice.customer = appstax.object("customers", {sysObjectId:"customer-1"});
+
+        var promise1 = invoice.save();
+        expect(requests.length).to.equal(1);
+        expect(requests[0].method).to.equal("POST");
+        expect(requests[0].requestBody).to.be.instanceOf(FormData);
+        requests[0].respond(200, {}, JSON.stringify({sysObjectId:"invoice-1"}));
+
+        return promise1.then(function() {
+            invoice.customer = appstax.object("customers", {sysObjectId:"customer-2"});
+            var promise2 = invoice.save();
+            expect(requests.length).to.equal(2);
+            requests[1].respond(200, {}, "");
+
+            return promise2.then(function() {
+                invoice.customer = appstax.object("customers", {sysObjectId:"customer-3"});
+                invoice.save();
+
+                expect(requests.length).to.equal(3);
+
+                expect(requests[2].method).to.equal("PUT");
+                expect(requests[2].url).to.equal("http://localhost:3000/objects/invoices/invoice-1");
+                var changes = JSON.parse(requests[2].requestBody).customer.sysRelationChanges;
+                expect(changes.additions).to.have.length(1);
+                expect(changes.additions).to.contain("customer-3");
+                expect(changes.removals).to.have.length(1);
+                expect(changes.removals).to.contain("customer-2");
+            });
         });
     });
 
