@@ -67,16 +67,20 @@ function createUsersContext(apiClient, objects) {
     function logout() {
         currentUser = null;
         apiClient.sessionId(null);
-        localStorage.removeItem("appstax_session_" + apiClient.appKey());
+        if(typeof localStorage != "undefined") {
+            localStorage.removeItem("appstax_session_" + apiClient.appKey());
+        }
     }
 
     function storeSession(sessionId, username, id) {
         apiClient.sessionId(sessionId);
-        localStorage.setItem("appstax_session_" + apiClient.appKey(), JSON.stringify({
-            username: username,
-            sessionId: sessionId,
-            userId: id
-        }));
+        if(typeof localStorage != "undefined") {
+            localStorage.setItem("appstax_session_" + apiClient.appKey(), JSON.stringify({
+                username: username,
+                sessionId: sessionId,
+                userId: id
+            }));
+        }
     }
 
     function restoreSession() {
