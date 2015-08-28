@@ -21,8 +21,9 @@ function createChannelsContext(socket) {
 
     function createChannel(channelName, usernames) {
         var nameParts = channelName.split("/");
-        var channel = {
+        var channel = channels[channelName] = {
             type: nameParts[0],
+            created: false,
             wildcard: channelName.indexOf("*") != -1,
             on: function(eventName, handler) {
                 addHandler(channelName, eventName, handler)
@@ -41,18 +42,16 @@ function createChannelsContext(socket) {
                 sendPermission(channelName, "revoke", [username], permissions);
             }
         };
-        if(channel.type == "private" && !channel.wildcard) {
-            sendPacket({channel:channelName, command:"channel.create"});
-            if(usernames && usernames.length > 0) {
-                sendPermission(channelName, "grant", usernames, ["read", "write"]);
-            }
-        } else {
-            sendPacket({channel:channelName, command:"subscribe"});
+
+        sendPacket({channel:channelName, command:"subscribe"});
+        if(channel.type == "private" && usernames && usernames.length > 0) {
+            sendPermission(channelName, "grant", usernames, ["read", "write"]);
         }
         return channel;
     }
 
     function sendPermission(channelName, change, usernames, permissions) {
+        sendCreate(channelName);
         permissions.forEach(function(permission) {
             sendPacket({
                 channel: channelName,
@@ -62,12 +61,19 @@ function createChannelsContext(socket) {
         });
     }
 
-    function getChannel(name, permissions) {
-        var channel = channels[name];
-        if(!channel) {
-            channels[name] = channel = createChannel(name, permissions);
+    function sendCreate(channelName) {
+        var channel = getChannel(channelName);
+        if(!channel.created) {
+            channel.created = true;
+            sendPacket({channel:channelName, command:"channel.create"});
         }
-        return channel;
+    }
+
+    function getChannel(name, permissions) {
+        if(!channels[name]) {
+            createChannel(name, permissions);
+        }
+        return channels[name];
     }
 
     function sendPacket(packet) {

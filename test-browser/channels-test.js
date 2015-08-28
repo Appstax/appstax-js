@@ -224,23 +224,12 @@ describe("Channels", function() {
         }, 200);
     });
 
-    it("should create a private channel", function(done) {
+    it("should subscribe a private channel", function(done) {
         var mychannel = appstax.channel("private/mychannel");
 
         setTimeout(function() {
-            expect(serverReceived[0]).to.have.property("command", "channel.create");
-            expect(serverReceived[0]).to.have.property("channel", "private/mychannel");
-            done();
-        }, 200);
-    });
-
-    it("should send 'subscribe' instead of 'create' for a private wildcard pattern", function(done) {
-        appstax.channel("private/something/*");
-        appstax.channel("private/foo/bar/*");
-
-        setTimeout(function() {
             expect(serverReceived[0]).to.have.property("command", "subscribe");
-            expect(serverReceived[1]).to.have.property("command", "subscribe");
+            expect(serverReceived[0]).to.have.property("channel", "private/mychannel");
             done();
         }, 200);
     });
@@ -253,25 +242,29 @@ describe("Channels", function() {
         mychannel.revoke("friend", ["write"]);
 
         setTimeout(function() {
-            expect(serverReceived.length).to.equal(7);
+            expect(serverReceived.length).to.equal(8);
+            expect(serverReceived[0]).to.have.property("channel", "private/mychannel");
+            expect(serverReceived[0]).to.have.property("command", "subscribe");
             expect(serverReceived[1]).to.have.property("channel", "private/mychannel");
-            expect(serverReceived[1]).to.have.property("command", "grant.read");
-            expect(serverReceived[1]).to.have.deep.property("data[0]", "buddy");
+            expect(serverReceived[1]).to.have.property("command", "channel.create");
             expect(serverReceived[2]).to.have.property("channel", "private/mychannel");
             expect(serverReceived[2]).to.have.property("command", "grant.read");
-            expect(serverReceived[2]).to.have.deep.property("data[0]", "friend");
+            expect(serverReceived[2]).to.have.deep.property("data[0]", "buddy");
             expect(serverReceived[3]).to.have.property("channel", "private/mychannel");
-            expect(serverReceived[3]).to.have.property("command", "grant.write");
+            expect(serverReceived[3]).to.have.property("command", "grant.read");
             expect(serverReceived[3]).to.have.deep.property("data[0]", "friend");
             expect(serverReceived[4]).to.have.property("channel", "private/mychannel");
-            expect(serverReceived[4]).to.have.property("command", "revoke.read");
-            expect(serverReceived[4]).to.have.deep.property("data[0]", "buddy");
+            expect(serverReceived[4]).to.have.property("command", "grant.write");
+            expect(serverReceived[4]).to.have.deep.property("data[0]", "friend");
             expect(serverReceived[5]).to.have.property("channel", "private/mychannel");
-            expect(serverReceived[5]).to.have.property("command", "revoke.write");
+            expect(serverReceived[5]).to.have.property("command", "revoke.read");
             expect(serverReceived[5]).to.have.deep.property("data[0]", "buddy");
             expect(serverReceived[6]).to.have.property("channel", "private/mychannel");
             expect(serverReceived[6]).to.have.property("command", "revoke.write");
-            expect(serverReceived[6]).to.have.deep.property("data[0]", "friend");
+            expect(serverReceived[6]).to.have.deep.property("data[0]", "buddy");
+            expect(serverReceived[7]).to.have.property("channel", "private/mychannel");
+            expect(serverReceived[7]).to.have.property("command", "revoke.write");
+            expect(serverReceived[7]).to.have.deep.property("data[0]", "friend");
             done();
         }, 200);
     });
@@ -280,15 +273,19 @@ describe("Channels", function() {
         var mychannel = appstax.channel("private/mychannel", ["buddy", "friend"]);
 
         setTimeout(function() {
-            expect(serverReceived.length).to.equal(3);
+            expect(serverReceived.length).to.equal(4);
+            expect(serverReceived[0]).to.have.property("channel", "private/mychannel");
+            expect(serverReceived[0]).to.have.property("command", "subscribe");
             expect(serverReceived[1]).to.have.property("channel", "private/mychannel");
-            expect(serverReceived[1]).to.have.property("command", "grant.read");
-            expect(serverReceived[1]).to.have.deep.property("data[0]", "buddy");
-            expect(serverReceived[1]).to.have.deep.property("data[1]", "friend");
+            expect(serverReceived[1]).to.have.property("command", "channel.create");
             expect(serverReceived[2]).to.have.property("channel", "private/mychannel");
-            expect(serverReceived[2]).to.have.property("command", "grant.write");
+            expect(serverReceived[2]).to.have.property("command", "grant.read");
             expect(serverReceived[2]).to.have.deep.property("data[0]", "buddy");
             expect(serverReceived[2]).to.have.deep.property("data[1]", "friend");
+            expect(serverReceived[3]).to.have.property("channel", "private/mychannel");
+            expect(serverReceived[3]).to.have.property("command", "grant.write");
+            expect(serverReceived[3]).to.have.deep.property("data[0]", "buddy");
+            expect(serverReceived[3]).to.have.deep.property("data[1]", "friend");
             done();
         }, 200);
     })
