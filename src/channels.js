@@ -85,11 +85,11 @@ function createChannelsContext(socket) {
         var filtered = [];
         if(channelName == "*") {
             filtered = handlers.filter(function(handler) {
-                return handler.eventName == eventName;
+                return handler.eventName == "*" || handler.eventName == eventName;
             });
         } else {
             filtered = handlers.filter(function(handler) {
-                return handler.eventName == eventName &&
+                return (handler.eventName == "*" || handler.eventName == eventName) &&
                        handler.regexp.test(channelName)
             });
         }
@@ -113,7 +113,7 @@ function createChannelsContext(socket) {
     }
 
     function handleSocketOpen(event) {
-        notifyHandlers("*", "open");
+        notifyHandlers("*", "open", {type: "open"});
     }
 
     function handleSocketError(event) {
@@ -131,6 +131,7 @@ function createChannelsContext(socket) {
 
         if(typeof data.channel === "string" &&
            typeof data.event   === "string") {
+            data.type = data.event;
             notifyHandlers(data.channel, data.event, data);
         }
     }

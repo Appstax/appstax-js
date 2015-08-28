@@ -127,7 +127,7 @@ describe("Channels", function() {
         }, 200);
     });
 
-    it("should map server events to wildcard handlers", function(done) {
+    it("should map server events to wildcard channel handlers", function(done) {
         var a1 = appstax.channel("public/a/1");
         var a2 = appstax.channel("public/a/2");
         var aw = appstax.channel("public/a/*");
@@ -156,6 +156,68 @@ describe("Channels", function() {
                 expect(received.b1.length).to.equal(1);
                 expect(received.b2.length).to.equal(1);
                 expect(received.bw.length).to.equal(2);
+
+                done();
+            }, 100);
+        }, 200);
+    });
+
+    it("should map server events to wildcard event handler", function(done) {
+        var a1 = appstax.channel("public/a/1");
+        var a2 = appstax.channel("public/a/2");
+        var aw = appstax.channel("public/a/*");
+        var b1 = appstax.channel("public/b/1");
+        var b2 = appstax.channel("public/b/2");
+        var bw = appstax.channel("public/b/*");
+
+        var received = {a1:[], a2:[], aw:[], b1:[], b2:[], bw:[]};
+        a1.on("*", function(event) { received.a1.push(event) });
+        a2.on("*", function(event) { received.a2.push(event) });
+        aw.on("*", function(event) { received.aw.push(event) });
+        b1.on("*", function(event) { received.b1.push(event) });
+        b2.on("*", function(event) { received.b2.push(event) });
+        bw.on("*", function(event) { received.bw.push(event) });
+
+        setTimeout(function() {
+            serverSend(JSON.stringify({channel: "public/a/1", event: "foo", foo1: "foo2"}));
+            serverSend(JSON.stringify({channel: "public/a/2", event: "bar", bar1: "bar2"}));
+            serverSend(JSON.stringify({channel: "public/b/1", event: "baz", baz1: "baz2"}));
+            serverSend(JSON.stringify({channel: "public/b/2", event: "gaz", gaz1: "gaz2"}));
+
+            setTimeout(function() {
+                expect(received.a1[0].type).to.equal("open");
+                expect(received.a2[0].type).to.equal("open");
+                expect(received.aw[0].type).to.equal("open");
+                expect(received.b1[0].type).to.equal("open");
+                expect(received.b2[0].type).to.equal("open");
+                expect(received.bw[0].type).to.equal("open");
+
+                expect(received.a1[1].channel).to.equal("public/a/1");
+                expect(received.a2[1].channel).to.equal("public/a/2");
+                expect(received.aw[1].channel).to.equal("public/a/1");
+                expect(received.aw[2].channel).to.equal("public/a/2");
+                expect(received.b1[1].channel).to.equal("public/b/1");
+                expect(received.b2[1].channel).to.equal("public/b/2");
+                expect(received.bw[1].channel).to.equal("public/b/1");
+                expect(received.bw[2].channel).to.equal("public/b/2");
+
+                expect(received.a1[1].type).to.equal("foo");
+                expect(received.a2[1].type).to.equal("bar");
+                expect(received.aw[1].type).to.equal("foo");
+                expect(received.aw[2].type).to.equal("bar");
+                expect(received.b1[1].type).to.equal("baz");
+                expect(received.b2[1].type).to.equal("gaz");
+                expect(received.bw[1].type).to.equal("baz");
+                expect(received.bw[2].type).to.equal("gaz");
+
+                expect(received.a1[1].foo1).to.equal("foo2");
+                expect(received.a2[1].bar1).to.equal("bar2");
+                expect(received.aw[1].foo1).to.equal("foo2");
+                expect(received.aw[2].bar1).to.equal("bar2");
+                expect(received.b1[1].baz1).to.equal("baz2");
+                expect(received.b2[1].gaz1).to.equal("gaz2");
+                expect(received.bw[1].baz1).to.equal("baz2");
+                expect(received.bw[2].gaz1).to.equal("gaz2");
 
                 done();
             }, 100);
