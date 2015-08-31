@@ -19,7 +19,7 @@ function createChannelsContext(socket) {
         handlers = [];
     }
 
-    function createChannel(channelName, usernames) {
+    function createChannel(channelName, options) {
         var nameParts = channelName.split("/");
         var channel = channels[channelName] = {
             type: nameParts[0],
@@ -43,10 +43,25 @@ function createChannelsContext(socket) {
             }
         };
 
-        sendPacket({channel:channelName, command:"subscribe"});
-        if(channel.type == "private" && usernames && usernames.length > 0) {
-            sendPermission(channelName, "grant", usernames, ["read", "write"]);
+
+        switch(channel.type) {
+
+            case "private":
+                sendPacket({channel:channelName, command:"subscribe"});
+                if(options != undefined) {
+                    var usernames = options;
+                    sendPermission(channelName, "grant", usernames, ["read", "write"]);
+                }
+                break;
+
+            case "objects":
+                sendPacket({channel:channelName, command:"subscribe", filter: options || ""});
+                break;
+
+            default:
+                sendPacket({channel:channelName, command:"subscribe"});
         }
+
         return channel;
     }
 

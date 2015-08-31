@@ -288,7 +288,28 @@ describe("Channels", function() {
             expect(serverReceived[3]).to.have.deep.property("data[1]", "friend");
             done();
         }, 200);
-    })
+    });
+
+    it("should subscribe to object channel", function(done) {
+        var ch = appstax.channel("objects/mycollection");
+        setTimeout(function() {
+            expect(serverReceived.length).to.equal(1);
+            expect(serverReceived[0]).to.have.property("channel", "objects/mycollection");
+            expect(serverReceived[0]).to.have.property("command", "subscribe");
+            done();
+        }, 200);
+    });
+
+    it("should subscribe to object channel with filter", function(done) {
+        var ch = appstax.channel("objects/mycollection", "text like Hello%");
+        setTimeout(function() {
+            expect(serverReceived.length).to.equal(1);
+            expect(serverReceived[0]).to.have.property("channel", "objects/mycollection");
+            expect(serverReceived[0]).to.have.property("command", "subscribe");
+            expect(serverReceived[0]).to.have.property("filter", "text like Hello%");
+            done();
+        }, 200);
+    });
 
 });
 
