@@ -1,7 +1,7 @@
 
 module.exports = createChannelsContext;
 
-function createChannelsContext(socket) {
+function createChannelsContext(socket, objects) {
     var channels;
     var handlers;
     var idCounter = 0;
@@ -144,16 +144,20 @@ function createChannelsContext(socket) {
         });
     }
 
-    function handleSocketMessage(event) {
-        var data = {};
+    function handleSocketMessage(socketEvent) {
+        var event = {};
         try {
-            data = JSON.parse(event.data);
+            event = JSON.parse(socketEvent.data);
         } catch(e) {}
 
-        if(typeof data.channel === "string" &&
-           typeof data.event   === "string") {
-            data.type = data.event;
-            notifyHandlers(data.channel, data.event, data);
+        if(typeof event.channel === "string" &&
+           typeof event.event   === "string") {
+            event.type = event.event;
+            if(event.type.indexOf("object.") == 0) {
+                var collection = event.channel.split("/")[1];
+                event.object = objects.createObject(collection, event.data);
+            }
+            notifyHandlers(event.channel, event.type, event);
         }
     }
 }

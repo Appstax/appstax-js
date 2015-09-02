@@ -42,7 +42,7 @@ function createContext(options) {
         context.objects     = objects(context.apiClient, context.files, context.collections);
         context.users       = users(context.apiClient, context.objects);
         context.request     = request(context.apiClient)
-        context.channels    = channels(context.apiClient.socket());
+        context.channels    = channels(context.apiClient.socket(), context.objects);
 
         // expose shortcuts
         context.object      = context.objects.createObject;

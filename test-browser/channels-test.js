@@ -311,6 +311,46 @@ describe("Channels", function() {
         }, 200);
     });
 
+    it("should convert received data to appstax objects", function(done) {
+        var ch = appstax.channel("objects/mycollection");
+        var receivedObjects = [];
+        ch.on("object.created", function(event) { receivedObjects.push(event.object) });
+        ch.on("object.updated", function(event) { receivedObjects.push(event.object) });
+        ch.on("object.deleted", function(event) { receivedObjects.push(event.object) });
+
+        setTimeout(function() {
+            serverSend(JSON.stringify({
+                channel: "objects/mycollection",
+                event: "object.created",
+                data: { sysObjectId: "id1", prop1: "value1" }
+            }));
+            serverSend(JSON.stringify({
+                channel: "objects/mycollection",
+                event: "object.updated",
+                data: { sysObjectId: "id2", prop2: "value2" }
+            }));
+            serverSend(JSON.stringify({
+                channel: "objects/mycollection",
+                event: "object.deleted",
+                data: { sysObjectId: "id3", prop3: "value3" }
+            }));
+
+            setTimeout(function() {
+                expect(receivedObjects.length).to.equal(3);
+                expect(receivedObjects[0].id).to.equal("id1");
+                expect(receivedObjects[0].collectionName).to.equal("mycollection");
+                expect(receivedObjects[0].prop1).to.equal("value1");
+                expect(receivedObjects[1].id).to.equal("id2");
+                expect(receivedObjects[1].collectionName).to.equal("mycollection");
+                expect(receivedObjects[1].prop2).to.equal("value2");
+                expect(receivedObjects[2].id).to.equal("id3");
+                expect(receivedObjects[2].collectionName).to.equal("mycollection");
+                expect(receivedObjects[2].prop3).to.equal("value3");
+                done();
+            }, 100)
+        }, 200);
+    });
+
 });
 
 
