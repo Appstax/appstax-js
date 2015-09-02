@@ -76,7 +76,9 @@ function createObjectsContext(apiClient, files, collections) {
         getObjectStatus: getObjectStatus,
         findAll: findAll,
         find: find,
-        search: search
+        search: search,
+        sort: sortObjects,
+        copy: copyValues
     };
 
     function createObject(collectionName, properties, factory) {
@@ -86,8 +88,8 @@ function createObjectsContext(apiClient, files, collections) {
         Object.defineProperty(object, "internalId", { writable: false, value: internal.internalId, enumerable:true });
         Object.defineProperty(object, "internalObject", { writable: false, value: internal, enumerable: false });
         Object.defineProperty(object, "collectionName", { get: function() { return internal.collectionName; }, enumerable:true });
-        Object.defineProperty(object, "created", { get: function() { return internal.created; }, enumerable:true });
-        Object.defineProperty(object, "updated", { get: function() { return internal.updated; }, enumerable:true });
+        Object.defineProperty(object, "created", { get: function() { return new Date(internal.sysValues.sysCreated); }, enumerable:true });
+        Object.defineProperty(object, "updated", { get: function() { return new Date(internal.sysValues.sysUpdated); }, enumerable:true });
         Object.defineProperty(object, "permissions", { get: function() { return internal.sysValues.sysPermissions; }, enumerable: true });
         if(collectionName == "users") {
             Object.defineProperty(object, "username", { get:function() { return internal.sysValues.sysUsername; }, enumerable:true });
@@ -108,12 +110,6 @@ function createObjectsContext(apiClient, files, collections) {
         if(typeof properties === "object") {
             var sysValues = internal.sysValues;
             internal.setId(properties.sysObjectId);
-            if(properties.sysCreated) {
-                internal.created = new Date(properties.sysCreated)
-            }
-            if(properties.sysUpdated) {
-                internal.updated = new Date(properties.sysUpdated)
-            }
             Object.keys(properties).forEach(function(key) {
                 var value = properties[key];
                 if(key.indexOf("sys") === 0) {
@@ -700,5 +696,46 @@ function createObjectsContext(apiClient, files, collections) {
 
     function isObject(object) {
         return object !== undefined && object !== null;
+    }
+
+    function copyValues(from, to) {
+        if(from == null || to == null) {
+            return;
+        }
+        Object.keys(from)
+              .filter(function(key) {
+                  return internalProperties.indexOf(key) == -1;
+              })
+              .forEach(function(key) {
+                  to[key] = from[key];
+              });
+        Object.keys(from.internalObject.sysValues)
+              .forEach(function(key) {
+                  to.internalObject.sysValues[key] = from.internalObject.sysValues[key];
+              });
+    }
+
+    function sortObjects(objects, order) {
+        order = order || ""
+        var dir = 1;
+        var key = order;
+        if(order.indexOf("-") == 0) {
+            dir = -1;
+            key = order.substr(1);
+        }
+        if(typeof objects.sort == "function") {
+            objects.sort(function(o1, o2) {
+                var d1 = o1[key];
+                var d2 = o2[key];
+                if(typeof d1 == "undefined") { d1 = 0; }
+                if(typeof d2 == "undefined") { d2 = 0; }
+                if(d1.getTime) { d1 = d1.getTime(); }
+                if(d2.getTime) { d2 = d2.getTime(); }
+
+                if(d1 > d2) { return dir; }
+                if(d1 < d2) { return -dir; }
+                return 0;
+            });
+        }
     }
 }

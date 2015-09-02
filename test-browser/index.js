@@ -12,6 +12,7 @@ require("./relations-test");
 require("./request-test");
 require("./socket-test");
 require("./channels-test");
+require("./models-test");
 
 // Polyfill for f.bind()
 Function.prototype.bind = Function.prototype.bind || function (thisp) {

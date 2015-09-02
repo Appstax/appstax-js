@@ -6,7 +6,7 @@ module.exports = createUsersContext;
 
 var internalProperties = ["id", "username", "save"];
 
-function createUsersContext(apiClient, objects) {
+function createUsersContext(apiClient, objects, hub) {
 
     var currentUser = null;
 
@@ -50,6 +50,7 @@ function createUsersContext(apiClient, objects) {
                          user = handleSignupOrLoginSuccess(username, result);
                      }
                      defer.resolve(user);
+                     hub.pub("users.signup", {user: currentUser});
                  })
                  .fail(function(error) {
                      defer.reject(error);
@@ -64,6 +65,7 @@ function createUsersContext(apiClient, objects) {
                  .then(function(result) {
                      handleSignupOrLoginSuccess(username, result);
                      defer.resolve(currentUser);
+                     hub.pub("users.login", {user: currentUser});
                  })
                  .fail(function(error) {
                      defer.reject(error);
@@ -84,6 +86,7 @@ function createUsersContext(apiClient, objects) {
         if(typeof localStorage != "undefined") {
             localStorage.removeItem("appstax_session_" + apiClient.appKey());
         }
+        hub.pub("users.logout");
     }
 
     function storeSession(sessionId, username, id) {
