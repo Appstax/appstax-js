@@ -80,7 +80,7 @@ function createObjectsContext(apiClient, files, collections) {
         search: search
     };
 
-    function createObject(collectionName, properties) {
+    function createObject(collectionName, properties, factory) {
         var internal = createInternalObject(collectionName);
         var object = Object.create(prototype);
         Object.defineProperty(object, "id", { get: function() { return internal.id; }, enumerable:true });
@@ -94,7 +94,7 @@ function createObjectsContext(apiClient, files, collections) {
         }
 
         properties = extend({}, collections.defaultValues(collectionName), properties);
-        fillObjectWithValues(object, properties);
+        fillObjectWithValues(object, properties, factory || createObject);
 
         if(object.id !== null) {
             internal.status = "saved";
@@ -102,7 +102,7 @@ function createObjectsContext(apiClient, files, collections) {
         return object;
     }
 
-    function fillObjectWithValues(object, properties) {
+    function fillObjectWithValues(object, properties, factory) {
         var internal = getInternalObject(object);
         var filteredProperties = {};
         if(typeof properties === "object") {
@@ -119,7 +119,7 @@ function createObjectsContext(apiClient, files, collections) {
                 if(key.indexOf("sys") === 0) {
                     sysValues[key] = value;
                 } else if(typeof value.sysDatatype == "string") {
-                    filteredProperties[key] = createPropertyWithDatatype(key, value, object);
+                    filteredProperties[key] = createPropertyWithDatatype(key, value, object, factory);
                     if(value.sysDatatype == "relation") {
                         internal.relations[key] = {
                             type: value.sysRelationType,
@@ -136,9 +136,9 @@ function createObjectsContext(apiClient, files, collections) {
         extend(object, filteredProperties);
     }
 
-    function createPropertyWithDatatype(key, value, object) {
+    function createPropertyWithDatatype(key, value, object, factory) {
         switch(value.sysDatatype) {
-            case "relation": return _createRelationProperty(value);
+            case "relation": return _createRelationProperty(value, factory);
             case "file": return files.create({
                 filename: value.filename,
                 url: files.urlForFile(object.collectionName, object.id, key, value.filename)
@@ -146,14 +146,14 @@ function createObjectsContext(apiClient, files, collections) {
         }
         return null;
 
-        function _createRelationProperty(value) {
+        function _createRelationProperty(value, factory) {
             var results = [];
             if(typeof value.sysObjects !== "undefined") {
                 results = value.sysObjects.map(function(object) {
                     if(typeof object === "string") {
                         return object
                     } else {
-                        return createObject(value.sysCollection, object);
+                        return factory(value.sysCollection, object, factory);
                     }
                 });
             }
@@ -590,7 +590,7 @@ function createObjectsContext(apiClient, files, collections) {
         var url = apiClient.url("/objects/:collection",
                                 {collection: collectionName},
                                 queryParametersFromQueryOptions(options));
-        return sendFindRequest(url, collectionName);
+        return sendFindRequest(url, collectionName, options);
     }
 
     function find(collectionName) {
@@ -615,14 +615,14 @@ function createObjectsContext(apiClient, files, collections) {
                                 {collection: collectionName, id: id},
                                 queryParametersFromQueryOptions(options));
 
-        return sendFindRequest(url, collectionName);
+        return sendFindRequest(url, collectionName, options);
     }
 
     function findByQueryString(collectionName, queryString, options) {
         var url = apiClient.url("/objects/:collection?filter=:queryString",
                                 {collection: collectionName, queryString: queryString},
                                 queryParametersFromQueryOptions(options));
-        return sendFindRequest(url, collectionName);
+        return sendFindRequest(url, collectionName, options);
     }
 
     function findByQueryObject(collectionName, queryObject, options) {
@@ -671,16 +671,17 @@ function createObjectsContext(apiClient, files, collections) {
     }
 
     function sendFindRequest(url, collectionName, options) {
+        var factory = (options && options.factory) || createObject;
         var defer = Q.defer();
         apiClient.request("get", url)
                  .then(function(result) {
                      if(Array.isArray(result.objects)) {
                          var objects = result.objects.map(function(properties) {
-                             return createObject(collectionName, properties);
+                             return factory(collectionName, properties, factory);
                          });
                          defer.resolve(objects);
                      } else {
-                         defer.resolve(createObject(collectionName, result));
+                         defer.resolve(factory(collectionName, result, factory));
                      }
                  })
                  .fail(function(error) {

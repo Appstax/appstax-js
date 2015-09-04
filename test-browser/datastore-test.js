@@ -345,6 +345,219 @@ describe("DataStore", function() {
         });
     });
 
+    describe("using object factory", function() {
+
+        var resultSpy, factorySpy;
+
+        beforeEach(function() {
+            resultSpy = sinon.spy();
+            factorySpy = sinon.spy(function(collectionName, properties) {
+                return {
+                    id: properties.sysObjectId,
+                    spy: true
+                }
+            });
+        });
+
+        function respond(o) {
+            requests[0].respond(200, {}, JSON.stringify(o));
+        }
+
+        it("should work with findAll(collection)", function() {
+            appstax.findAll("coll1", {factory: factorySpy}).then(resultSpy);
+            respond({objects:[{sysObjectId: "id1"}, {sysObjectId: "id2"}]});
+
+            expect(factorySpy.callCount).to.equal(2);
+            expect(factorySpy.args[0][0]).to.equal("coll1");
+            expect(factorySpy.args[1][0]).to.equal("coll1");
+            expect(factorySpy.args[0][1]).to.have.property("sysObjectId", "id1");
+            expect(factorySpy.args[1][1]).to.have.property("sysObjectId", "id2");
+
+            expect(resultSpy.callCount).to.equal(1);
+            expect(resultSpy.args[0][0][0]).to.have.property("id", "id1");
+            expect(resultSpy.args[0][0][1]).to.have.property("id", "id2");
+            expect(resultSpy.args[0][0][0]).to.have.property("spy", true);
+            expect(resultSpy.args[0][0][1]).to.have.property("spy", true);
+        });
+
+        it("should work with find(collection, id)", function() {
+            appstax.find("coll2", "id3", {factory: factorySpy}).then(resultSpy);
+            respond({sysObjectId: "id3"});
+
+            expect(factorySpy.callCount).to.equal(1);
+            expect(factorySpy.args[0][0]).to.equal("coll2");
+            expect(factorySpy.args[0][1]).to.have.property("sysObjectId", "id3");
+
+            expect(resultSpy.callCount).to.equal(1);
+            expect(resultSpy.args[0][0]).to.have.property("id", "id3");
+            expect(resultSpy.args[0][0]).to.have.property("spy", true);
+        });
+
+        it("should work with find(collection, queryFunction)", function() {
+            var query = function() {}
+            appstax.find("coll3", query, {factory: factorySpy}).then(resultSpy);
+            respond({objects:[{sysObjectId: "id4"}, {sysObjectId: "id5"}]});
+
+            expect(factorySpy.callCount).to.equal(2);
+            expect(factorySpy.args[0][0]).to.equal("coll3");
+            expect(factorySpy.args[1][0]).to.equal("coll3");
+            expect(factorySpy.args[0][1]).to.have.property("sysObjectId", "id4");
+            expect(factorySpy.args[1][1]).to.have.property("sysObjectId", "id5");
+
+            expect(resultSpy.callCount).to.equal(1);
+            expect(resultSpy.args[0][0][0]).to.have.property("id", "id4");
+            expect(resultSpy.args[0][0][1]).to.have.property("id", "id5");
+            expect(resultSpy.args[0][0][0]).to.have.property("spy", true);
+            expect(resultSpy.args[0][0][1]).to.have.property("spy", true);
+        });
+
+        it("should work with find(collection, queryObject)", function() {
+            var query = {queryString: function() { return "foo" }};
+            appstax.find("coll4", query, {factory: factorySpy}).then(resultSpy);
+            respond({objects:[{sysObjectId: "id6"}, {sysObjectId: "id7"}]});
+
+            expect(factorySpy.callCount).to.equal(2);
+            expect(factorySpy.args[0][0]).to.equal("coll4");
+            expect(factorySpy.args[1][0]).to.equal("coll4");
+            expect(factorySpy.args[0][1]).to.have.property("sysObjectId", "id6");
+            expect(factorySpy.args[1][1]).to.have.property("sysObjectId", "id7");
+
+            expect(resultSpy.callCount).to.equal(1);
+            expect(resultSpy.args[0][0][0]).to.have.property("id", "id6");
+            expect(resultSpy.args[0][0][1]).to.have.property("id", "id7");
+            expect(resultSpy.args[0][0][0]).to.have.property("spy", true);
+            expect(resultSpy.args[0][0][1]).to.have.property("spy", true);
+        });
+
+        it("should work with find(collection, queryString)", function() {
+            var query = "foo";
+            appstax.find("coll5", query, {factory: factorySpy}).then(resultSpy);
+            respond({objects:[{sysObjectId: "id8"}, {sysObjectId: "id9"}]});
+
+            expect(factorySpy.callCount).to.equal(2);
+            expect(factorySpy.args[0][0]).to.equal("coll5");
+            expect(factorySpy.args[1][0]).to.equal("coll5");
+            expect(factorySpy.args[0][1]).to.have.property("sysObjectId", "id8");
+            expect(factorySpy.args[1][1]).to.have.property("sysObjectId", "id9");
+
+            expect(resultSpy.callCount).to.equal(1);
+            expect(resultSpy.args[0][0][0]).to.have.property("id", "id8");
+            expect(resultSpy.args[0][0][1]).to.have.property("id", "id9");
+            expect(resultSpy.args[0][0][0]).to.have.property("spy", true);
+            expect(resultSpy.args[0][0][1]).to.have.property("spy", true);
+        });
+
+        it("should work with find(collection, propertyValues)", function() {
+            appstax.find("coll6", {foo:"bar"}, {factory: factorySpy}).then(resultSpy);
+            respond({objects:[{sysObjectId: "id1"}, {sysObjectId: "id2"}]});
+
+            expect(factorySpy.callCount).to.equal(2);
+            expect(factorySpy.args[0][0]).to.equal("coll6");
+            expect(factorySpy.args[1][0]).to.equal("coll6");
+            expect(factorySpy.args[0][1]).to.have.property("sysObjectId", "id1");
+            expect(factorySpy.args[1][1]).to.have.property("sysObjectId", "id2");
+
+            expect(resultSpy.callCount).to.equal(1);
+            expect(resultSpy.args[0][0][0]).to.have.property("id", "id1");
+            expect(resultSpy.args[0][0][1]).to.have.property("id", "id2");
+            expect(resultSpy.args[0][0][0]).to.have.property("spy", true);
+            expect(resultSpy.args[0][0][1]).to.have.property("spy", true);
+        });
+
+        it("should work with search(collection, propertyValues)", function() {
+            appstax.search("coll7", {foo:"bar"}, {factory: factorySpy}).then(resultSpy);
+            respond({objects:[{sysObjectId: "id3"}, {sysObjectId: "id4"}]});
+
+            expect(factorySpy.callCount).to.equal(2);
+            expect(factorySpy.args[0][0]).to.equal("coll7");
+            expect(factorySpy.args[1][0]).to.equal("coll7");
+            expect(factorySpy.args[0][1]).to.have.property("sysObjectId", "id3");
+            expect(factorySpy.args[1][1]).to.have.property("sysObjectId", "id4");
+
+            expect(resultSpy.callCount).to.equal(1);
+            expect(resultSpy.args[0][0][0]).to.have.property("id", "id3");
+            expect(resultSpy.args[0][0][1]).to.have.property("id", "id4");
+            expect(resultSpy.args[0][0][0]).to.have.property("spy", true);
+            expect(resultSpy.args[0][0][1]).to.have.property("spy", true);
+        });
+
+        it("should work with search(collection, propertyValue, propertyNames)", function() {
+            appstax.search("coll8", "needle", ["haystack1", "haystack2"], {factory: factorySpy}).then(resultSpy);
+            respond({objects:[{sysObjectId: "id5"}, {sysObjectId: "id6"}]});
+
+            expect(factorySpy.callCount).to.equal(2);
+            expect(factorySpy.args[0][0]).to.equal("coll8");
+            expect(factorySpy.args[1][0]).to.equal("coll8");
+            expect(factorySpy.args[0][1]).to.have.property("sysObjectId", "id5");
+            expect(factorySpy.args[1][1]).to.have.property("sysObjectId", "id6");
+
+            expect(resultSpy.callCount).to.equal(1);
+            expect(resultSpy.args[0][0][0]).to.have.property("id", "id5");
+            expect(resultSpy.args[0][0][1]).to.have.property("id", "id6");
+            expect(resultSpy.args[0][0][0]).to.have.property("spy", true);
+            expect(resultSpy.args[0][0][1]).to.have.property("spy", true);
+        });
+
+        it("should work with expanded relations", function() {
+            factorySpy = sinon.spy(function(collectionName, properties, factory) {
+                var obj = appstax.object(collectionName, properties, factory);
+                obj.spy = true;
+                return obj;
+            });
+
+            appstax.find("coll1", "id1", {factory: factorySpy}).then(resultSpy);
+
+            respond({
+                sysObjectId: "id1",
+                prop1: {
+                    sysDatatype: "relation",
+                    sysRelationType: "single",
+                    sysCollection: "coll2",
+                    sysObjects: [{sysObjectId:"id2"}]
+                },
+                prop2: {
+                    sysDatatype: "relation",
+                    sysRelationType: "array",
+                    sysCollection: "coll3",
+                    sysObjects: [
+                        {sysObjectId:"id3"},
+                        {sysObjectId:"id4", prop3: {
+                            sysDatatype: "relation",
+                            sysRelationType: "single",
+                            sysCollection: "coll4",
+                            sysObjects: [{sysObjectId:"id5"}]
+                        }}]
+                }
+            });
+
+            expect(factorySpy.callCount).to.equal(5);
+            expect(factorySpy.args[0][0]).to.equal("coll1");
+            expect(factorySpy.args[1][0]).to.equal("coll2");
+            expect(factorySpy.args[2][0]).to.equal("coll3");
+            expect(factorySpy.args[3][0]).to.equal("coll3");
+            expect(factorySpy.args[4][0]).to.equal("coll4");
+            expect(factorySpy.args[0][1]).to.have.property("sysObjectId", "id1");
+            expect(factorySpy.args[1][1]).to.have.property("sysObjectId", "id2");
+            expect(factorySpy.args[2][1]).to.have.property("sysObjectId", "id3");
+            expect(factorySpy.args[3][1]).to.have.property("sysObjectId", "id4");
+            expect(factorySpy.args[4][1]).to.have.property("sysObjectId", "id5");
+
+            expect(resultSpy.callCount).to.equal(1);
+            expect(resultSpy.args[0][0]).to.have.property("id", "id1");
+            expect(resultSpy.args[0][0].prop1).to.have.property("id", "id2");
+            expect(resultSpy.args[0][0].prop2[0]).to.have.property("id", "id3");
+            expect(resultSpy.args[0][0].prop2[1]).to.have.property("id", "id4");
+            expect(resultSpy.args[0][0].prop2[1].prop3).to.have.property("id", "id5");
+
+            expect(resultSpy.args[0][0]).to.have.property("spy", true);
+            expect(resultSpy.args[0][0].prop1).to.have.property("spy", true);
+            expect(resultSpy.args[0][0].prop2[0]).to.have.property("spy", true);
+            expect(resultSpy.args[0][0].prop2[1]).to.have.property("spy", true);
+            expect(resultSpy.args[0][0].prop2[1].prop3).to.have.property("spy", true);
+        });
+
+    });
+
 });
 
 
