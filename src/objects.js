@@ -587,18 +587,10 @@ function createObjectsContext(apiClient, files, collections) {
     }
 
     function findAll(collectionName, options) {
-        var defer = Q.defer();
         var url = apiClient.url("/objects/:collection",
                                 {collection: collectionName},
                                 queryParametersFromQueryOptions(options));
-        apiClient.request("get", url)
-                 .then(function(result) {
-                     defer.resolve(createObjectsFromFindResult(collectionName, result));
-                 })
-                 .fail(function(error) {
-                     defer.reject(error);
-                 });
-        return defer.promise;
+        return sendFindRequest(url, collectionName);
     }
 
     function find(collectionName) {
@@ -619,33 +611,18 @@ function createObjectsContext(apiClient, files, collections) {
     }
 
     function findById(collectionName, id, options) {
-        var defer = Q.defer();
         var url = apiClient.url("/objects/:collection/:id",
                                 {collection: collectionName, id: id},
                                 queryParametersFromQueryOptions(options));
-        apiClient.request("get", url)
-                 .then(function(result) {
-                     defer.resolve(createObject(collectionName, result));
-                 })
-                 .fail(function(error) {
-                     defer.reject(error);
-                 });
-        return defer.promise;
+
+        return sendFindRequest(url, collectionName);
     }
 
     function findByQueryString(collectionName, queryString, options) {
-        var defer = Q.defer();
         var url = apiClient.url("/objects/:collection?filter=:queryString",
                                 {collection: collectionName, queryString: queryString},
                                 queryParametersFromQueryOptions(options));
-        apiClient.request("get", url)
-                 .then(function(result) {
-                     defer.resolve(createObjectsFromFindResult(collectionName, result));
-                 })
-                 .fail(function(error) {
-                     defer.reject(error);
-                 });
-        return defer.promise;
+        return sendFindRequest(url, collectionName);
     }
 
     function findByQueryObject(collectionName, queryObject, options) {
@@ -693,10 +670,23 @@ function createObjectsContext(apiClient, files, collections) {
         }, options);
     }
 
-    function createObjectsFromFindResult(collectionName, result) {
-        return result.objects.map(function(properties) {
-            return createObject(collectionName, properties);
-        });
+    function sendFindRequest(url, collectionName, options) {
+        var defer = Q.defer();
+        apiClient.request("get", url)
+                 .then(function(result) {
+                     if(Array.isArray(result.objects)) {
+                         var objects = result.objects.map(function(properties) {
+                             return createObject(collectionName, properties);
+                         });
+                         defer.resolve(objects);
+                     } else {
+                         defer.resolve(createObject(collectionName, result));
+                     }
+                 })
+                 .fail(function(error) {
+                     defer.reject(error);
+                 });
+        return defer.promise;
     }
 
     function createQuery(options) {
