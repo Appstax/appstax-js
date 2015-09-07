@@ -43,12 +43,12 @@ describe("User service", function() {
         _appstaxInit();
     }
 
-    it("should POST signup", function() {
+    it("should POST signup with login=false as default", function() {
         appstax.signup("frank", "secret");
 
         expect(requests).to.have.length(1);
         expect(requests[0].method).to.equal("POST");
-        expect(requests[0].url).to.equal("http://localhost:3000/users");
+        expect(requests[0].url).to.equal("http://localhost:3000/users?login=false");
         expect(requests[0].requestBody).to.exist;
         var data = JSON.parse(requests[0].requestBody);
         expect(data).to.have.property("sysUsername", "frank");
@@ -85,11 +85,12 @@ describe("User service", function() {
         });
     });
 
-    it("should set current user when signup succeeds", function() {
+    it("should set current user when signup succeeds with login=true", function() {
         expect(appstax.currentUser()).to.be.null;
 
-        var promise = appstax.signup("howard", "holy");
+        var promise = appstax.signup("howard", "holy", true);
 
+        expect(requests[0].url).to.equal("http://localhost:3000/users?login=true");
         requests[0].respond(200, {}, JSON.stringify({}));
         return promise.then(function(user) {
             expect(appstax.currentUser()).to.not.be.null;
@@ -99,9 +100,21 @@ describe("User service", function() {
         });
     });
 
+    it("should not set current user when signup succeeds if login=false", function() {
+        expect(appstax.currentUser()).to.be.null;
+
+        var promise = appstax.signup("howard", "holy", false);
+
+        expect(requests[0].url).to.equal("http://localhost:3000/users?login=false");
+        requests[0].respond(200, {}, JSON.stringify({}));
+        return promise.then(function(user) {
+            expect(appstax.currentUser()).to.be.null;
+        });
+    });
+
     it("should use session id from signup when it succeeds", function() {
         expect(apiClient.sessionId()).to.be.null;
-        var promise = appstax.signup("homer", "duff");
+        var promise = appstax.signup("homer", "duff", true);
 
         requests[0].respond(200, {}, JSON.stringify({sysSessionId:"the-session-id"}));
         return promise.then(function(user) {
@@ -112,7 +125,7 @@ describe("User service", function() {
     it("should store session id, username and user id on localstorage when signup succeeds", function() {
         expect(localStorage["appstax_session_" + appKey]).to.not.exist;
 
-        var promise = appstax.signup("homer", "duff");
+        var promise = appstax.signup("homer", "duff", true);
 
         requests[0].respond(200, {}, JSON.stringify({sysSessionId:"the-other-session-id", user:{sysObjectId:"userid"}}));
         return promise.then(function(user) {

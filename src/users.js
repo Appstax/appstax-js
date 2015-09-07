@@ -29,14 +29,25 @@ function createUsersContext(apiClient, objects) {
         return user;
     }
 
-    function signup(username, password, properties) {
+    function signup(username, password, arg3, arg4) {
         var defer = Q.defer();
-        var url = apiClient.url("/users");
+        var properties = {};
+        var login = false;
+        if(typeof arg3 == "boolean") {
+            login = arg3;
+        }
+        if(typeof arg3 == "object") {
+            properties = arg3;
+        }
+        var url = apiClient.url("/users", {}, {login:login});
         var data = extend({sysUsername:username, sysPassword:password}, properties);
         apiClient.request("post", url, data)
                  .then(function(result) {
-                     handleSignupOrLoginSuccess(username, result);
-                     defer.resolve(currentUser);
+                     var user = createUser(username, result.user);
+                     if(login) {
+                         user = handleSignupOrLoginSuccess(username, result);
+                     }
+                     defer.resolve(user);
                  })
                  .fail(function(error) {
                      defer.reject(error);
@@ -62,6 +73,7 @@ function createUsersContext(apiClient, objects) {
         var id = result.user ? result.user.sysObjectId : null;
         storeSession(result.sysSessionId, username, id);
         currentUser = createUser(username, result.user);
+        return currentUser;
     }
 
     function logout() {

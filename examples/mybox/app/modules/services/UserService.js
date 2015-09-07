@@ -2,7 +2,7 @@
 app.service("UserService", function($q, $modal) {
 
     this.signup = function(options) {
-        return $q.when(appstax.signup(options.email, options.password, {email:options.email, name:options.name}));
+        return $q.when(appstax.signup(options.email, options.password, true, {email:options.email, name:options.name}));
     }
 
     this.login = function(email, password) {

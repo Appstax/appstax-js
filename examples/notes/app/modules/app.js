@@ -22,8 +22,15 @@ app.controller("LoginCtl", function($scope, $rootScope, $timeout) {
 
     $scope.submit = function() {
         $scope.activity = true;
-        appstax[$scope.mode]($scope.username, $scope.password)
-               .then(function(user) {
+        
+        var promise;
+        if($scope.mode == "signup") {
+            promise = appstax.signup($scope.username, $scope.password, true)
+        } else {
+            promise = appstax.login($scope.username, $scope.password)
+        }
+        
+        promise.then(function(user) {
                    $timeout(function() {
                        $rootScope.loggedIn = true;
                        $scope.activity = false;
