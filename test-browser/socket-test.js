@@ -167,15 +167,63 @@ describe("Sockets", function() {
         ws.simulateConnectionError = true;
 
         var socket = appstax.apiClient.socket();
+        var errorEvent;
         socket.on("error", function(event) {
-            expect(event.type).to.equal("error");
-            done();
+            errorEvent = event;
+        });
+        socket.on("open", function(event) {
+            throw new Error("Should not trigger 'open' event");
         });
         socket.connect();
 
         setTimeout(function() {
             requests[0].respond(200, {}, JSON.stringify({realtimeSessionId: realtimeSessionId}));
         }, 20);
+
+        setTimeout(function() {
+            expect(errorEvent.type).to.equal("error");
+            done();
+        }, 200)
+    });
+
+    it("should trigger 'status' events throughout connection/reconnection lifecycle", function(done) {
+        var socket = appstax.apiClient.socket();
+        var statusSpy = sinon.spy();
+        socket.on("status", statusSpy);
+
+        expect(socket.status()).to.equal("disconnected");
+        expect(statusSpy.callCount).to.equal(0);
+
+        socket.connect();
+        expect(statusSpy.callCount).to.equal(1);
+        expect(statusSpy.args[0][0].type).to.equal("status");
+        expect(statusSpy.args[0][0].status).to.equal("connecting");
+        expect(socket.status()).to.equal("connecting");
+
+        setTimeout(function() {
+            requests[0].respond(200, {}, JSON.stringify({realtimeSessionId: realtimeSessionId}));
+        }, 20);
+
+        setTimeout(function() {
+            expect(statusSpy.callCount).to.equal(2);
+            expect(statusSpy.args[1][0].status).to.equal("connected");
+            expect(socket.status()).to.equal("connected");
+            ws.server.close();
+
+            setTimeout(function() {
+                expect(statusSpy.callCount).to.equal(3);
+                expect(statusSpy.args[2][0].status).to.equal("disconnected");
+                expect(socket.status()).to.equal("disconnected");
+            }, 10);
+        }, 250);
+
+        setTimeout(function() {
+            expect(statusSpy.callCount).to.equal(5);
+            expect(statusSpy.args[3][0].status).to.equal("connecting");
+            expect(statusSpy.args[4][0].status).to.equal("connected");
+            expect(socket.status()).to.equal("connected");
+            done();
+        }, 1000);
     });
 
 });

@@ -10,16 +10,19 @@ function createSocket(apiClient) {
     var realtimeSessionId = "";
     var webSocket = null;
     var connectionIntervalId = null;
+    var status = "disconnected";
     var handlers = {
         open: [],
         message: [],
         error: [],
-        close: []
+        close: [],
+        status: []
     };
 
     return {
         connect: connect,
         disconnect: disconnect,
+        status: function() { return status },
         send: send,
         on: on
     }
@@ -56,6 +59,7 @@ function createSocket(apiClient) {
     function disconnect() {
         clearInterval(connectionIntervalId);
         webSocket && webSocket.close();
+        realtimeSessionPromise = null;
     }
 
     function connect() {
@@ -65,6 +69,7 @@ function createSocket(apiClient) {
         if(!connectionIntervalId) {
             connectionIntervalId = setInterval(function() {
                 if(!webSocket || webSocket.readyState > 1) {
+                    setStatus("connecting");
                     realtimeSessionPromise.then(connectSocket);
                 }
             }, 100);
@@ -72,6 +77,7 @@ function createSocket(apiClient) {
     }
 
     function connectSession() {
+        setStatus("connecting");
         var defer = Q.defer();
         realtimeSessionPromise = defer.promise;
         var url = apiClient.url("/messaging/realtime/sessions");
@@ -105,8 +111,9 @@ function createSocket(apiClient) {
     }
 
     function handleSocketOpen(event) {
-        sendQueue();
         notifyHandlers("open", event);
+        setStatus("connected");
+        sendQueue();
     }
 
     function handleSocketError(event) {
@@ -119,12 +126,24 @@ function createSocket(apiClient) {
 
     function handleSocketClose(event) {
         notifyHandlers("close", event);
+        setStatus("disconnected");
     }
 
     function notifyHandlers(eventName, event) {
         handlers[eventName].forEach(function(handler) {
             handler(event);
         });
+    }
+
+    function setStatus(newStatus) {
+        var oldStatus = status;
+        status = newStatus;
+        if(newStatus != oldStatus) {
+            notifyHandlers("status", {
+                type: "status",
+                status: status
+            });
+        }
     }
 
 }
