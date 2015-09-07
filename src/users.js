@@ -38,6 +38,8 @@ function createUsersContext(apiClient, objects) {
         }
         if(typeof arg3 == "object") {
             properties = arg3;
+        } else if(typeof arg4 == "object") {
+            properties = arg4;
         }
         var url = apiClient.url("/users", {}, {login:login});
         var data = extend({sysUsername:username, sysPassword:password}, properties);

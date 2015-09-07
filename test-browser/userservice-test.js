@@ -65,6 +65,17 @@ describe("User service", function() {
         expect(data).to.have.property("fullname", "Donald Duck");
     });
 
+    it("should POST extra properties with signup also when login is specified", function() {
+        appstax.signup("donald", "quack", false, {fullname:"Donald Duck"});
+
+        expect(requests[0].url).to.equal("http://localhost:3000/users?login=false");
+        expect(requests[0].requestBody).to.exist;
+        var data = JSON.parse(requests[0].requestBody);
+        expect(data).to.have.property("sysUsername", "donald");
+        expect(data).to.have.property("sysPassword", "quack");
+        expect(data).to.have.property("fullname", "Donald Duck");
+    });
+
     it("should fulfill promise with user object when signup succeeds", function() {
         var promise = appstax.signup("fred", "holy");
 
