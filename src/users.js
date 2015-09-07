@@ -32,7 +32,7 @@ function createUsersContext(apiClient, objects) {
     function signup(username, password, arg3, arg4) {
         var defer = Q.defer();
         var properties = {};
-        var login = false;
+        var login = true;
         if(typeof arg3 == "boolean") {
             login = arg3;
         }

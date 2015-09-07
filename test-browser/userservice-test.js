@@ -43,12 +43,12 @@ describe("User service", function() {
         _appstaxInit();
     }
 
-    it("should POST signup with login=false as default", function() {
+    it("should POST signup with login=true as default", function() {
         appstax.signup("frank", "secret");
 
         expect(requests).to.have.length(1);
         expect(requests[0].method).to.equal("POST");
-        expect(requests[0].url).to.equal("http://localhost:3000/users?login=false");
+        expect(requests[0].url).to.equal("http://localhost:3000/users?login=true");
         expect(requests[0].requestBody).to.exist;
         var data = JSON.parse(requests[0].requestBody);
         expect(data).to.have.property("sysUsername", "frank");

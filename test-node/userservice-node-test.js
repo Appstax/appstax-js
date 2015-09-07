@@ -25,7 +25,7 @@ describe("User service under node.js", function() {
 
     it("should POST signup", function() {
         var mock = nock("http://localhost:3000/")
-                    .post("/api/latest/users?login=false", {sysUsername:"frank", sysPassword:"secret"}).reply(200, {})
+                    .post("/api/latest/users?login=true", {sysUsername:"frank", sysPassword:"secret"}).reply(200, {})
 
         return appstax.signup("frank", "secret")
             .then(function() {
