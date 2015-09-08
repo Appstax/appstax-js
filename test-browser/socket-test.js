@@ -3,15 +3,15 @@
 var appstax = require("../src/appstax");
 var sinon = require("sinon");
 var Q = require("kew");
-require("mock-socket/src/main");
+var wsmock = require("./lib/wsmock");
 
 describe("Sockets", function() {
 
     var xhr, requests;
-    var socketServer;
     var nextSession = 1;
     var realtimeSessionId;
     var socketUrl;
+    var ws;
 
     beforeEach(function() {
         appstax.init({appKey:"sockettestapikey", baseUrl: "http://localhost:3000/api/latest", log:false});
@@ -22,19 +22,20 @@ describe("Sockets", function() {
         };
         realtimeSessionId = "rs-" + (nextSession++);
         socketUrl = "ws://localhost:3000/api/latest/messaging/realtime?rsession=" + realtimeSessionId;
-        socketServer = new MockServer(socketUrl);
-        window.WebSocket = MockSocket;
+        ws = wsmock(socketUrl);
     });
 
     afterEach(function() {
         xhr.restore();
+        ws.restore();
+        appstax.apiClient.socket().disconnect();
     });
 
-    it("should verify mock-socket works", function(done) {
+    it("should verify wsmock works", function(done) {
         var socketOpen = false;
         var serverReceived = undefined;
 
-        socketServer.on("connection", function(server) {
+        ws.server.on("connection", function(server) {
             server.on("message", function(data) {
                 serverReceived = data;
                 server.send("hello");
@@ -70,10 +71,8 @@ describe("Sockets", function() {
 
     it("should auto-connect on send and queue messages while connecting", function(done) {
         var serverReceived = [];
-        socketServer.on("connection", function(server) {
-            server.on("message", function(data) {
-                serverReceived.push(data);
-            });
+        ws.server.on("message", function(data) {
+            serverReceived.push(data);
         });
 
         var socket = appstax.apiClient.socket();
@@ -91,7 +90,7 @@ describe("Sockets", function() {
     });
 
     it("should receive socket messages", function(done) {
-        socketServer.on("connection", function(server) {
+        ws.server.on("connection", function(server) {
             server.send("foo");
             server.send({foo:"bar"});
         });
@@ -115,17 +114,18 @@ describe("Sockets", function() {
     it("should queue messages and reconnect when connection is closed", function(done) {
         var serverReceived = [];
         var serverConnected = false;
-        socketServer.on("connection", function(server) {
+        ws.server.on("connection", function(server) {
             serverConnected = true;
-            server.on("message", function(data) {
-                if(serverConnected) {
-                    serverReceived.push(data);
-                }
-            });
+
             setTimeout(function() {
                 serverConnected = false;
                 server.close();
-            }, 60);
+            }, 40);
+        });
+        ws.server.on("message", function(data) {
+            if(serverConnected) {
+                serverReceived.push(data);
+            }
         });
 
         var socket = appstax.apiClient.socket();
@@ -135,7 +135,7 @@ describe("Sockets", function() {
             if(++sendCounter > 30) {
                 clearInterval(sendIntervalId);
             }
-        }, 10);
+        }, 5);
 
         setTimeout(function() {
             requests[0].respond(200, {}, JSON.stringify({realtimeSessionId: realtimeSessionId}));
@@ -143,7 +143,9 @@ describe("Sockets", function() {
 
         setTimeout(function() {
             expect(serverReceived.length).to.be.greaterThan(20);
+            expect(serverReceived.length).to.be.lessThan(30);
             expect(serverReceived[serverReceived.length - 1]).to.equal("message30");
+            expect(serverReceived[serverReceived.length - 2]).to.not.equal("message30");
             expect(requests.length).to.equal(1);
             done();
         }, 500);
@@ -161,20 +163,20 @@ describe("Sockets", function() {
         requests[0].respond(422, {}, JSON.stringify({errorMessage:"Oh no!"}));
     });
 
-    // it("should trigger 'error' event when there is an error with initial websocket request", function(done) {
-    //     delete window.MockSocket.services[socketUrl];
+    it("should trigger 'error' event when there is an error with initial websocket request", function(done) {
+        ws.simulateConnectionError = true;
 
-    //     var socket = appstax.apiClient.socket();
-    //     socket.on("error", function(event) {
-    //         expect(event.type).to.equal("error");
-    //         done();
-    //     });
-    //     socket.connect();
+        var socket = appstax.apiClient.socket();
+        socket.on("error", function(event) {
+            expect(event.type).to.equal("error");
+            done();
+        });
+        socket.connect();
 
-    //     setTimeout(function() {
-    //         requests[0].respond(200, {}, JSON.stringify({realtimeSessionId: realtimeSessionId}));
-    //     }, 20);
-    // });
+        setTimeout(function() {
+            requests[0].respond(200, {}, JSON.stringify({realtimeSessionId: realtimeSessionId}));
+        }, 20);
+    });
 
 });
 

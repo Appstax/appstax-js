@@ -19,6 +19,7 @@ function createSocket(apiClient) {
 
     return {
         connect: connect,
+        disconnect: disconnect,
         send: send,
         on: on
     }
@@ -50,6 +51,11 @@ function createSocket(apiClient) {
 
     function on(event, handler) {
         handlers[event].push(handler);
+    }
+
+    function disconnect() {
+        clearInterval(connectionIntervalId);
+        webSocket && webSocket.close();
     }
 
     function connect() {

@@ -2,18 +2,17 @@
 
 var appstax = require("../src/appstax");
 var sinon = require("sinon");
-require("mock-socket/src/main");
+var wsmock = require("./lib/wsmock");
 
 describe("Channels", function() {
 
     var xhr, requests;
     var httpServer;
-    var wsServer;
     var nextSession = 1000;
     var realtimeSessionId;
     var socketUrl;
     var serverReceived;
-    var serverSend;
+    var ws;
 
     beforeEach(function() {
         appstax.init({appKey:"channeltestapikey", baseUrl: "http://localhost:3000/api/latest", log:false});
@@ -26,22 +25,18 @@ describe("Channels", function() {
         httpServer.respondWith("POST", "http://localhost:3000/api/latest/messaging/realtime/sessions", [200, {}, JSON.stringify({realtimeSessionId: realtimeSessionId})]);
         httpServer.autoRespond = true;
 
-        wsServer = new MockServer(socketUrl);
-        wsServer.on("connection", function(server) {
-            server.on("message", function(jsonData) {
-                var data = JSON.parse(jsonData);
-                serverReceived.push(data);
-            });
-            serverSend = function(packet) {
-                server.send(packet);
-            }
-        });
         serverReceived = [];
-        window.WebSocket = MockSocket;
+        ws = wsmock(socketUrl);
+        ws.server.on("message", function(jsonData) {
+            var data = JSON.parse(jsonData);
+            serverReceived.push(data);
+        });
     });
 
     afterEach(function() {
+        ws.restore();
         httpServer.restore();
+        appstax.apiClient.socket().disconnect();
     });
 
     it("should send 'subscribe' command to server and 'open' event to client", function(done) {
@@ -56,16 +51,26 @@ describe("Channels", function() {
         });
     });
 
-    // it("should send 'error' event to client when connection fails", function(done) {
-    //     delete window.MockSocket.services[socketUrl];
+    it("should send 'error' event to client when connection fails", function(done) {
+        ws.simulateConnectionError = true;
 
-    //     var chat = appstax.channel("public/chat");
-    //     chat.on("error", function(event) {
-    //         expect(event.type).to.equal("error");
-    //         expect(event.error.message).to.equal("Error connecting to realtime service");
-    //         done();
-    //     });
-    // });
+        var errorEvent;
+        var chat = appstax.channel("public/chat");
+        chat.on("error", function(event) {
+            errorEvent = event;
+        });
+
+        chat.on("open", function(event) {
+            throw new Error("Should not dispatch 'open' event");
+        });
+
+        setTimeout(function() {
+            expect(errorEvent).to.exist;
+            expect(errorEvent.type).to.equal("error");
+            expect(errorEvent.error.message).to.equal("Error connecting to realtime service");
+            done();
+        }, 1000);
+    });
 
     it("should publish messages with id to server", function(done) {
         var chat = appstax.channel("public/chat");
@@ -108,10 +113,10 @@ describe("Channels", function() {
         stocks.on("error", stocksHandler);
 
         setTimeout(function() {
-            serverSend(JSON.stringify({channel: "public/chat",   event: "message", message: "Hello World!"}));
-            serverSend(JSON.stringify({channel: "public/chat",   event: "error",   error: "Bad dog!"}));
-            serverSend(JSON.stringify({channel: "public/stocks", event: "message", message: {"AAPL": "127.61"}}));
-            serverSend(JSON.stringify({channel: "public/stocks", event: "error",   error: "Bad stock!"}));
+            ws.server.send(JSON.stringify({channel: "public/chat",   event: "message", message: "Hello World!"}));
+            ws.server.send(JSON.stringify({channel: "public/chat",   event: "error",   error: "Bad dog!"}));
+            ws.server.send(JSON.stringify({channel: "public/stocks", event: "message", message: {"AAPL": "127.61"}}));
+            ws.server.send(JSON.stringify({channel: "public/stocks", event: "error",   error: "Bad stock!"}));
 
             setTimeout(function() {
                 expect(chatReceived.length).to.equal(2);
@@ -144,10 +149,10 @@ describe("Channels", function() {
         bw.on("message", function(event) { received.bw.push(event.message) });
 
         setTimeout(function() {
-            serverSend(JSON.stringify({channel: "public/a/1", event: "message", message: "A1"}));
-            serverSend(JSON.stringify({channel: "public/a/2", event: "message", message: "A2"}));
-            serverSend(JSON.stringify({channel: "public/b/1", event: "message", message: "B1"}));
-            serverSend(JSON.stringify({channel: "public/b/2", event: "message", message: "B2"}));
+            ws.server.send(JSON.stringify({channel: "public/a/1", event: "message", message: "A1"}));
+            ws.server.send(JSON.stringify({channel: "public/a/2", event: "message", message: "A2"}));
+            ws.server.send(JSON.stringify({channel: "public/b/1", event: "message", message: "B1"}));
+            ws.server.send(JSON.stringify({channel: "public/b/2", event: "message", message: "B2"}));
 
             setTimeout(function() {
                 expect(received.a1.length).to.equal(1);
@@ -179,10 +184,10 @@ describe("Channels", function() {
         bw.on("*", function(event) { received.bw.push(event) });
 
         setTimeout(function() {
-            serverSend(JSON.stringify({channel: "public/a/1", event: "foo", foo1: "foo2"}));
-            serverSend(JSON.stringify({channel: "public/a/2", event: "bar", bar1: "bar2"}));
-            serverSend(JSON.stringify({channel: "public/b/1", event: "baz", baz1: "baz2"}));
-            serverSend(JSON.stringify({channel: "public/b/2", event: "gaz", gaz1: "gaz2"}));
+            ws.server.send(JSON.stringify({channel: "public/a/1", event: "foo", foo1: "foo2"}));
+            ws.server.send(JSON.stringify({channel: "public/a/2", event: "bar", bar1: "bar2"}));
+            ws.server.send(JSON.stringify({channel: "public/b/1", event: "baz", baz1: "baz2"}));
+            ws.server.send(JSON.stringify({channel: "public/b/2", event: "gaz", gaz1: "gaz2"}));
 
             setTimeout(function() {
                 expect(received.a1[0].type).to.equal("open");
@@ -319,17 +324,17 @@ describe("Channels", function() {
         ch.on("object.deleted", function(event) { receivedObjects.push(event.object) });
 
         setTimeout(function() {
-            serverSend(JSON.stringify({
+            ws.server.send(JSON.stringify({
                 channel: "objects/mycollection",
                 event: "object.created",
                 data: { sysObjectId: "id1", prop1: "value1" }
             }));
-            serverSend(JSON.stringify({
+            ws.server.send(JSON.stringify({
                 channel: "objects/mycollection",
                 event: "object.updated",
                 data: { sysObjectId: "id2", prop2: "value2" }
             }));
-            serverSend(JSON.stringify({
+            ws.server.send(JSON.stringify({
                 channel: "objects/mycollection",
                 event: "object.deleted",
                 data: { sysObjectId: "id3", prop3: "value3" }
