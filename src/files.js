@@ -5,7 +5,6 @@ var extend    = require("extend");
 module.exports = createFilesContext;
 
 function createFilesContext(apiClient) {
-    var internalFiles = [];
 
     return {
         create: createFile,
@@ -38,6 +37,7 @@ function createFilesContext(apiClient) {
             Object.defineProperty(file, "url", { get: function() { return internal.url; }, enumerable:true });
             Object.defineProperty(file, "preview", { value: function() { return previewFile(internal); }});
             Object.defineProperty(file, "imageUrl", { value: function(operation, options) { return imageUrl(internal, operation, options); }});
+            Object.defineProperty(file, "internalFile", { value: internal, enumerable: false, writable: false });
         } else {
             throw new Error("Invalid file options");
         }
@@ -52,7 +52,6 @@ function createFilesContext(apiClient) {
             url: options.url || "",
             status: "new"
         }
-        internalFiles.push(internal);
         return internal;
     }
 
@@ -79,18 +78,9 @@ function createFilesContext(apiClient) {
         return internalFile.url.replace("/files/", "/images/" + operation + "/" + o.width + "/" + o.height + "/");
     }
 
-    function getInternalFile(file) {
-        for(var i = 0; i < internalFiles.length; i++) {
-            if(internalFiles[i].file == file) {
-                return internalFiles[i];
-            }
-        }
-        return null;
-    }
-
     function saveFile(collectionName, objectId, propertyName, file) {
         var defer = Q.defer();
-        var internal = getInternalFile(file);
+        var internal = file.internalFile;
         internal.status = "saving";
         var url = urlForFile(collectionName, objectId, propertyName, file.filename);
         var data = new FormData();
@@ -125,7 +115,7 @@ function createFilesContext(apiClient) {
 
     function getNativeFile(file) {
         var nativeFile = null;
-        var internal = getInternalFile(file);
+        var internal = file.internalFile;
         if(internal != null) {
             nativeFile = internal.nativeFile;
         }
@@ -133,18 +123,18 @@ function createFilesContext(apiClient) {
     }
 
     function isFile(file) {
-        return getInternalFile(file) != null;
+        return file != null && file != undefined && file.internalFile != null;
     }
 
     function fileStatus(file, status) {
         if(typeof status === "string") {
-            getInternalFile(file).status = status;
+            file.internalFile.status = status;
         }
-        return getInternalFile(file).status;
+        return file.internalFile.status;
     }
 
     function setUrl(file, url) {
-        var internal = getInternalFile(file);
+        var internal = file.internalFile;
         if(internal) {
             internal.url = url;
         }
