@@ -42,10 +42,6 @@ describe("Appstax", function() {
         expect(app2.apiClient.baseUrl()).to.equal("http://server2/api/");
         expect(app1.apiClient.sessionId()).to.equal("session1");
         expect(app2.apiClient.sessionId()).to.equal("session2");
-        expect(app1.status(object1)).to.equal("saved");
-        expect(app1.status(object2)).to.equal(undefined);
-        expect(app2.status(object1)).to.equal(undefined);
-        expect(app2.status(object2)).to.equal("saved");
     });
 
 

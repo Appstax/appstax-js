@@ -11,8 +11,7 @@ var nextContextId = 0;
 
 function createObjectsContext(apiClient, files, collections) {
     var contextId = nextContextId++;
-    var internalIds = [];
-    var internalObjects = {};
+    var internalIds = 0;
 
     var prototype = {
         save: function() {
@@ -38,7 +37,7 @@ function createObjectsContext(apiClient, files, collections) {
             if(typeof usernames === "string") {
                 usernames = [usernames];
             }
-            var internal = getInternalObject(this);
+            var internal = this.internalObject;
             usernames.forEach(function(username) {
                 internal.grants.push({
                     username: username,
@@ -50,7 +49,7 @@ function createObjectsContext(apiClient, files, collections) {
             if(typeof usernames === "string") {
                 usernames = [usernames];
             }
-            var internal = getInternalObject(this);
+            var internal = this.internalObject;
             usernames.forEach(function(username) {
                 internal.revokes.push({
                     username: username,
@@ -85,6 +84,7 @@ function createObjectsContext(apiClient, files, collections) {
         var object = Object.create(prototype);
         Object.defineProperty(object, "id", { get: function() { return internal.id; }, enumerable:true });
         Object.defineProperty(object, "internalId", { writable: false, value: internal.internalId, enumerable:true });
+        Object.defineProperty(object, "internalObject", { writable: false, value: internal, enumerable: false });
         Object.defineProperty(object, "collectionName", { get: function() { return internal.collectionName; }, enumerable:true });
         Object.defineProperty(object, "created", { get: function() { return internal.created; }, enumerable:true });
         Object.defineProperty(object, "updated", { get: function() { return internal.updated; }, enumerable:true });
@@ -103,7 +103,7 @@ function createObjectsContext(apiClient, files, collections) {
     }
 
     function fillObjectWithValues(object, properties, factory) {
-        var internal = getInternalObject(object);
+        var internal = object.internalObject;
         var filteredProperties = {};
         if(typeof properties === "object") {
             var sysValues = internal.sysValues;
@@ -181,17 +181,12 @@ function createObjectsContext(apiClient, files, collections) {
             setId: function(id) { if(id) { this.id = id; }},
             resetPermissions: function() { this.grants = []; this.revokes = []; }
         }
-        internalObjects[object.internalId] = object;
         return object;
-    }
-
-    function getInternalObject(object) {
-        return internalObjects[object.internalId];
     }
 
     function refreshObject(object) {
         var defer = Q.defer();
-        var internal = getInternalObject(object);
+        var internal = object.internalObject;
         if(internal.status === "new") {
             defer.resolve(object);
         } else {
@@ -210,7 +205,7 @@ function createObjectsContext(apiClient, files, collections) {
     }
 
     function saveObject(object, defer) {
-        var internal = getInternalObject(object)
+        var internal = object.internalObject
         var defer = typeof defer == "object" ? defer : Q.defer();
         if(internal.status === "saving") {
             setTimeout(function() {
@@ -271,7 +266,7 @@ function createObjectsContext(apiClient, files, collections) {
             depth = options;
         }
         findById(object.collectionName, object.id, {expand:depth}).then(function(expanded) {
-            var internal = getInternalObject(object);
+            var internal = object.internalObject;
             var relations = Object.keys(internal.relations);
             relations.forEach(function(relation) {
                 object[relation] = expanded[relation];
@@ -310,7 +305,7 @@ function createObjectsContext(apiClient, files, collections) {
     function savePermissionChanges(object) {
         var defer = Q.defer();
         var url = apiClient.url("/permissions");
-        var internal = getInternalObject(object);
+        var internal = object.internalObject;
         var grants = internal.grants.map(_convertChange);
         var revokes = internal.revokes.map(_convertChange);
         internal.resetPermissions();
@@ -410,7 +405,7 @@ function createObjectsContext(apiClient, files, collections) {
 
     function getRelatedObjects(object) {
         var related = [];
-        var internal = getInternalObject(object);
+        var internal = object.internalObject;
         Object.keys(internal.relations).forEach(function(key) {
             var property = object[key];
             if(property == null) {
@@ -422,7 +417,7 @@ function createObjectsContext(apiClient, files, collections) {
     }
 
     function getRelationChanges(object, propertyName) {
-        var internal = getInternalObject(object);
+        var internal = object.internalObject;
         var relation = internal.relations[propertyName];
         var changes = {
             additions: [],
@@ -449,7 +444,7 @@ function createObjectsContext(apiClient, files, collections) {
     }
 
     function applyRelationChanges(object, savedData) {
-        var internal = getInternalObject(object);
+        var internal = object.internalObject;
         Object.keys(internal.relations).forEach(function(key) {
             var relation = internal.relations[key];
             var changes = savedData[key].sysRelationChanges;
@@ -463,7 +458,7 @@ function createObjectsContext(apiClient, files, collections) {
 
     function detectUndeclaredRelations(object) {
         var collection = collections.get(object.collectionName);
-        var relations = getInternalObject(object).relations;
+        var relations = object.internalObject.relations;
 
         var properties = getProperties(object);
         Object.keys(properties).forEach(function(key) {
@@ -508,7 +503,7 @@ function createObjectsContext(apiClient, files, collections) {
                 data[key] = object[key];
             }
         });
-        var sysValues = getInternalObject(object).sysValues;
+        var sysValues = object.internalObject.sysValues;
         Object.keys(sysValues).forEach(function(key) {
             if(internalProperties.indexOf(key) == -1) {
                 data[key] = sysValues[key];
@@ -539,7 +534,7 @@ function createObjectsContext(apiClient, files, collections) {
     }
 
     function getPropertiesForSaving(object) {
-        var internal = getInternalObject(object);
+        var internal = object.internalObject;
         var properties = getProperties(object);
         Object.keys(properties).forEach(function(key) {
             var property = properties[key];
@@ -570,8 +565,8 @@ function createObjectsContext(apiClient, files, collections) {
     }
 
     function createInternalId() {
-        var id = "internal-id-" + contextId + "-" + internalIds.length;
-        internalIds.push(id);
+        var id = "internal-id-" + contextId + "-" + internalIds;
+        internalIds++;
         return id;
     }
 
@@ -695,7 +690,7 @@ function createObjectsContext(apiClient, files, collections) {
     }
 
     function getObjectStatus(object) {
-        var internal = getInternalObject(object);
+        var internal = object.internalObject;
         return internal ? internal.status : undefined;
     }
 
