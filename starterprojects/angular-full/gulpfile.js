@@ -62,6 +62,11 @@ gulp.task('assets', function(){
 		.pipe(gulp.dest('public/styles'));
 });
 
+gulp.task('fonts', function(){
+    gulp.src('app/fonts/*')
+        .pipe(gulp.dest('public/fonts'));
+});
+
 //Starts the web server and watch for changes
 gulp.task('server', function() {
   connect.server({
@@ -87,6 +92,6 @@ gulp.task('livereload', function() {
 
 
 // Default Task
-gulp.task('default', ['js', 'js-vendor', 'html',  'sass', 'css', 'img', 'assets']);
+gulp.task('default', ['js', 'js-vendor', 'html',  'sass', 'css', 'img', 'assets', 'fonts']);
 
 gulp.task('serve', ['default','server', 'livereload', 'watch']);

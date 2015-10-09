@@ -6,18 +6,48 @@ $yellow: #FFC30D;
 $green: #65C873;
 $purple: rgb(143,131,202);
 
+$TURQUOISE_LIGHT:#1ABC9C;
+$TURQUOISE_DARK: #16A085;
+
+$GREEN_LIGHT:#2ECC71;
+$GREEN_DARK:#27AE60;
+
+$BLUE_LIGHT:#3498DB;
+$BLUE_DARK:#2980B9;
+
+$APSPHALT_LIGHT:#34495E;
+$APSPHALT_DARK:#2C3E50;
+
+$CLOUDS:#ECF0F1;
+$SILVER: #BDC3C7;
+
+$RED_LIGHT:#E74C3C;
+$RED_DARK:#C0392B;
+
+$ORANGE_LIGHT: #E67E22;
+$ORANGE_DARK: #D35400;
+
+$YELLOW_LIGHT: #F1C40F;
+$YELLOW_DARK: #F39C12;
+
+$PURPLE_LIGHT: #9B59B6;
+$PURPLE_DARK: #8E44AD;
+
+$GREY_LIGHT:#95A5A6;
+$GREY_DARK:#7F8C8D;
+
 #app {
 	.navbar-custom {
-		background:$brand-color;
+		background:$CLOUDS;
 		a {
-			color: #fff;
+			color: darken($CLOUDS,70%);
 		}
 	}
 	.btn{
 		margin-top: 7px;
 		margin-left: 10px;
 		background-color:transparent;
-		color: #fff;
+		
 	}
 
 	.dropdown {		
@@ -25,41 +55,29 @@ $purple: rgb(143,131,202);
 			color: $blue;
 		}
 		i {
-			color:#555;
+			font-size: 18px;
+			color: darken($CLOUDS,70%);
 		}
 	}
 	.dropdown-toggle, button {				
 		i {
 			color:#fff;
+			color: darken($CLOUDS,70%);
+		}		
+	}
+	.dropdown-menu {
+		a {
+			color: $APSPHALT_DARK !important;
 		}
 	}
 	
 }
 
-#hero {
+#hero {	
 	padding-top:300px;
 	padding-bottom:300px;
 }
 
-#section3 {
-	padding-top:50px;
-	background:$blue;
-	padding-bottom:300px;
-	color:#fff;
-	h1 {
-		color:#fff;
-	}
-}
-
-#section4 {
-	padding-top:50px;
-	background:$green;
-	padding-bottom:300px;
-	color:#fff;
-	h1 {
-		color:#fff;
-	}
-}
 
 input {
 
@@ -77,6 +95,8 @@ input[type="email"], input[type="password"] {
     /* Then Style */
     border-radius: 3px;
     padding: 10px;
+    
+    
     line-height: 20px;    
     background: transparent;      
     box-shadow:none !important;
@@ -85,50 +105,67 @@ input[type="email"], input[type="password"] {
 
 #form {
 	height:100vh;
-	background: url(../images/hero.jpg) no-repeat center center fixed; 
-	  -webkit-background-size: cover;
-	  -moz-background-size: cover;
-	  -o-background-size: cover;
-	  background-size: cover;
+	background:#fff;
+	
+    
+
+    h2 {
+    	padding:0;
+    }
 
 	.form-wrapper {
-		padding-bottom: 50px;
-		margin:0 auto;
+		padding-bottom: 50px;		
+		margin:0 auto;		
 		max-width: 400px;
 		margin-top: 20%;		
 		background: transparent;
-
 	}
 
 	.panel {
-		border-color:$brand-color;
-		background:transparent;
+		border-color:darken($CLOUDS,5%);
+		background:transparent;		
 	}
 
 	.panel-heading {
-		color:#eee;
+		color:$GREY_DARK;
 		border-color:#eee;
-		background:transparent;
-		background:rgba(10,10,10, .5);
+		background:$CLOUDS;
+		
 	}
 	.panel-body {
 		padding-top:50px;
 		padding-bottom:50px;		
-		background:rgba(250,250,250, 0.9);
+		background:#fff;
+		padding-left:40px;
+		padding-right:40px;
 	}
 	.panel-footer {
 		border-color:#eee;
 		padding-top:20px;
 		padding-bottom:20px;
-		background:$brand-color;
-		.btn-default {
-			height: 35px !important;
-		}
+		background:$CLOUDS;
+		padding-left:40px;
+		padding-right:40px;
 	}
 
 	label {
-		font-size: 18px;
-		font-weight: 400;
+		font-size: 14px;
+		font-weight: 600;
 		color: #333;
+		margin-bottom: 10px;
 	}
+
+	p {
+		font-size: 14px;
+	}
+.btn-success { 
+  background:$red;
+  border-color: $red;
+  color :#fff;
+}
+
+.btn-success:hover {
+  background:rgba($red,.8);
+  border-color:$red;
+}
 }

@@ -1,6 +1,6 @@
-<section id="form">
+<div id="form">
   <div class="container ">	  
-		<div class="form-wrapper animated slideInDown">			  	
+		<div class="form-wrapper">			  	
 		  	<form name="loginForm" novalidate ng-controller="UserCtrl">
 		  		<div class="panel panel-default">
 		  		<div class="panel-heading"><h2 class="text-center">Log in to {{conf.siteName}}</h2></div>
@@ -9,25 +9,24 @@
 		  		<!-- EMAIL -->
 			  		<label>Your email:</label>
 			  		<div class="form-group" ng-class="{'has-error' : loginForm.email.$invalid && !loginForm.email.$pristine }">
-			  			<input focus-me="{{true}}" class="form-control input-lg" type="email" name="email" ng-model="email" ng-focus="email=''" placeholder="your username" reqired autofocus="autofocus">	
+			  			<input focus-me="{{true}}" class="form-control" type="email" name="email" ng-model="email"  placeholder="your username" reqired autofocus="autofocus">	
 			  			<p class ="help-block" ng-show="loginForm.email.$invalid && !loginForm.email.$pristine">Please enter a valid email address</p>
 			  		</div>
 
 			  		<!-- PASSWORD -->
 			  		<label>Enter a password:</label>
 			  		<div class="form-group">
-			  			<input class="form-control input-lg" type="password" name="password" ng-model="password" ng-focus="password=''" required placeholder="*******">	
-			  			
-			  		</div>
+			  			<input class="form-control" type="password" name="password" ng-model="password"  required placeholder="*******">				  			
+			  		</div>			  		
 		  		</div><!-- End panel body-->
 
 		  		<div class="panel-footer">
 			  			<!-- SUBMIT BUTTON -->
-			  		<button ng-click="login()" type="submit" class="btn btn-success" ng-disabled="loginForm.$invalid">
-			  		<i class="fa fa-arrow-circle-right"></i>&nbsp&nbspLog in
+			  		<button ng-click="login()" type="submit" class="btn btn-sm btn-success" ng-disabled="loginForm.$invalid">
+			  		<i class="ion-ios-arrow-forward"></i>&nbsp&nbspLog in
 			  		</button>
 			  		<!-- CANCEL BUTTON -->
-			  		<button ng-click="cancel()" type="submit" class="btn btn-default" style="height:40px">
+			  		<button ng-click="cancel()" type="submit" class="btn btn-sm btn-default">
 			  		Cancel
 			  		</button>
 		  		</div>
@@ -36,6 +35,6 @@
 		  	<div ng-show="error" class="alert alert-danger" style="margin-top:10px">{{message}}</div>
 	  	</div><!-- LOGIN WRAPPER-->
   </div><!-- END CONTAINER -->
-</section>
+</div>
 
 <ui-view></ui-view>

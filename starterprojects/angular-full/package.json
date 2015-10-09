@@ -15,9 +15,8 @@
     "gulp-concat": "^2.3.4",
     "gulp-clean": "^0.3.1",
     "gulp-connect": "^2.0.6",
-    "gulp-watch": "^0.6.9",                
-    "gulp-ruby-sass": "^0.7.1",
-    "gulp-sass": "^0.7.3",
+    "gulp-watch": "^0.6.9",                    
+    "gulp-sass": "latest",
     "proxy-middleware": "^0.5.0"        
   }
 }

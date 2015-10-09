@@ -1,12 +1,13 @@
 'use strict';
 
-angular.module('MyApp').controller('UserCtrl', function ($log, $scope, $state, conf) {
+angular.module('MyApp').controller('UserCtrl', function ($log, $scope, $state, conf, $timeout) {
    $log.debug('Entering UserCtrl');
    
    $scope.email = "";
    $scope.password = "";
    $scope.message = "";
    $scope.conf = conf;
+   $scope.error = false;
    
    $scope.login = function(){
    	 $log.debug("Login is called");
@@ -20,8 +21,17 @@ angular.module('MyApp').controller('UserCtrl', function ($log, $scope, $state, c
 
        })
        .fail(function(error) {
-          $scope.error = true;
-           $scope.message = error.message;
+          $scope.$apply(function(){
+            $scope.error = true;
+            $scope.message = "Could not log in. Please verify your username and password.";  
+          });
+
+          //Cancel the error after 3 seconds
+           $timeout(function(){
+            $scope.error = false;
+            $scope.message = "";  
+          },3000);
+          
            
        });
    }
@@ -37,9 +47,18 @@ angular.module('MyApp').controller('UserCtrl', function ($log, $scope, $state, c
 
        })
        .fail(function(error) {
-        $scope.error = true;
-           $scope.message = error.message;
-           
+        
+          $scope.$apply(function(){
+            $scope.error = true;
+            $scope.message = "Could not sign up.";  
+          });
+
+          //Cancel the error after 3 seconds
+          $timeout(function(){
+            $scope.error = false;
+            $scope.message = "";  
+          },3000);
+                   
        });
    }
 

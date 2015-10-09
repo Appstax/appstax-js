@@ -3,7 +3,7 @@
 //
 //  Initialize the Appstax app engine with your appkey
 //
-appstax.init('<<appstax-app-key>>');
+appstax.init("<<appstax-app-key>>");
 
 var module = angular.module('MyApp', [
     'ngSanitize',    
