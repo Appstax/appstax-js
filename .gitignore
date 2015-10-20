@@ -1,10 +1,10 @@
-node_modules
-test-results
-build
+node_modules/*
+test-results/*
+build/*
 npm-debug.log
-bower_components
-dist
-public
+bower_components/*
+dist/*
+public/*
 !examples/photobooth/public
 !examples/drawing/public
 !examples/chat/public
