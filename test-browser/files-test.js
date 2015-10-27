@@ -63,6 +63,28 @@ describe("Files", function() {
         expect(function() { object.attachment.filename = "foo" }).to.throw(Error);
     });
 
+    it("should use first file from <input type=file>", function() {
+        var input = {
+            nodeName: "INPUT",
+            type: "file",
+            files: [mockFile("something.png")]
+        };
+
+        var file = appstax.file(input);
+        expect(file.filename).to.equal("something.png");
+    });
+
+    it("should return undefined if <input> has no files", function() {
+        var input = {
+            nodeName: "INPUT",
+            type: "file",
+            files: []
+        };
+
+        var file = appstax.file(input);
+        expect(file).to.be.undefined;
+    });
+
     it("should store file properties in objects", function() {
         var object = appstax.object("myobjects");
         object.file1 = appstax.file(mockFile("f0.ext"));
