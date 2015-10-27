@@ -22,7 +22,7 @@ describe("Channels", function() {
 
         requests = [];
         httpServer = sinon.fakeServer.create();
-        httpServer.respondWith("POST", "http://localhost:3000/api/latest/messaging/realtime/sessions", [200, {}, JSON.stringify({realtimeSessionId: realtimeSessionId})]);
+        httpServer.respondWith("POST", /realtime\/sessions/, [200, {}, JSON.stringify({realtimeSessionId: realtimeSessionId})]);
         httpServer.autoRespond = true;
 
         serverReceived = [];

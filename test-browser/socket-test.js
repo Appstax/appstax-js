@@ -64,7 +64,7 @@ describe("Sockets", function() {
 
         expect(requests.length).to.equal(1);
         expect(requests[0].method).to.equal("POST");
-        expect(requests[0].url).to.equal("http://localhost:3000/api/latest/messaging/realtime/sessions");
+        expect(requests[0].url).to.include("http://localhost:3000/api/latest/messaging/realtime/sessions");
         expect(requests[0].requestHeaders).to.have.property("x-appstax-appkey", "sockettestapikey");
         requests[0].respond(200, {}, JSON.stringify({realtimeSessionId: realtimeSessionId}));
     });
