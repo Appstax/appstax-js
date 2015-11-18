@@ -2,7 +2,7 @@
 var extend      = require("extend");
 var query       = require("./query");
 var failLogger  = require("./faillogger");
-var Q           = require("kew");
+var Q           = require("q");
 
 module.exports = createObjectsContext;
 
@@ -335,7 +335,9 @@ function createObjectsContext(apiClient, files, collections) {
         if(related.some(isUnsaved)) {
             throw new Error("Error saving object. Found unsaved related objects. Save related objects first or consider using saveAll().")
         } else {
-            return Q.resolve(object);
+            var defer = Q.defer();
+            defer.fulfill(object);
+            return defer.promise;
         }
     }
 

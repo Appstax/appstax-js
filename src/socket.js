@@ -1,5 +1,5 @@
 
-var Q  = require("kew");
+var Q  = require("q");
 var WS = require("ws");
 
 module.exports = createSocket;

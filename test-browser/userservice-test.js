@@ -1,7 +1,7 @@
 
 var appstax = require("../src/appstax");
 var sinon = require("sinon");
-var Q = require("kew");
+var Q = require("q");
 
 describe("User service", function() {
 
@@ -13,6 +13,7 @@ describe("User service", function() {
 
     beforeEach(function() {
         appKey = "test-app-key-" + (appKeyCounter++);
+        _deleteLocalStorage();
         _appstaxInit();
         requests = [];
         xhr = sinon.useFakeXMLHttpRequest();
@@ -23,10 +24,14 @@ describe("User service", function() {
 
     afterEach(function() {
         xhr.restore();
-        var key = "appstax_session_" + appKey;
-        delete localStorage[key];
+        _deleteLocalStorage();
         appstax.logout();
     });
+
+    function _deleteLocalStorage() {
+        var key = "appstax_session_" + appKey;
+        delete localStorage[key];
+    }
 
     function _appstaxInit() {
         appstax.init({appKey:appKey, baseUrl: "http://localhost:3000/", log:false});
@@ -43,226 +48,284 @@ describe("User service", function() {
         _appstaxInit();
     }
 
-    it("should POST signup with login=true as default", function() {
+    it("should POST signup with login=true as default", function(done) {
         appstax.signup("frank", "secret");
 
-        expect(requests).to.have.length(1);
-        expect(requests[0].method).to.equal("POST");
-        expect(requests[0].url).to.equal("http://localhost:3000/users?login=true");
-        expect(requests[0].requestBody).to.exist;
-        var data = JSON.parse(requests[0].requestBody);
-        expect(data).to.have.property("sysUsername", "frank");
-        expect(data).to.have.property("sysPassword", "secret");
+        setTimeout(function() {
+            expect(requests).to.have.length(1);
+            expect(requests[0].method).to.equal("POST");
+            expect(requests[0].url).to.equal("http://localhost:3000/users?login=true");
+            expect(requests[0].requestBody).to.exist;
+            var data = JSON.parse(requests[0].requestBody);
+            expect(data).to.have.property("sysUsername", "frank");
+            expect(data).to.have.property("sysPassword", "secret");
+            done();
+        }, 10);
     });
 
-    it("should POST extra properties with signup", function() {
+    it("should POST extra properties with signup", function(done) {
         appstax.signup("donald", "quack", {fullname:"Donald Duck"});
 
-        expect(requests[0].requestBody).to.exist;
-        var data = JSON.parse(requests[0].requestBody);
-        expect(data).to.have.property("sysUsername", "donald");
-        expect(data).to.have.property("sysPassword", "quack");
-        expect(data).to.have.property("fullname", "Donald Duck");
+        setTimeout(function() {
+            expect(requests[0].requestBody).to.exist;
+            var data = JSON.parse(requests[0].requestBody);
+            expect(data).to.have.property("sysUsername", "donald");
+            expect(data).to.have.property("sysPassword", "quack");
+            expect(data).to.have.property("fullname", "Donald Duck");
+            done();
+        }, 10);
     });
 
-    it("should POST extra properties with signup also when login is specified", function() {
+    it("should POST extra properties with signup also when login is specified", function(done) {
         appstax.signup("donald", "quack", false, {fullname:"Donald Duck"});
 
-        expect(requests[0].url).to.equal("http://localhost:3000/users?login=false");
-        expect(requests[0].requestBody).to.exist;
-        var data = JSON.parse(requests[0].requestBody);
-        expect(data).to.have.property("sysUsername", "donald");
-        expect(data).to.have.property("sysPassword", "quack");
-        expect(data).to.have.property("fullname", "Donald Duck");
+        setTimeout(function() {
+            expect(requests[0].url).to.equal("http://localhost:3000/users?login=false");
+            expect(requests[0].requestBody).to.exist;
+            var data = JSON.parse(requests[0].requestBody);
+            expect(data).to.have.property("sysUsername", "donald");
+            expect(data).to.have.property("sysPassword", "quack");
+            expect(data).to.have.property("fullname", "Donald Duck");
+            done();
+        }, 10);
     });
 
-    it("should fulfill promise with user object when signup succeeds", function() {
+    it("should fulfill promise with user object when signup succeeds", function(done) {
         var promise = appstax.signup("fred", "holy");
 
-        requests[0].respond(200, {}, JSON.stringify({}));
-        return promise.then(function(user) {
+        setTimeout(function() {
+            requests[0].respond(200, {}, JSON.stringify({}));
+        }, 10);
+        promise.then(function(user) {
             expect(user).to.have.property("username", "fred");
             expect(user).to.have.property("collectionName", "users");
             expect(user).to.not.have.property("password");
-        });
+            done();
+        }).done();
     });
 
-    it("should get user id from server on signup", function() {
+    it("should get user id from server on signup", function(done) {
         var promise = appstax.signup("fred", "holy");
 
-        requests[0].respond(200, {}, JSON.stringify({user:{sysObjectId:"the-user-id"}}));
-        return promise.then(function(user) {
+        setTimeout(function() {
+            requests[0].respond(200, {}, JSON.stringify({user:{sysObjectId:"the-user-id"}}));
+        }, 10);
+        promise.then(function(user) {
             expect(user).to.have.property("id", "the-user-id");
-        });
+            done();
+        }).done();
     });
 
-    it("should set current user when signup succeeds with login=true", function() {
+    it("should set current user when signup succeeds with login=true", function(done) {
         expect(appstax.currentUser()).to.be.null;
 
         var promise = appstax.signup("howard", "holy", true);
 
-        expect(requests[0].url).to.equal("http://localhost:3000/users?login=true");
-        requests[0].respond(200, {}, JSON.stringify({}));
-        return promise.then(function(user) {
+        setTimeout(function() {
+            expect(requests[0].url).to.equal("http://localhost:3000/users?login=true");
+            requests[0].respond(200, {}, JSON.stringify({}));
+        }, 10);
+        promise.then(function(user) {
             expect(appstax.currentUser()).to.not.be.null;
             expect(appstax.currentUser()).to.have.property("username", "howard");
             expect(appstax.currentUser()).to.have.property("collectionName", "users");
             expect(appstax.currentUser()).to.equal(user);
-        });
+            done();
+        }).done();
     });
 
-    it("should not set current user when signup succeeds if login=false", function() {
+    it("should not set current user when signup succeeds if login=false", function(done) {
         expect(appstax.currentUser()).to.be.null;
 
         var promise = appstax.signup("howard", "holy", false);
 
-        expect(requests[0].url).to.equal("http://localhost:3000/users?login=false");
-        requests[0].respond(200, {}, JSON.stringify({}));
-        return promise.then(function(user) {
+        setTimeout(function() {
+            expect(requests[0].url).to.equal("http://localhost:3000/users?login=false");
+            requests[0].respond(200, {}, JSON.stringify({}));
+        }, 10);
+        promise.then(function(user) {
             expect(appstax.currentUser()).to.be.null;
-        });
+            done();
+        }).done();
     });
 
-    it("should use session id from signup when it succeeds", function() {
+    it("should use session id from signup when it succeeds", function(done) {
         expect(apiClient.sessionId()).to.be.null;
         var promise = appstax.signup("homer", "duff", true);
 
-        requests[0].respond(200, {}, JSON.stringify({sysSessionId:"the-session-id"}));
-        return promise.then(function(user) {
+        setTimeout(function() {
+            requests[0].respond(200, {}, JSON.stringify({sysSessionId:"the-session-id"}));
+        }, 10);
+        promise.then(function(user) {
             expect(apiClient.sessionId()).to.equal("the-session-id");
-        });
+            done();
+        }).done();
     });
 
-    it("should store session id, username and user id on localstorage when signup succeeds", function() {
+    it("should store session id, username and user id on localstorage when signup succeeds", function(done) {
         expect(localStorage["appstax_session_" + appKey]).to.not.exist;
 
         var promise = appstax.signup("homer", "duff", true);
 
-        requests[0].respond(200, {}, JSON.stringify({sysSessionId:"the-other-session-id", user:{sysObjectId:"userid"}}));
-        return promise.then(function(user) {
+        setTimeout(function() {
+            requests[0].respond(200, {}, JSON.stringify({sysSessionId:"the-other-session-id", user:{sysObjectId:"userid"}}));
+        }, 10);
+        promise.then(function(user) {
             var session = JSON.parse(localStorage["appstax_session_" + appKey]);
             expect(session).to.have.property("sessionId", "the-other-session-id");
             expect(session).to.have.property("username", "homer");
             expect(session).to.have.property("userId", "userid");
-        });
+            done();
+        }).done();
     });
 
-    it("should reject promise when signup fails", function() {
+    it("should reject promise when signup fails", function(done) {
         var promise = appstax.signup("homer", "duff");
 
-        requests[0].respond(422, {}, JSON.stringify({errorMessage:"The error"}));
-        return promise
+        setTimeout(function() {
+            requests[0].respond(422, {}, JSON.stringify({errorMessage:"The error"}));
+        }, 10);
+        promise
             .then(function() {
                 throw new Error("Success handler should not be called!");
             })
             .fail(function(error) {
                 expect(error).to.be.instanceOf(Error);
                 expect(error.message).to.equal("The error");
-            });
+                done();
+            }).done();
     });
 
-    it("should POST login", function() {
+    it("should POST login", function(done) {
         appstax.login("frank", "secret");
 
-        expect(requests).to.have.length(1);
-        expect(requests[0].method).to.equal("POST");
-        expect(requests[0].url).to.equal("http://localhost:3000/sessions");
-        expect(requests[0].requestBody).to.exist;
-        var data = JSON.parse(requests[0].requestBody);
-        expect(data).to.have.property("sysUsername", "frank");
-        expect(data).to.have.property("sysPassword", "secret");
+        setTimeout(function() {
+            expect(requests).to.have.length(1);
+            expect(requests[0].method).to.equal("POST");
+            expect(requests[0].url).to.equal("http://localhost:3000/sessions");
+            expect(requests[0].requestBody).to.exist;
+            var data = JSON.parse(requests[0].requestBody);
+            expect(data).to.have.property("sysUsername", "frank");
+            expect(data).to.have.property("sysPassword", "secret");
+            done();
+        }, 10);
     });
 
-    it("should fulfill promise with user object when login succeeds", function() {
+    it("should fulfill promise with user object when login succeeds", function(done) {
         var promise = appstax.login("fred", "holy");
 
-        requests[0].respond(200, {}, JSON.stringify({}));
-        return promise.then(function(user) {
+        setTimeout(function() {
+            requests[0].respond(200, {}, JSON.stringify({}));
+        }, 10);
+        promise.then(function(user) {
             expect(user).to.have.property("username", "fred");
             expect(user).to.have.property("collectionName", "users");
             expect(user).to.not.have.property("password");
-        });
+            done();
+        }).done();
     });
 
-    it("should get user id from server on login", function() {
+    it("should get user id from server on login", function(done) {
         var promise = appstax.login("fred", "holy");
 
-        requests[0].respond(200, {}, JSON.stringify({user:{sysObjectId:"the-user-id"}}));
-        return promise.then(function(user) {
+        setTimeout(function() {
+            requests[0].respond(200, {}, JSON.stringify({user:{sysObjectId:"the-user-id"}}));
+        }, 10);
+        promise.then(function(user) {
             expect(user).to.have.property("id", "the-user-id");
-        });
+            done();
+        }).done();
     });
 
-    it("should get custom user properties from server on login", function() {
+    it("should get custom user properties from server on login", function(done) {
         var promise = appstax.login("homer", "duff");
 
-        requests[0].respond(200, {}, JSON.stringify({user:{sysObjectId:"the-user-id-3", fullname:"Homer Simpson"}}));
-        return promise.then(function(user) {
+        setTimeout(function() {
+            requests[0].respond(200, {}, JSON.stringify({user:{sysObjectId:"the-user-id-3", fullname:"Homer Simpson"}}));
+        }, 10);
+        promise.then(function(user) {
             expect(user).to.have.property("fullname", "Homer Simpson");
-        });
+            done();
+        }).done();
     });
 
-    it("should set current user when login succeeds", function() {
+    it("should set current user when login succeeds", function(done) {
         var promise = appstax.login("howard", "holy");
 
-        requests[0].respond(200, {}, JSON.stringify({}));
-        return promise.then(function(user) {
+        setTimeout(function() {
+            requests[0].respond(200, {}, JSON.stringify({}));
+        }, 10);
+        promise.then(function(user) {
             expect(appstax.currentUser()).to.not.be.null;
             expect(appstax.currentUser()).to.have.property("username", "howard");
             expect(appstax.currentUser()).to.have.property("collectionName", "users");
             expect(appstax.currentUser()).to.equal(user);
-        });
+            done();
+        }).done();
     });
 
-    it("should use session id from login when it succeeds", function() {
+    it("should use session id from login when it succeeds", function(done) {
         expect(apiClient.sessionId()).to.be.null;
         var promise = appstax.login("homer", "duff");
 
-        requests[0].respond(200, {}, JSON.stringify({sysSessionId:"the-third-session-id"}));
-        return promise.then(function(user) {
+        setTimeout(function() {
+            requests[0].respond(200, {}, JSON.stringify({sysSessionId:"the-third-session-id"}));
+        }, 10);
+        promise.then(function(user) {
             expect(apiClient.sessionId()).to.equal("the-third-session-id");
-        });
+            done();
+        }).done();
     });
 
-    it("should store session id and username on localstorage when login succeeds", function() {
+    it("should store session id and username on localstorage when login succeeds", function(done) {
         expect(localStorage["appstax_session_" + appKey]).to.not.exist;
 
         var promise = appstax.login("homer", "duff");
 
-        requests[0].respond(200, {}, JSON.stringify({sysSessionId:"the-4th-session-id", user:{sysObjectId:"user-id"}}));
-        return promise.then(function(user) {
+        setTimeout(function() {
+            requests[0].respond(200, {}, JSON.stringify({sysSessionId:"the-4th-session-id", user:{sysObjectId:"user-id"}}));
+        }, 10);
+        promise.then(function(user) {
             var session = JSON.parse(localStorage["appstax_session_" + appKey]);
             expect(session).to.have.property("sessionId", "the-4th-session-id");
             expect(session).to.have.property("username", "homer");
             expect(session).to.have.property("userId", "user-id");
-        });
+            done();
+        }).done();
     });
 
-    it("should reject promise when login fails", function() {
+    it("should reject promise when login fails", function(done) {
         var promise = appstax.login("homer", "duff");
 
-        requests[0].respond(422, {}, JSON.stringify({errorMessage:"The error"}));
-        return promise
+        setTimeout(function() {
+            requests[0].respond(422, {}, JSON.stringify({errorMessage:"The error"}));
+        }, 10);
+        promise
             .then(function() {
                 throw new Error("Success handler should not be called!");
             })
             .fail(function(error) {
                 expect(error).to.be.instanceOf(Error);
                 expect(error.message).to.equal("The error");
-            });
+                done();
+            }).done();
     });
 
-    it("should remove current user and session on logout", function() {
+    it("should remove current user and session on logout", function(done) {
         var promise = appstax.login("foo", "bar");
-        requests[0].respond(200, {}, JSON.stringify({sysSessionId:"the-4th-session-id"}));
 
-        return promise.then(function() {
+        setTimeout(function() {
+            requests[0].respond(200, {}, JSON.stringify({sysSessionId:"the-4th-session-id"}));
+        }, 10);
+
+        promise.then(function() {
             appstax.logout();
         }).then(function() {
             expect(appstax.currentUser()).to.be.null;
             expect(apiClient.sessionId()).to.be.null;
             expect(localStorage["appstax_session_" + appKey]).to.not.exist;
-        });
+            done();
+        }).done();
     });
 
     it("should not have an initial currentUser", function() {
@@ -280,27 +343,34 @@ describe("User service", function() {
         expect(appstax.currentUser()).to.have.property("id", "a-user-id");
     });
 
-    it("should have read-only username and id", function() {
+    it("should have read-only username and id", function(done) {
         var promise = appstax.login("homer", "duff");
-        requests[0].respond(200, {}, JSON.stringify({user:{sysObjectId:"hello-user"}}));
-        return promise.then(function(user) {
+
+        setTimeout(function() {
+            requests[0].respond(200, {}, JSON.stringify({user:{sysObjectId:"hello-user"}}));
+        }, 10);
+        promise.then(function(user) {
             expect(function() { user.username = "bart" }).to.throw(Error);
             expect(function() { user.id = "1234-5678" }).to.throw(Error);
-        });
+            done();
+        }).done();
     });
 
-    it("should PUT to objects/users when saving user", function() {
+    it("should PUT to objects/users when saving user", function(done) {
         _createUserSession("homer", "the-user-id", "the-session-id");
         var user = appstax.currentUser();
 
         user.save();
 
-        expect(requests).to.have.length(1);
-        expect(requests[0].method).to.equal("PUT");
-        expect(requests[0].url).to.equal("http://localhost:3000/objects/users/the-user-id");
+        setTimeout(function() {
+            expect(requests).to.have.length(1);
+            expect(requests[0].method).to.equal("PUT");
+            expect(requests[0].url).to.equal("http://localhost:3000/objects/users/the-user-id");
+            done();
+        }, 10);
     });
 
-    it("should PUT sysUsername + all custom properties", function() {
+    it("should PUT sysUsername + all custom properties", function(done) {
         _createUserSession("homer", "the-user-id-2", "the-session-id");
         var user = appstax.currentUser();
 
@@ -308,70 +378,88 @@ describe("User service", function() {
         user.beer = "Duff";
         user.save();
 
-        var data = JSON.parse(requests[0].requestBody)
-        expect(data).to.have.property("sysUsername", "homer");
-        expect(data).to.have.property("fullName", "Homer Simpson");
-        expect(data).to.have.property("beer", "Duff");
-        expect(data).to.not.have.property("save");
-        expect(data).to.not.have.property("collectionName");
-        expect(data).to.not.have.property("id");
-        expect(data).to.not.have.property("username");
+        setTimeout(function() {
+            var data = JSON.parse(requests[0].requestBody)
+            expect(data).to.have.property("sysUsername", "homer");
+            expect(data).to.have.property("fullName", "Homer Simpson");
+            expect(data).to.have.property("beer", "Duff");
+            expect(data).to.not.have.property("save");
+            expect(data).to.not.have.property("collectionName");
+            expect(data).to.not.have.property("id");
+            expect(data).to.not.have.property("username");
+            done();
+        }, 10);
     });
 
-    it("should fulfill promise with user when saving completes", function() {
+    it("should fulfill promise with user when saving completes", function(done) {
         _createUserSession("homer", "the-user-id-2", "the-session-id");
         var user = appstax.currentUser();
 
         var promise = user.save();
-        requests[0].respond(200);
 
-        return promise.then(function(savedUser) {
+        setTimeout(function() {
+            requests[0].respond(200);
+        }, 10);
+
+        promise.then(function(savedUser) {
             expect(savedUser).to.equal(user);
-        });
+            done();
+        }).done();
     });
 
-    it("should reject promise when saving fails", function() {
+    it("should reject promise when saving fails", function(done) {
         _createUserSession("homer", "the-user-id-2", "the-session-id");
         var user = appstax.currentUser();
 
         var promise = user.save();
-        requests[0].respond(422, {}, JSON.stringify({errorMessage:"The user save error"}));
 
-        return promise
+        setTimeout(function() {
+            requests[0].respond(422, {}, JSON.stringify({errorMessage:"The user save error"}));
+        }, 10);
+
+        promise
             .then(function() {
                 throw new Error("Success handler should not be called!");
             })
             .fail(function(error) {
                 expect(error).to.have.property("message", "The user save error");
-            });
+                done();
+            }).done();
     });
 
-    it("should refresh a user object", function() {
+    it("should refresh a user object", function(done) {
         _createUserSession("theuser", "a-user-id", "my-session");
         appstax.init();
 
         var promise = appstax.currentUser().refresh();
-        requests[0].respond(200, {}, JSON.stringify({sysObjectId:"a-user-id", fullName:"The Full Name"}));
 
-        return promise.then(function(object) {
+        setTimeout(function() {
+            requests[0].respond(200, {}, JSON.stringify({sysObjectId:"a-user-id", fullName:"The Full Name"}));
+        }, 10);
+
+        promise.then(function(object) {
             var user = appstax.currentUser();
             expect(user.fullName).to.equal("The Full Name");
             expect(user).to.have.property("collectionName", "users");
             expect(user).to.not.have.property("sysObjectId");
-        });
+            done();
+        }).done();
     });
 
-    it("should add username property to objects from users collection", function() {
+    it("should add username property to objects from users collection", function(done) {
         var promise = appstax.findAll("users");
 
-        requests[0].respond(200, {}, JSON.stringify({objects:[{sysObjectId:"a-user-id", sysUsername:"shortname", fullName:"The Full Name"}]}));
+        setTimeout(function() {
+            requests[0].respond(200, {}, JSON.stringify({objects:[{sysObjectId:"a-user-id", sysUsername:"shortname", fullName:"The Full Name"}]}));
+        }, 10);
 
-        return promise.then(function(users) {
+        promise.then(function(users) {
             expect(users[0]).to.have.property("fullName", "The Full Name");
             expect(users[0]).to.have.property("collectionName", "users");
             expect(users[0]).to.have.property("id", "a-user-id");
             expect(users[0]).to.have.property("username", "shortname");
-        });
+            done();
+        }).done();
     });
 
 });

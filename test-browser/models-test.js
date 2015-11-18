@@ -1,7 +1,7 @@
 
 var appstax = require("../src/appstax");
 var sinon = require("sinon");
-var Q = require("kew");
+var Q = require("q");
 var wsmock = require("./lib/wsmock");
 
 describe("Live data model", function() {
@@ -63,7 +63,7 @@ describe("Live data model", function() {
         }
     }
 
-    it("should add array property and update it with initial data", function() {
+    it("should add array property and update it with initial data", function(done) {
         var model = appstax.model();
 
         expect(model).to.not.have.property("posts");
@@ -76,88 +76,118 @@ describe("Live data model", function() {
         expect(requests[0].method).to.equal("GET");
         expect(requests[0].url).to.equal("http://localhost:3000/objects/posts");
 
-        requests[0].respond(200, {}, JSON.stringify({objects:[
-            {sysObjectId: "id1", content: "c1", sysCreated: "2015-08-19T11:00:00"},
-            {sysObjectId: "id2", content: "c2", sysCreated: "2015-08-19T10:00:00"}
-        ]}));
+        setTimeout(function() {
+            requests[0].respond(200, {}, JSON.stringify({objects:[
+                {sysObjectId: "id1", content: "c1", sysCreated: "2015-08-19T11:00:00"},
+                {sysObjectId: "id2", content: "c2", sysCreated: "2015-08-19T10:00:00"}
+            ]}));
 
-        expect(model.posts.length).to.equal(2);
-        expect(model.posts[0].id).to.equal("id1");
-        expect(model.posts[1].id).to.equal("id2");
-        expect(model.posts[0].content).to.equal("c1")
-        expect(model.posts[1].content).to.equal("c2")
-        expect(model.posts[0].collectionName).to.equal("posts");
-        expect(model.posts[1].collectionName).to.equal("posts");
+            setTimeout(function() {
+                expect(model.posts.length).to.equal(2);
+                expect(model.posts[0].id).to.equal("id1");
+                expect(model.posts[1].id).to.equal("id2");
+                expect(model.posts[0].content).to.equal("c1")
+                expect(model.posts[1].content).to.equal("c2")
+                expect(model.posts[0].collectionName).to.equal("posts");
+                expect(model.posts[1].collectionName).to.equal("posts");
+                done();
+            }, 10);
+        }, 10);
     });
 
-    it("should sort initial data by created date", function() {
+    it("should sort initial data by created date", function(done) {
         var model = appstax.model();
         model.watch("posts");
 
-        requests[0].respond(200, {}, JSON.stringify({objects:[
-            {sysObjectId: "id1", sysCreated: "2015-08-19T10:00:00"},
-            {sysObjectId: "id2", sysCreated: "2015-08-19T12:00:00"},
-            {sysObjectId: "id3", sysCreated: "2015-08-19T11:00:00"}
-        ]}));
+        setTimeout(function() {
+            requests[0].respond(200, {}, JSON.stringify({objects:[
+                {sysObjectId: "id1", sysCreated: "2015-08-19T10:00:00"},
+                {sysObjectId: "id2", sysCreated: "2015-08-19T12:00:00"},
+                {sysObjectId: "id3", sysCreated: "2015-08-19T11:00:00"}
+            ]}));
 
-        var ids = model.posts.map(function(o) { return o.id }).join(",");
-        expect(ids).to.equal("id2,id3,id1");
+            setTimeout(function() {
+                var ids = model.posts.map(function(o) { return o.id }).join(",");
+                expect(ids).to.equal("id2,id3,id1");
+                done();
+            }, 10);
+        }, 10);
     });
 
-    it("should order objects by given date property (asc)", function() {
+    it("should order objects by given date property (asc)", function(done) {
         var model = appstax.model();
         model.watch("posts", {order: "updated"});
 
-        requests[0].respond(200, {}, JSON.stringify({objects:[
-            {sysObjectId: "id1", sysCreated: "2015-08-20", sysUpdated: "2015-08-21"},
-            {sysObjectId: "id2", sysCreated: "2015-08-22", sysUpdated: "2015-08-20"},
-            {sysObjectId: "id3", sysCreated: "2015-08-21", sysUpdated: "2015-08-22"}
-        ]}));
+        setTimeout(function() {
+            requests[0].respond(200, {}, JSON.stringify({objects:[
+                {sysObjectId: "id1", sysCreated: "2015-08-20", sysUpdated: "2015-08-21"},
+                {sysObjectId: "id2", sysCreated: "2015-08-22", sysUpdated: "2015-08-20"},
+                {sysObjectId: "id3", sysCreated: "2015-08-21", sysUpdated: "2015-08-22"}
+            ]}));
 
-        var ids = model.posts.map(function(o) { return o.id }).join(",");
-        expect(ids).to.equal("id2,id1,id3");
+            setTimeout(function() {
+                var ids = model.posts.map(function(o) { return o.id }).join(",");
+                expect(ids).to.equal("id2,id1,id3");
+                done();
+            }, 10);
+        }, 10);
     });
 
-    it("should order objects by given date property (desc)", function() {
+    it("should order objects by given date property (desc)", function(done) {
         var model = appstax.model();
         model.watch("posts", {order: "-updated"});
 
-        requests[0].respond(200, {}, JSON.stringify({objects:[
-            {sysObjectId: "id1", sysCreated: "2015-08-20", sysUpdated: "2015-08-21"},
-            {sysObjectId: "id2", sysCreated: "2015-08-22", sysUpdated: "2015-08-20"},
-            {sysObjectId: "id3", sysCreated: "2015-08-21", sysUpdated: "2015-08-22"}
-        ]}));
+        setTimeout(function() {
+            requests[0].respond(200, {}, JSON.stringify({objects:[
+                {sysObjectId: "id1", sysCreated: "2015-08-20", sysUpdated: "2015-08-21"},
+                {sysObjectId: "id2", sysCreated: "2015-08-22", sysUpdated: "2015-08-20"},
+                {sysObjectId: "id3", sysCreated: "2015-08-21", sysUpdated: "2015-08-22"}
+            ]}));
 
-        var ids = model.posts.map(function(o) { return o.id }).join(",");
-        expect(ids).to.equal("id3,id1,id2");
+            setTimeout(function() {
+                var ids = model.posts.map(function(o) { return o.id }).join(",");
+                expect(ids).to.equal("id3,id1,id2");
+                done();
+            }, 10);
+        }, 10);
     });
 
-    it("should order objects by given string property (asc)", function() {
+    it("should order objects by given string property (asc)", function(done) {
         var model = appstax.model();
         model.watch("posts", {order: "category"});
 
-        requests[0].respond(200, {}, JSON.stringify({objects:[
-            {sysObjectId: "id1", sysCreated: "2015-08-22", category: "gamma"},
-            {sysObjectId: "id2", sysCreated: "2015-08-20", category: "alpha"},
-            {sysObjectId: "id3", sysCreated: "2015-08-21", category: "beta"}
-        ]}));
+        setTimeout(function() {
+            requests[0].respond(200, {}, JSON.stringify({objects:[
+                {sysObjectId: "id1", sysCreated: "2015-08-22", category: "gamma"},
+                {sysObjectId: "id2", sysCreated: "2015-08-20", category: "alpha"},
+                {sysObjectId: "id3", sysCreated: "2015-08-21", category: "beta"}
+            ]}));
 
-        var ids = model.posts.map(function(o) { return o.id }).join(",");
-        expect(ids).to.equal("id2,id3,id1");
+            setTimeout(function() {
+                var ids = model.posts.map(function(o) { return o.id }).join(",");
+                expect(ids).to.equal("id2,id3,id1");
+                done();
+            }, 10);
+        }, 10);
     });
 
-    it("should order objects by given string property (desc)", function() {
+    it("should order objects by given string property (desc)", function(done) {
         var model = appstax.model();
         model.watch("posts", {order: "-category"});
 
-        requests[0].respond(200, {}, JSON.stringify({objects:[
-            {sysObjectId: "id1", sysCreated: "2015-08-22", category: "gamma"},
-            {sysObjectId: "id2", sysCreated: "2015-08-20", category: "alpha"},
-            {sysObjectId: "id3", sysCreated: "2015-08-21", category: "beta"}
-        ]}));
+        setTimeout(function() {
+            requests[0].respond(200, {}, JSON.stringify({objects:[
+                {sysObjectId: "id1", sysCreated: "2015-08-22", category: "gamma"},
+                {sysObjectId: "id2", sysCreated: "2015-08-20", category: "alpha"},
+                {sysObjectId: "id3", sysCreated: "2015-08-21", category: "beta"}
+            ]}));
 
-        var ids = model.posts.map(function(o) { return o.id }).join(",");
-        expect(ids).to.equal("id1,id3,id2");
+            setTimeout(function() {
+                var ids = model.posts.map(function(o) { return o.id }).join(",");
+                expect(ids).to.equal("id1,id3,id2");
+                done();
+            }, 10);
+        }, 10);
     });
 
     it("should trigger change event after loading initial data", function(done) {
@@ -189,96 +219,116 @@ describe("Live data model", function() {
         expect(model.posts[0].content).to.equal("c3");
     });
 
-    it("should keep order when inserting object from object.created", function() {
+    it("should keep order when inserting object from object.created", function(done) {
         var model = appstax.model();
         model.watch("posts");
 
-        requests[0].respond(200, {}, JSON.stringify({objects:[
-            {sysObjectId: "id1", sysCreated: "2015-08-19T10:00:00"},
-            {sysObjectId: "id2", sysCreated: "2015-08-19T12:00:00"},
-            {sysObjectId: "id3", sysCreated: "2015-08-19T11:00:00"}
-        ]}));
+        setTimeout(function() {
+            requests[0].respond(200, {}, JSON.stringify({objects:[
+                {sysObjectId: "id1", sysCreated: "2015-08-19T10:00:00"},
+                {sysObjectId: "id2", sysCreated: "2015-08-19T12:00:00"},
+                {sysObjectId: "id3", sysCreated: "2015-08-19T11:00:00"}
+            ]}));
 
-        fakeChannelReceive("objects/posts", "", {
-            type: "object.created",
-            object: appstax.object("posts", {
-                sysObjectId: "id4",
-                sysCreated: "2015-08-19T11:30:00"
-            })
-        });
+            setTimeout(function() {
+                fakeChannelReceive("objects/posts", "", {
+                    type: "object.created",
+                    object: appstax.object("posts", {
+                        sysObjectId: "id4",
+                        sysCreated: "2015-08-19T11:30:00"
+                    })
+                });
 
-        var ids = model.posts.map(function(o) { return o.id }).join(",");
-        expect(ids).to.equal("id2,id4,id3,id1");
+                var ids = model.posts.map(function(o) { return o.id }).join(",");
+                expect(ids).to.equal("id2,id4,id3,id1");
+                done();
+            }, 10);
+        }, 10);
     });
 
-    it("should reorder when updating object from object.updated", function() {
+    it("should reorder when updating object from object.updated", function(done) {
         var model = appstax.model();
         model.watch("posts", {order: "-updated"});
 
-        requests[0].respond(200, {}, JSON.stringify({objects:[
-            {sysObjectId: "id1", sysUpdated: "2015-08-20"},
-            {sysObjectId: "id2", sysUpdated: "2015-08-22"},
-            {sysObjectId: "id3", sysUpdated: "2015-08-21"}
-        ]}));
+        setTimeout(function() {
+            requests[0].respond(200, {}, JSON.stringify({objects:[
+                {sysObjectId: "id1", sysUpdated: "2015-08-20"},
+                {sysObjectId: "id2", sysUpdated: "2015-08-22"},
+                {sysObjectId: "id3", sysUpdated: "2015-08-21"}
+            ]}));
 
-        var ids = model.posts.map(function(o) { return o.id }).join(",");
-        expect(ids).to.equal("id2,id3,id1");
+            setTimeout(function() {
+                var ids = model.posts.map(function(o) { return o.id }).join(",");
+                expect(ids).to.equal("id2,id3,id1");
 
-        fakeChannelReceive("objects/posts", "", {
-            type: "object.updated",
-            object: appstax.object("posts", {
-                sysObjectId: "id1",
-                sysUpdated: "2015-08-23"
-            })
-        });
+                fakeChannelReceive("objects/posts", "", {
+                    type: "object.updated",
+                    object: appstax.object("posts", {
+                        sysObjectId: "id1",
+                        sysUpdated: "2015-08-23"
+                    })
+                });
 
-        var ids = model.posts.map(function(o) { return o.id }).join(",");
-        expect(ids).to.equal("id1,id2,id3");
+                var ids = model.posts.map(function(o) { return o.id }).join(",");
+                expect(ids).to.equal("id1,id2,id3");
+                done();
+            }, 10);
+        }, 10);
     });
 
-    it("should remove object when receiving object.deleted", function() {
+    it("should remove object when receiving object.deleted", function(done) {
         var model = appstax.model();
         model.watch("posts");
 
-        requests[0].respond(200, {}, JSON.stringify({objects:[
-            {sysObjectId: "id1"},
-            {sysObjectId: "id2"},
-            {sysObjectId: "id3"}
-        ]}));
+        setTimeout(function() {
+            requests[0].respond(200, {}, JSON.stringify({objects:[
+                {sysObjectId: "id1"},
+                {sysObjectId: "id2"},
+                {sysObjectId: "id3"}
+            ]}));
 
-        fakeChannelReceive("objects/posts", "", {
-            type: "object.deleted",
-            object: appstax.object("posts", {
-                sysObjectId: "id2"
-            })
-        });
+            setTimeout(function() {
+                fakeChannelReceive("objects/posts", "", {
+                    type: "object.deleted",
+                    object: appstax.object("posts", {
+                        sysObjectId: "id2"
+                    })
+                });
 
-        var ids = model.posts.map(function(o) { return o.id }).join(",");
-        expect(ids).to.equal("id1,id3");
+                var ids = model.posts.map(function(o) { return o.id }).join(",");
+                expect(ids).to.equal("id1,id3");
+                done();
+            }, 10);
+        }, 10);
     });
 
-    it("should update object in place when receiving object.deleted", function() {
+    it("should update object in place when receiving object.deleted", function(done) {
         var model = appstax.model();
         model.watch("posts");
 
-        requests[0].respond(200, {}, JSON.stringify({objects:[
-            {sysObjectId: "id1", prop: "value1"}
-        ]}));
+        setTimeout(function() {
+            requests[0].respond(200, {}, JSON.stringify({objects:[
+                {sysObjectId: "id1", prop: "value1"}
+            ]}));
 
-        var oldObject = model.posts[0];
+            setTimeout(function() {
+                var oldObject = model.posts[0];
 
-        fakeChannelReceive("objects/posts", "", {
-            type: "object.updated",
-            object: appstax.object("posts", {
-                sysObjectId: "id1",
-                prop: "value2"
-            })
-        });
+                fakeChannelReceive("objects/posts", "", {
+                    type: "object.updated",
+                    object: appstax.object("posts", {
+                        sysObjectId: "id1",
+                        prop: "value2"
+                    })
+                });
 
-        var updatedObject = model.posts[0];
-        expect(updatedObject.prop).to.equal("value2")
-        expect(updatedObject === oldObject).to.be.true
-        expect(updatedObject).to.equal(oldObject);
+                var updatedObject = model.posts[0];
+                expect(updatedObject.prop).to.equal("value2")
+                expect(updatedObject === oldObject).to.be.true
+                expect(updatedObject).to.equal(oldObject);
+                done();
+            }, 10);
+        }, 10);
     });
 
     it("should trigger change event after receiving realtime object events", function() {
@@ -308,121 +358,151 @@ describe("Live data model", function() {
 
     describe(".has() filter", function() {
 
-        it("should match string properties", function() {
+        it("should match string properties", function(done) {
             var model = appstax.model();
             model.watch("messages");
 
-            requests[0].respond(200, {}, JSON.stringify({objects:[
-                {sysObjectId: "id1", category:"foo", sysCreated: "2015-08-22"},
-                {sysObjectId: "id2", category:"bar", sysCreated: "2015-08-21"},
-                {sysObjectId: "id3", category:"foo", sysCreated: "2015-08-20"}
-            ]}));
+            setTimeout(function() {
+                requests[0].respond(200, {}, JSON.stringify({objects:[
+                    {sysObjectId: "id1", category:"foo", sysCreated: "2015-08-22"},
+                    {sysObjectId: "id2", category:"bar", sysCreated: "2015-08-21"},
+                    {sysObjectId: "id3", category:"foo", sysCreated: "2015-08-20"}
+                ]}));
 
-            var filtered = model.messages.has("category", "foo");
-            expect(filtered).to.be.instanceOf(Array);
-            expect(filtered.length).to.equal(2);
-            expect(filtered[0].id).to.equal("id1");
-            expect(filtered[1].id).to.equal("id3");
+                setTimeout(function() {
+                    var filtered = model.messages.has("category", "foo");
+                    expect(filtered).to.be.instanceOf(Array);
+                    expect(filtered.length).to.equal(2);
+                    expect(filtered[0].id).to.equal("id1");
+                    expect(filtered[1].id).to.equal("id3");
+                    done();
+                }, 10);
+            }, 10);
         });
 
-        it("should match number properties", function() {
+        it("should match number properties", function(done) {
             var model = appstax.model();
             model.watch("messages");
 
-            requests[0].respond(200, {}, JSON.stringify({objects:[
-                {sysObjectId: "id1", value: 1, sysCreated: "2015-08-22"},
-                {sysObjectId: "id2", value: 2, sysCreated: "2015-08-21"},
-                {sysObjectId: "id3", value: 2, sysCreated: "2015-08-20"}
-            ]}));
+            setTimeout(function() {
+                requests[0].respond(200, {}, JSON.stringify({objects:[
+                    {sysObjectId: "id1", value: 1, sysCreated: "2015-08-22"},
+                    {sysObjectId: "id2", value: 2, sysCreated: "2015-08-21"},
+                    {sysObjectId: "id3", value: 2, sysCreated: "2015-08-20"}
+                ]}));
 
-            var filtered = model.messages.has("value", 2);
-            expect(filtered).to.be.instanceOf(Array);
-            expect(filtered.length).to.equal(2);
-            expect(filtered[0].id).to.equal("id2");
-            expect(filtered[1].id).to.equal("id3");
+                setTimeout(function() {
+                    var filtered = model.messages.has("value", 2);
+                    expect(filtered).to.be.instanceOf(Array);
+                    expect(filtered.length).to.equal(2);
+                    expect(filtered[0].id).to.equal("id2");
+                    expect(filtered[1].id).to.equal("id3");
+                    done();
+                }, 10);
+            }, 10);
         });
 
-        it("should match number properties", function() {
+        it("should match number properties", function(done) {
             var model = appstax.model();
             model.watch("messages");
 
-            requests[0].respond(200, {}, JSON.stringify({objects:[
-                {sysObjectId: "id1", value: 1, sysCreated: "2015-08-22"},
-                {sysObjectId: "id2", value: 2, sysCreated: "2015-08-21"},
-                {sysObjectId: "id3", value: 2, sysCreated: "2015-08-20"}
-            ]}));
+            setTimeout(function() {
+                requests[0].respond(200, {}, JSON.stringify({objects:[
+                    {sysObjectId: "id1", value: 1, sysCreated: "2015-08-22"},
+                    {sysObjectId: "id2", value: 2, sysCreated: "2015-08-21"},
+                    {sysObjectId: "id3", value: 2, sysCreated: "2015-08-20"}
+                ]}));
 
-            var filtered = model.messages.has("value", 2);
-            expect(filtered).to.be.instanceOf(Array);
-            expect(filtered.length).to.equal(2);
-            expect(filtered[0].id).to.equal("id2");
-            expect(filtered[1].id).to.equal("id3");
+                setTimeout(function() {
+                    var filtered = model.messages.has("value", 2);
+                    expect(filtered).to.be.instanceOf(Array);
+                    expect(filtered.length).to.equal(2);
+                    expect(filtered[0].id).to.equal("id2");
+                    expect(filtered[1].id).to.equal("id3");
+                    done();
+                }, 10);
+            }, 10);
         });
 
-        it("should match array properties, single value", function() {
+        it("should match array properties, single value", function(done) {
             var model = appstax.model();
             model.watch("messages");
 
-            requests[0].respond(200, {}, JSON.stringify({objects:[
-                {sysObjectId: "id1", tags: ["foo", "bar"], sysCreated: "2015-08-22"},
-                {sysObjectId: "id2", tags: ["bar", "baz"], sysCreated: "2015-08-21"},
-                {sysObjectId: "id3", tags: ["baz", "gaz"], sysCreated: "2015-08-20"}
-            ]}));
+            setTimeout(function() {
+                requests[0].respond(200, {}, JSON.stringify({objects:[
+                    {sysObjectId: "id1", tags: ["foo", "bar"], sysCreated: "2015-08-22"},
+                    {sysObjectId: "id2", tags: ["bar", "baz"], sysCreated: "2015-08-21"},
+                    {sysObjectId: "id3", tags: ["baz", "gaz"], sysCreated: "2015-08-20"}
+                ]}));
 
-            var filtered = model.messages.has("tags", "bar");
-            expect(filtered).to.be.instanceOf(Array);
-            expect(filtered.length).to.equal(2);
-            expect(filtered[0].id).to.equal("id1");
-            expect(filtered[1].id).to.equal("id2");
+                setTimeout(function() {
+                    var filtered = model.messages.has("tags", "bar");
+                    expect(filtered).to.be.instanceOf(Array);
+                    expect(filtered.length).to.equal(2);
+                    expect(filtered[0].id).to.equal("id1");
+                    expect(filtered[1].id).to.equal("id2");
+                    done();
+                }, 10);
+            }, 10);
         });
 
-        it("should match array properties, multiple values (OR)", function() {
+        it("should match array properties, multiple values (OR)", function(done) {
             var model = appstax.model();
             model.watch("messages");
 
-            requests[0].respond(200, {}, JSON.stringify({objects:[
-                {sysObjectId: "id1", tags: ["foo", "bar"], sysCreated: "2015-08-22"},
-                {sysObjectId: "id2", tags: ["bar", "baz"], sysCreated: "2015-08-21"},
-                {sysObjectId: "id3", tags: ["baz", "gaz"], sysCreated: "2015-08-20"}
-            ]}));
+            setTimeout(function() {
+                requests[0].respond(200, {}, JSON.stringify({objects:[
+                    {sysObjectId: "id1", tags: ["foo", "bar"], sysCreated: "2015-08-22"},
+                    {sysObjectId: "id2", tags: ["bar", "baz"], sysCreated: "2015-08-21"},
+                    {sysObjectId: "id3", tags: ["baz", "gaz"], sysCreated: "2015-08-20"}
+                ]}));
 
-            var filtered = model.messages.has("tags", ["foo", "bar"]);
-            expect(filtered).to.be.instanceOf(Array);
-            expect(filtered.length).to.equal(2);
-            expect(filtered[0].id).to.equal("id1");
-            expect(filtered[1].id).to.equal("id2");
+                setTimeout(function() {
+                    var filtered = model.messages.has("tags", ["foo", "bar"]);
+                    expect(filtered).to.be.instanceOf(Array);
+                    expect(filtered.length).to.equal(2);
+                    expect(filtered[0].id).to.equal("id1");
+                    expect(filtered[1].id).to.equal("id2");
+                    done();
+                }, 10);
+            }, 10);
         });
 
-        it("should match relation properties", function() {
+        it("should match relation properties", function(done) {
             var model = appstax.model();
             model.watch("messages");
 
-            requests[0].respond(200, {}, JSON.stringify({objects:[
-                { sysObjectId: "id1", sysCreated: "2015-08-22",
-                  comments: {
-                      sysDatatype: "relation",
-                      sysRelationType: "array",
-                      sysObjects: ["rel1", "rel2"]
-                  }},
-                { sysObjectId: "id2", sysCreated: "2015-08-21",
-                  comments: {
-                      sysDatatype: "relation",
-                      sysRelationType: "array",
-                      sysObjects: [{sysObjectId:"rel2"}, {sysObjectId:"rel3"}]
-                  }},
-                { sysObjectId: "id3", sysCreated: "2015-08-20",
-                  comments: {
-                      sysDatatype: "relation",
-                      sysRelationType: "array",
-                      sysObjects: ["rel4"]
-                  }}
-            ]}));
+            setTimeout(function() {
+                requests[0].respond(200, {}, JSON.stringify({objects:[
+                    { sysObjectId: "id1", sysCreated: "2015-08-22",
+                      comments: {
+                          sysDatatype: "relation",
+                          sysRelationType: "array",
+                          sysObjects: ["rel1", "rel2"]
+                      }},
+                    { sysObjectId: "id2", sysCreated: "2015-08-21",
+                      comments: {
+                          sysDatatype: "relation",
+                          sysRelationType: "array",
+                          sysObjects: [{sysObjectId:"rel2"}, {sysObjectId:"rel3"}]
+                      }},
+                    { sysObjectId: "id3", sysCreated: "2015-08-20",
+                      comments: {
+                          sysDatatype: "relation",
+                          sysRelationType: "array",
+                          sysObjects: ["rel4"]
+                      }}
+                ]}));
 
-            var filtered = model.messages.has("comments", ["rel3", appstax.object("foo", {sysObjectId:"rel4"})]);
-            expect(filtered).to.be.instanceOf(Array);
-            expect(filtered.length).to.equal(2);
-            expect(filtered[0].id).to.equal("id2");
-            expect(filtered[1].id).to.equal("id3");
+                setTimeout(function() {
+                    var filtered = model.messages.has("comments", ["rel3", appstax.object("foo", {sysObjectId:"rel4"})]);
+                    expect(filtered).to.be.instanceOf(Array);
+                    expect(filtered.length).to.equal(2);
+                    expect(filtered[0].id).to.equal("id2");
+                    expect(filtered[1].id).to.equal("id3");
+                    done();
+                }, 10);
+            }, 10);
         });
 
     });
@@ -436,7 +516,7 @@ describe("Live data model", function() {
             expect(model.currentUser).to.equal(null);
         });
 
-        it("should get loaded with properties if user is already logged in", function() {
+        it("should get loaded with properties if user is already logged in", function(done) {
             var appKey   = "appkey_" + (Math.random() * 10000);
             var localKey = "appstax_session_" + appKey;
             localStorage.setItem(localKey, JSON.stringify({
@@ -451,86 +531,107 @@ describe("Live data model", function() {
 
             expect(model.currentUser).to.equal(null);
             expect(requests.length).to.equal(1);
-            expect(requests[0].url).to.equal("http://localhost:3000/objects/users/id1001");
 
-            requests[0].respond(200, {}, JSON.stringify({sysObjectId: "id1001", fullName:"Bart Simpson"}));
+            setTimeout(function() {
+                expect(requests[0].url).to.equal("http://localhost:3000/objects/users/id1001");
+                requests[0].respond(200, {}, JSON.stringify({sysObjectId: "id1001", fullName:"Bart Simpson"}));
 
-            expect(model.currentUser).to.have.property("fullName", "Bart Simpson");
-
-            delete localStorage[localKey];
+                setTimeout(function() {
+                    expect(model.currentUser).to.have.property("fullName", "Bart Simpson");
+                    delete localStorage[localKey];
+                    done();
+                }, 10);
+            }, 10);
         });
 
-        it("should get loaded with properties after login", function() {
+        it("should get loaded with properties after login", function(done) {
             var model = appstax.model();
             model.watch("currentUser");
 
             appstax.login("homer", "secret");
-
             expect(model.currentUser).to.equal(null);
-            expect(requests.length).to.equal(1);
-            expect(requests[0].method).to.equal("POST");
-            expect(requests[0].url).to.equal("http://localhost:3000/sessions");
 
-            requests[0].respond(200, {}, JSON.stringify({
-                sysSessionId: "sid1003",
-                user: {sysObjectId: "id1004", fullName: "Homer Simpson"}
-            }));
+            setTimeout(function() {
+                expect(requests.length).to.equal(1);
+                expect(requests[0].method).to.equal("POST");
+                expect(requests[0].url).to.equal("http://localhost:3000/sessions");
 
-            expect(model.currentUser).to.exist;
-            expect(model.currentUser).to.have.property("fullName", "Homer Simpson");
+                requests[0].respond(200, {}, JSON.stringify({
+                    sysSessionId: "sid1003",
+                    user: {sysObjectId: "id1004", fullName: "Homer Simpson"}
+                }));
+
+                setTimeout(function() {
+                    expect(model.currentUser).to.exist;
+                    expect(model.currentUser).to.have.property("fullName", "Homer Simpson");
+                    done();
+                }, 10);
+            }, 10);
         });
 
-        it("should get loaded with properties after signup", function() {
+        it("should get loaded with properties after signup", function(done) {
             var model = appstax.model();
             model.watch("currentUser");
 
             appstax.signup("smithers", "secret");
-
             expect(model.currentUser).to.equal(null);
-            expect(requests.length).to.equal(1);
-            expect(requests[0].method).to.equal("POST");
-            expect(requests[0].url).to.equal("http://localhost:3000/users?login=true");
 
-            requests[0].respond(200, {}, JSON.stringify({
-                sysSessionId: "sid1003",
-                user: {sysObjectId: "id1005", fullName: "Mr. Smithers"}
-            }));
+            setTimeout(function() {
+                expect(requests.length).to.equal(1);
+                expect(requests[0].method).to.equal("POST");
+                expect(requests[0].url).to.equal("http://localhost:3000/users?login=true");
 
-            expect(model.currentUser).to.exist;
-            expect(model.currentUser).to.have.property("fullName", "Mr. Smithers");
+                requests[0].respond(200, {}, JSON.stringify({
+                    sysSessionId: "sid1003",
+                    user: {sysObjectId: "id1005", fullName: "Mr. Smithers"}
+                }));
+
+                setTimeout(function() {
+                    expect(model.currentUser).to.exist;
+                    expect(model.currentUser).to.have.property("fullName", "Mr. Smithers");
+                    done();
+                }, 10);
+            }, 10);
         });
 
-        it("should be removed after logout", function() {
+        it("should be removed after logout", function(done) {
             var model = appstax.model();
             model.watch("currentUser");
 
             appstax.login("smithers", "secret");
-            requests[0].respond(200, {}, JSON.stringify({sysSessionId: "sid1003", user: {sysObjectId: "id1005"}}));
+            setTimeout(function() {
+                requests[0].respond(200, {}, JSON.stringify({sysSessionId: "sid1003", user: {sysObjectId: "id1005"}}));
 
-            expect(model.currentUser).to.exist;
-
-            appstax.logout();
-            expect(model.currentUser).to.equal(null);
+                setTimeout(function() {
+                    expect(model.currentUser).to.exist;
+                    appstax.logout();
+                    expect(model.currentUser).to.equal(null);
+                    done();
+                }, 10);
+            }, 10);
         });
 
-        it("should be updated on object.updated", function() {
+        it("should be updated on object.updated", function(done) {
             var model = appstax.model();
             model.watch("currentUser");
 
             appstax.login("homer", "secret");
-            requests[0].respond(200, {}, JSON.stringify({
-                sysSessionId: "sid1003",
-                user: {sysObjectId: "id1005", fullName: "Homer S"}
-            }));
+            setTimeout(function() {
+                requests[0].respond(200, {}, JSON.stringify({
+                    sysSessionId: "sid1003",
+                    user: {sysObjectId: "id1005", fullName: "Homer S"}
+                }));
 
-            expect(model.currentUser).to.have.property("fullName", "Homer S");
-
-            fakeChannelReceive("objects/users", "", {
-                type: "object.updated",
-                object: appstax.object("users", {sysObjectId: "id1005", fullName: "Homer Jay Simpson"})
-            });
-
-            expect(model.currentUser).to.have.property("fullName", "Homer Jay Simpson");
+                setTimeout(function() {
+                    expect(model.currentUser).to.have.property("fullName", "Homer S");
+                    fakeChannelReceive("objects/users", "", {
+                        type: "object.updated",
+                        object: appstax.object("users", {sysObjectId: "id1005", fullName: "Homer Jay Simpson"})
+                    });
+                    expect(model.currentUser).to.have.property("fullName", "Homer Jay Simpson");
+                    done();
+                }, 10);
+            }, 10);
         });
 
     });

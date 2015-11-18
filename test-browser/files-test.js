@@ -1,7 +1,7 @@
 
 var appstax = require("../src/appstax");
 var sinon = require("sinon");
-var Q = require("kew");
+var Q = require("q");
 
 describe("Files", function() {
 
@@ -85,20 +85,23 @@ describe("Files", function() {
         expect(file).to.be.undefined;
     });
 
-    it("should store file properties in objects", function() {
+    it("should store file properties in objects", function(done) {
         var object = appstax.object("myobjects");
         object.file1 = appstax.file(mockFile("f0.ext"));
 
         object.save();
 
-        var formData = requests[0].requestBody;
-        expect(formData).to.be.instanceOf(FormData);
-        var objectData = JSON.parse(formData.get("sysObjectData").value);
-        expect(objectData.file1).to.have.property("sysDatatype", "file");
-        expect(objectData.file1).to.have.property("filename", "f0.ext");
+        setTimeout(function() {
+            var formData = requests[0].requestBody;
+            expect(formData).to.be.instanceOf(FormData);
+            var objectData = JSON.parse(formData.get("sysObjectData").value);
+            expect(objectData.file1).to.have.property("sysDatatype", "file");
+            expect(objectData.file1).to.have.property("filename", "f0.ext");
+            done();
+        }, 10);
     });
 
-    it("should should POST object with multipart files", function() {
+    it("should should POST object with multipart files", function(done) {
         apiClient.urlToken("4321");
         var object = appstax.object("myobjects");
         object.file1 = appstax.file(mockFile("f1.pdf"));
@@ -106,31 +109,39 @@ describe("Files", function() {
         object.prop1 = "value1";
         object.prop2 = "value2";
 
-        var promise = object.save();
-        requests[0].respond(200, {}, JSON.stringify({sysObjectId:"id1234"}));
+        object.save();
 
-        expect(requests.length).to.equal(1);
-        expect(requests[0].method).to.equal("POST");
-        //expect(requests[0].requestHeaders["Content-Type"]).to.contain("multipart")
-        var formData = requests[0].requestBody;
-        expect(formData).to.be.instanceOf(FormData);
-        expect(formData.get("file1").value).to.equal(appstax.files.nativeFile(object.file1));
-        expect(formData.get("file2").value).to.equal(appstax.files.nativeFile(object.file2));
+        setTimeout(function() {
+            requests[0].respond(200, {}, JSON.stringify({sysObjectId:"id1234"}));
+            expect(requests.length).to.equal(1);
+            expect(requests[0].method).to.equal("POST");
+            //expect(requests[0].requestHeaders["Content-Type"]).to.contain("multipart")
+            var formData = requests[0].requestBody;
+            expect(formData).to.be.instanceOf(FormData);
+            expect(formData.get("file1").value).to.equal(appstax.files.nativeFile(object.file1));
+            expect(formData.get("file2").value).to.equal(appstax.files.nativeFile(object.file2));
+            done();
+        }, 10);
     });
 
-    it("should encode file names with whitespace in url", function() {
+    it("should encode file names with whitespace in url", function(done) {
         apiClient.urlToken("4321");
         var object = appstax.object("myobjects", {sysObjectId:"1234"});
         object.file1 = appstax.file(mockFile("file with space.png"));
 
-        var promise = object.save();
-        requests[0].respond(200, {}, JSON.stringify({sysObjectId:"id1234"}));
+        object.save();
 
-        expect(requests[1].method).to.equal("PUT");
-        expect(requests[1].url).to.equal("http://localhost:3000/files/myobjects/id1234/file1/file%20with%20space.png?token=4321");
+        setTimeout(function() {
+            requests[0].respond(200, {}, JSON.stringify({sysObjectId:"id1234"}));
+            setTimeout(function() {
+                expect(requests[1].method).to.equal("PUT");
+                expect(requests[1].url).to.equal("http://localhost:3000/files/myobjects/id1234/file1/file%20with%20space.png?token=4321");
+                done();
+            }, 10);
+        }, 10);
     });
 
-    it("should update status and fulfill save promise after all files finish saving", function() {
+    it("should update status and fulfill save promise after all files finish saving", function(done) {
         var object = appstax.object("myobjects", {sysObjectId:"1234"});
         object.info = appstax.file(mockFile("info.pdf"));
         object.picture = appstax.file(mockFile("picture.jpg"));
@@ -139,85 +150,99 @@ describe("Files", function() {
         expect(appstax.files.status(object.picture)).to.equal("new");
 
         var promise = object.save();
-        requests[0].respond(200, {}, JSON.stringify({sysObjectId:"id1234"}));
-        window.setTimeout(function() {
-            requests[1].respond(204, {});
-            requests[2].respond(204, {});
-        }, 100);
 
-        expect(appstax.files.status(object.info)).to.equal("saving");
-        expect(appstax.files.status(object.picture)).to.equal("saving");
+        setTimeout(function() {
+            requests[0].respond(200, {}, JSON.stringify({sysObjectId:"id1234"}));
+            setTimeout(function() {
+                expect(appstax.files.status(object.info)).to.equal("saving");
+                expect(appstax.files.status(object.picture)).to.equal("saving");
+                requests[1].respond(204, {});
+                requests[2].respond(204, {});
+            }, 10);
+        }, 10);
 
-        return promise.then(function(promisedObject) {
+        promise.then(function(promisedObject) {
             expect(promisedObject).to.equal(promisedObject);
             expect(appstax.files.status(object.info)).to.equal("saved");
             expect(appstax.files.status(object.picture)).to.equal("saved");
-        });
+            done();
+        }).done();
     });
 
-    it("should have readonly url property with token after saving new object", function() {
+    it("should have readonly url property with token after saving new object", function(done) {
         apiClient.urlToken("abc12345");
         var object = appstax.object("myobjects");
         object.picture = appstax.file(mockFile("me120x200.jpg"));
 
         var promise = object.save();
-        requests[0].respond(200, {}, JSON.stringify({sysObjectId:"id1"}));
+        setTimeout(function() {
+            requests[0].respond(200, {}, JSON.stringify({sysObjectId:"id1"}));
+        }, 10);
 
-        return promise.then(function(promisedObject) {
+        promise.then(function(promisedObject) {
             var url = "http://localhost:3000/files/myobjects/id1/picture/me120x200.jpg?token=abc12345";
             expect(object.picture.url).to.equal(url);
             expect(function() { object.picture.url = "foo" }).to.throw(Error);
-        });
+            done();
+        }).done();
     });
 
-    it("should have readonly url property with token after updating object (PUT file request)", function() {
+    it("should have readonly url property with token after updating object (PUT file request)", function(done) {
         apiClient.urlToken("abc12345");
         var object = appstax.object("myobjects", {sysObjectId:"1234"});
         object.picture = appstax.file(mockFile("profile120x200.jpg"));
 
         var promise = object.save();
-        requests[0].respond(200, {}, JSON.stringify({sysObjectId:"id1"}));
-        requests[1].respond(204, {});
+        setTimeout(function() {
+            requests[0].respond(200, {}, JSON.stringify({sysObjectId:"id1"}));
+            setTimeout(function() {
+                requests[1].respond(204, {});
+            }, 10);
+        }, 10);
 
-        return promise.then(function(promisedObject) {
+        promise.then(function(promisedObject) {
             var url = "http://localhost:3000/files/myobjects/id1/picture/profile120x200.jpg?token=abc12345";
             expect(object.picture.url).to.equal(url);
             expect(function() { object.picture.url = "foo" }).to.throw(Error);
-        });
+            done();
+        }).done();
     });
 
     it("should not set data: url unless asked for", function(done) {
         var object = appstax.object("myobjects");
         object.picture = appstax.file(mockFile("profile120x200.jpg"));
 
-        window.setTimeout(function() {
+        setTimeout(function() {
             expect(object.picture.url).to.equal("") // during file save
             done();
         }, 100);
     });
 
-    it("should set data url with preview() and fulfill promise", function() {
+    it("should set data url with preview() and fulfill promise", function(done) {
         var picture = appstax.file(mockFile("profile120x200.jpg"));
-        return picture.preview().then(function(file) {
+        picture.preview().then(function(file) {
             expect(picture.url).to.match(/^data:/);
             expect(file).to.equal(picture);
-        });
+            done();
+        }).done();
     });
 
-    it("should fill file properties when loading objects from server", function() {
+    it("should fill file properties when loading objects from server", function(done) {
         apiClient.urlToken("xyz");
         var promise = appstax.findAll("profiles");
 
-        requests[0].respond(200, {}, JSON.stringify({objects:[
-            {   sysObjectId:"001",
-                profileImage:{sysDatatype:"file", url:"files/profiles/001/profileImage/name1", filename:"name1"},
-                backgroundImage:{sysDatatype:"file", url:"files/profiles/001/backgroundImage/name2", filename:"name2"}},
-            {   sysObjectId:"002",
-                profileImage:{sysDatatype:"file", url:"files/profiles/002/profileImage/name3", filename:"name3"},
-                backgroundImage:{sysDatatype:"file", url:"files/profiles/002/backgroundImage/name4", filename:"name4"}}
-        ]}));
+        setTimeout(function() {
+            requests[0].respond(200, {}, JSON.stringify({objects:[
+                {   sysObjectId:"001",
+                    profileImage:{sysDatatype:"file", url:"files/profiles/001/profileImage/name1", filename:"name1"},
+                    backgroundImage:{sysDatatype:"file", url:"files/profiles/001/backgroundImage/name2", filename:"name2"}},
+                {   sysObjectId:"002",
+                    profileImage:{sysDatatype:"file", url:"files/profiles/002/profileImage/name3", filename:"name3"},
+                    backgroundImage:{sysDatatype:"file", url:"files/profiles/002/backgroundImage/name4", filename:"name4"}}
+            ]}));
+        }, 10);
 
-        return promise.then(function(objects) {
+        promise.then(function(objects) {
             expect(objects[0].profileImage.url).to.equal("http://localhost:3000/files/profiles/001/profileImage/name1?token=xyz");
             expect(objects[1].profileImage.url).to.equal("http://localhost:3000/files/profiles/002/profileImage/name3?token=xyz");
             expect(objects[0].backgroundImage.url).to.equal("http://localhost:3000/files/profiles/001/backgroundImage/name2?token=xyz");
@@ -226,110 +251,134 @@ describe("Files", function() {
             expect(appstax.files.status(objects[1].profileImage)).to.equal("saved");
             expect(appstax.files.status(objects[0].backgroundImage)).to.equal("saved");
             expect(appstax.files.status(objects[1].backgroundImage)).to.equal("saved");
+            done();
         });
     });
 
-    it("should use appkey in file url when there is no url token", function() {
+    it("should use appkey in file url when there is no url token", function(done) {
         apiClient.urlToken("");
         var promise = appstax.findAll("profiles");
 
-        requests[0].respond(200, {}, JSON.stringify({objects:[
-            {   sysObjectId:"001",
-                profileImage:{sysDatatype:"file", url:"files/profiles/001/profileImage/name1", filename:"name1"},
-                backgroundImage:{sysDatatype:"file", url:"files/profiles/001/backgroundImage/name2", filename:"name2"}},
-            {   sysObjectId:"002",
-                profileImage:{sysDatatype:"file", url:"files/profiles/002/profileImage/name3", filename:"name3"},
-                backgroundImage:{sysDatatype:"file", url:"files/profiles/002/backgroundImage/name4", filename:"name4"}}
-        ]}));
+        setTimeout(function() {
+            requests[0].respond(200, {}, JSON.stringify({objects:[
+                {   sysObjectId:"001",
+                    profileImage:{sysDatatype:"file", url:"files/profiles/001/profileImage/name1", filename:"name1"},
+                    backgroundImage:{sysDatatype:"file", url:"files/profiles/001/backgroundImage/name2", filename:"name2"}},
+                {   sysObjectId:"002",
+                    profileImage:{sysDatatype:"file", url:"files/profiles/002/profileImage/name3", filename:"name3"},
+                    backgroundImage:{sysDatatype:"file", url:"files/profiles/002/backgroundImage/name4", filename:"name4"}}
+            ]}));
+        }, 10);
 
-        return promise.then(function(objects) {
+        promise.then(function(objects) {
             expect(objects[0].profileImage.url).to.equal("http://localhost:3000/files/profiles/001/profileImage/name1?appkey=testappkey");
             expect(objects[1].profileImage.url).to.equal("http://localhost:3000/files/profiles/002/profileImage/name3?appkey=testappkey");
             expect(objects[0].backgroundImage.url).to.equal("http://localhost:3000/files/profiles/001/backgroundImage/name2?appkey=testappkey");
             expect(objects[1].backgroundImage.url).to.equal("http://localhost:3000/files/profiles/002/backgroundImage/name4?appkey=testappkey");
-        });
+            done();
+        }).done();
     });
 
-    it("should not save file when updating a loaded object", function() {
+    it("should not save unchanged file when updating a loaded object", function(done) {
         var loadPromise = appstax.find("profiles", "001");
-        requests[0].respond(200, {}, JSON.stringify({
-            sysObjectId:"001",
-            name: "Mr. Burns",
-            profileImage:{sysDatatype:"file", url:"files/1", filename:"name1"},
-            backgroundImage:{sysDatatype:"file", url:"files/2", filename:"name2"}
-        }));
 
-        return loadPromise.then(function(object) {
+        setTimeout(function() {
+            requests[0].respond(200, {}, JSON.stringify({
+                sysObjectId:"001",
+                name: "Mr. Burns",
+                profileImage:{sysDatatype:"file", url:"files/1", filename:"name1"},
+                backgroundImage:{sysDatatype:"file", url:"files/2", filename:"name2"}
+            }));
+        }, 10);
+
+        loadPromise.then(function(object) {
             object.name = "Dr. Burns";
             savePromise = object.save();
-            requests[1].respond(200, {});
+            setTimeout(function() {
+                requests[1].respond(200, {});
+            }, 10);
 
-            return savePromise.then(function() {
+            savePromise.then(function() {
                 expect(requests.length).to.equal(2);
+                done();
             });
         });
     });
 
-    it("should save changed file when updating a loaded object", function() {
+    it("should save changed file when updating a loaded object", function(done) {
         var loadPromise = appstax.find("profiles", "001");
-        requests[0].respond(200, {}, JSON.stringify({
-            sysObjectId:"001",
-            name: "Mr. Burns",
-            profileImage:{sysDatatype:"file", url:"files/1", filename:"name1"},
-            backgroundImage:{sysDatatype:"file", url:"files/2", filename:"name2"}
-        }));
 
-        return loadPromise.then(function(object) {
+        setTimeout(function() {
+            requests[0].respond(200, {}, JSON.stringify({
+                sysObjectId:"001",
+                name: "Mr. Burns",
+                profileImage:{sysDatatype:"file", url:"files/1", filename:"name1"},
+                backgroundImage:{sysDatatype:"file", url:"files/2", filename:"name2"}
+            }));
+        }, 10);
+
+        loadPromise.then(function(object) {
             object.backgroundImage = appstax.file(mockFile("landscape.jpg"));
             expect(appstax.files.status(object.backgroundImage)).to.equal("new");
 
             savePromise = object.save();
-            requests[1].respond(200, {});
-            requests[2].respond(200, {});
+            setTimeout(function() {
+                requests[1].respond(200, {});
+                setTimeout(function() {
+                    requests[2].respond(200, {});
+                }, 10);
+            }, 10);
 
-            return savePromise.then(function() {
+            savePromise.then(function() {
                 expect(requests.length).to.equal(3);
                 expect(appstax.files.status(object.backgroundImage)).to.equal("saved");
-            });
-        });
+                done();
+            }).done();
+        }).done();
     });
 
-    it("should generate image resize url", function() {
+    it("should generate image resize url", function(done) {
         apiClient.urlToken("xyz");
         var promise = appstax.findAll("profiles");
 
-        requests[0].respond(200, {}, JSON.stringify({objects:[
-            {   sysObjectId:"001",
-                profileImage:{sysDatatype:"file", url:"files/profiles/001/profileImage/name2", filename:"name2"}}
-        ]}));
+        setTimeout(function() {
+            requests[0].respond(200, {}, JSON.stringify({objects:[
+                {   sysObjectId:"001",
+                    profileImage:{sysDatatype:"file", url:"files/profiles/001/profileImage/name2", filename:"name2"}}
+            ]}));
+        }, 10);
 
-        return promise.then(function(objects) {
+        promise.then(function(objects) {
             var url1 = objects[0].profileImage.imageUrl("resize", {width:200});
             var url2 = objects[0].profileImage.imageUrl("resize", {height:300});
             var url3 = objects[0].profileImage.imageUrl("resize", {width:400, height:500});
             expect(url1).to.equal("http://localhost:3000/images/resize/200/-/profiles/001/profileImage/name2?token=xyz");
             expect(url2).to.equal("http://localhost:3000/images/resize/-/300/profiles/001/profileImage/name2?token=xyz");
             expect(url3).to.equal("http://localhost:3000/images/resize/400/500/profiles/001/profileImage/name2?token=xyz");
-        });
+            done();
+        }).done();
     });
 
-    it("should generate image crop url", function() {
+    it("should generate image crop url", function(done) {
         apiClient.urlToken("xyz");
         var promise = appstax.findAll("profiles");
 
-        requests[0].respond(200, {}, JSON.stringify({objects:[
-            {   sysObjectId:"001",
-                profileImage:{sysDatatype:"file", url:"files/profiles/001/profileImage/name2", filename:"name2"}}
-        ]}));
+        setTimeout(function() {
+            requests[0].respond(200, {}, JSON.stringify({objects:[
+                {   sysObjectId:"001",
+                    profileImage:{sysDatatype:"file", url:"files/profiles/001/profileImage/name2", filename:"name2"}}
+            ]}));
+        }, 10);
 
-        return promise.then(function(objects) {
+        promise.then(function(objects) {
             var url1 = objects[0].profileImage.imageUrl("crop", {width:200});
             var url2 = objects[0].profileImage.imageUrl("crop", {height:300});
             var url3 = objects[0].profileImage.imageUrl("crop", {width:400, height:500});
             expect(url1).to.equal("http://localhost:3000/images/crop/200/-/profiles/001/profileImage/name2?token=xyz");
             expect(url2).to.equal("http://localhost:3000/images/crop/-/300/profiles/001/profileImage/name2?token=xyz");
             expect(url3).to.equal("http://localhost:3000/images/crop/400/500/profiles/001/profileImage/name2?token=xyz");
-        });
+            done();
+        }).done();
     });
 
 });

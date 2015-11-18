@@ -1,7 +1,7 @@
 
 var appstax = require("../src/appstax");
 var sinon = require("sinon");
-var Q = require("kew");
+var Q = require("q");
 
 describe("Object queries", function() {
 

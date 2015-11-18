@@ -2,7 +2,7 @@
 
 var appstax = require("../src/appstax");
 var sinon = require("sinon");
-var Q = require("kew");
+var Q = require("q");
 var wsmock = require("./lib/wsmock");
 
 describe("Sockets", function() {

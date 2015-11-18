@@ -1,6 +1,6 @@
 
 var extend    = require("extend");
-var Q         = require("kew");
+var Q         = require("q");
 
 module.exports = createUsersContext;
 

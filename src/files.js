@@ -1,5 +1,5 @@
 
-var Q         = require("kew");
+var Q         = require("q");
 var extend    = require("extend");
 
 module.exports = createFilesContext;

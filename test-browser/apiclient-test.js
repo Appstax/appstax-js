@@ -168,17 +168,25 @@ describe("API Client", function() {
         expect(requests[3].requestHeaders).has.property("x-appstax-urltoken");
     });
 
-    it("should pick up url token from response header", function() {
+    it("should pick up url token from response header", function(done) {
         apiClient.request("get", "http://example.com");
         requests[0].respond(200, {"x-appstax-urltoken": "the-url-token"}, "{}");
-        expect(apiClient.urlToken()).to.equal("the-url-token");
+
+        setTimeout(function() {
+            expect(apiClient.urlToken()).to.equal("the-url-token");
+            done();
+        }, 10);
     });
 
-    it("should not overwrite with blank urltoken when no response header is present", function() {
+    it("should not overwrite with blank urltoken when no response header is present", function(done) {
         apiClient.urlToken("initial-url-token");
         apiClient.request("get", "http://example.com");
         requests[0].respond(200, {}, "{}");
-        expect(apiClient.urlToken()).to.equal("initial-url-token");
+
+        setTimeout(function() {
+            expect(apiClient.urlToken()).to.equal("initial-url-token");
+            done();
+        }, 10);
     });
 
 });

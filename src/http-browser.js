@@ -1,6 +1,6 @@
 
 var extend  = require("extend");
-var Q       = require("kew");
+var Q       = require("q");
 var reqwest = null;
 if(typeof window == "object") {
     reqwest = require("reqwest");
