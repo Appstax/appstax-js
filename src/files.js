@@ -94,11 +94,15 @@ function createFilesContext(apiClient) {
         var url = urlForFile(collectionName, objectId, propertyName, file.filename);
         var data = new FormData();
         data.append("file", internal.nativeFile);
-        apiClient.request("put", url, data).then(function(response) {
-            internal.status = "saved";
-            internal.url = url;
-            defer.resolve(file);
-        });
+        apiClient.request("put", url, data)
+            .progress(function(progress) {
+                defer.notify(progress);
+            })
+            .then(function(response) {
+                internal.status = "saved";
+                internal.url = url;
+                defer.resolve(file);
+            });
         return defer.promise;
     }
 

@@ -381,4 +381,72 @@ describe("Files", function() {
         }).done();
     });
 
+    it("should provide upload progress when POST'ing object and file", function(done) {
+        apiClient.urlToken("4321");
+        var object = appstax.object("myobjects");
+        object.file1 = appstax.file(mockFile("f1.pdf"));
+        object.prop1 = "value1";
+
+        var progressSpy = sinon.spy();
+        var promise = object.save().progress(progressSpy);
+
+
+        setTimeout(function() {
+            requests[0].upload.dispatchEvent(new sinon.ProgressEvent("progress", {loaded: 58, total: 100}));
+            setTimeout(function() {
+                requests[0].respond(200, {}, JSON.stringify({sysObjectId:"id1234"}));
+            }, 10);
+        }, 10);
+
+        promise.then(function() {
+            expect(progressSpy.callCount).to.equal(2);
+            expect(progressSpy.args[0][0]).to.have.property("percent", 58);
+            expect(progressSpy.args[1][0]).to.have.property("percent", 100);
+            done();
+        }).done();
+    });
+
+    it("should provide upload progress when PUT'ing multiple files", function(done) {
+        apiClient.urlToken("4321");
+        var object = appstax.object("myobjects", {sysObjectId: "10023"});
+        object.file1 = appstax.file(mockFile("f1.pdf"));
+        object.file2 = appstax.file(mockFile("f2.pdf"));
+        object.file3 = appstax.file(mockFile("f3.pdf"));
+
+        var progressSpy = sinon.spy();
+        var promise = object.save().progress(progressSpy);
+
+        setTimeout(function() {
+            requests[0].respond(200, {}, JSON.stringify({sysObjectId:"id1234"}));
+            setTimeout(function() {
+                expect(requests.length).to.equal(4);
+                _progress(10, 1, 30, 100); // 30%  0%  0%  ->  10%
+                _progress(20, 2, 30, 100); // 30% 30%  0%  ->  20%
+                _progress(30, 3, 30, 100); // 30% 30% 30%  ->  30%
+                setTimeout(function() {
+                    requests[1].respond(204, {});
+                    requests[2].respond(204, {});
+                    requests[3].respond(204, {});
+                }, 200);
+            }, 10);
+        }, 10);
+
+        promise.then(function() {
+            expect(progressSpy.callCount).to.equal(6);
+            expect(progressSpy.args[0][0]).to.have.property("percent",  10); //  30%   0%   0%  ->  10%
+            expect(progressSpy.args[1][0]).to.have.property("percent",  20); //  30%  30%   0%  ->  20%
+            expect(progressSpy.args[2][0]).to.have.property("percent",  30); //  30%  30%  30%  ->  30%
+            expect(progressSpy.args[3][0]).to.have.property("percent",  53); // 100%  30%  30%  ->  53.3333%
+            expect(progressSpy.args[4][0]).to.have.property("percent",  77); // 100% 100%  30%  ->  76.6666%
+            expect(progressSpy.args[5][0]).to.have.property("percent", 100); // 100% 100% 100%  ->  100%
+            done();
+        }).done();
+
+        function _progress(delay, index, loaded, total) {
+            setTimeout(function() {
+                requests[index].upload.dispatchEvent(new sinon.ProgressEvent("progress", {loaded: loaded, total: total}));
+            }, delay);
+        }
+    });
+
 });

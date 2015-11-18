@@ -13,9 +13,19 @@ module.exports = {
         var r = reqwest(extend({
                 type: "json",
                 contentType: "application/json",
-                crossOrigin: true
+                crossOrigin: true,
+                before: function(xhr) {
+                    xhr.upload.addEventListener("progress", function(event) {
+                        defer.notify({
+                            percent: 100 * event.loaded / event.total,
+                            loaded: event.loaded,
+                            total: event.total
+                        });
+                    });
+                }
             }, options))
             .then(function(response) {
+                defer.notify({percent: 100});
                 defer.resolve({
                     response: response,
                     request: r.request

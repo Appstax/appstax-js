@@ -223,6 +223,11 @@ function createObjectsContext(apiClient, files, collections) {
         }
         internal.status = "saving";
         apiClient.request(method, url, formData || objectData)
+                 .progress(function(progress) {
+                     if(typeof formData != "undefined") {
+                         defer.notify(progress);
+                     }
+                 })
                  .then(function(response) {
                      internal.setId(response.sysObjectId);
                      internal.status = "saved";
@@ -286,16 +291,32 @@ function createObjectsContext(apiClient, files, collections) {
         var fileProperties = getFileProperties(object);
         var keys = Object.keys(fileProperties);
         var promises = [];
+        var progress = [];
         keys.forEach(function(key) {
             var file = fileProperties[key];
             if(files.status(file) !== "saved") {
                 var promise = files.saveFile(object.collectionName, object.id, key, file)
                 promises.push(promise);
+                progress.push(0);
             }
         });
-        return Q.all(promises).then(function() {
-            return Q.resolve(object)
-        });
+
+        var defer = Q.defer();
+        Q.all(promises)
+            .progress(function(item) {
+                progress[item.index] = item.value.percent;
+                var percent = progress.reduce(function(previous, current, index, array) {
+                    return previous + (current / array.length);
+                }, 0);
+                defer.notify({percent: Math.round(percent)});
+            })
+            .then(function() {
+                defer.resolve(object);
+            })
+            .fail(function(error) {
+                defer.reject(error);
+            });
+        return defer.promise;
     }
 
     function savePermissionChanges(object) {

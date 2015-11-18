@@ -87,6 +87,9 @@ function createApiClient(options) {
 
         var defer = Q.defer();
         http.request(options)
+            .progress(function(progress) {
+                defer.notify(progress);
+            })
             .fail(function(error) {
                 if(config.log) {
                     config.log("error", "Appstax Error: " + error.message);
