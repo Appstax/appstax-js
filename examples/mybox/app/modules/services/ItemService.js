@@ -25,6 +25,7 @@ app.service("ItemService", function($q, $state, $rootScope, $interval, UserServi
 
     this.saveItems = function(items, progressCallback) {
         var doneCount = 0;
+        var defer = $q.defer();
         var promises = [];
         items.forEach(function(item) {
             item.username = UserService.username();
@@ -37,8 +38,14 @@ app.service("ItemService", function($q, $state, $rootScope, $interval, UserServi
                     progressCallback(doneCount, items.length);    
                 }
             });
+            promise.progress(function(progress) {
+                defer.notify({item: item, progress: progress});
+            });
         });
-        return $q.all(promises);
+        $q.all(promises).then(function() {
+            defer.resolve(items);
+        });
+        return defer.promise;
     }
 
     this.createItem = function(file) {

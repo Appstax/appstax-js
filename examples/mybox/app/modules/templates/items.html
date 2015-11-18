@@ -5,7 +5,8 @@
         <div class="row row-centered">
             <div class="col-xs-6 col-sm-3 col-md-3 col-centered" ng-repeat="item in items.slice(0, limit)">
                 <div class="thumbnail" ng-click="editItem(item)">
-                    <img class="" alt="" ng-src="{{item.file.imageUrl('resize', {width:400})}}">
+                    <img class="" alt="" ng-src="{{item.file.imageUrl('resize', {width:300})}}">
+                    <p class="text-center text-muted" ng-show="progress[$index] && progress[$index] < 100"><small>{{ progress[$index] | number : 0 }}%</small></p>
                     <div class="thumbnail-overlay" ng-show="item.description">
                         {{item.description}}
                     </div>

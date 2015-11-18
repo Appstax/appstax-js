@@ -6,6 +6,7 @@ app.controller("ItemsController", function($scope, $state, $window, $timeout, $m
     }
 
     $scope.items = [];
+    $scope.progress = [];
     $scope.limit = 12;
 
     updateView(allItems);
@@ -25,7 +26,13 @@ app.controller("ItemsController", function($scope, $state, $window, $timeout, $m
 
     $scope.addItems = function(files) {
         var items = ItemService.createItems(files);
-        ItemService.saveItems(items);
+        ItemService.saveItems(items).then(
+            function success() {},
+            function fail() {},
+            function progress(itemProgress) {
+                var index = $scope.items.indexOf(itemProgress.item);
+                $scope.progress[index] = itemProgress.progress.percent;
+            });
     }
 
     $scope.editItem = function(item) {
