@@ -1,30 +1,37 @@
 
 var extend  = require("extend");
 var Q       = require("q");
-var reqwest = null;
-if(typeof window == "object") {
-    reqwest = require("reqwest");
-}
+var reqwest = require("reqwest");
 
 module.exports = {
     request: function(options) {
         var defer = Q.defer();
 
         var r = reqwest(extend({
-                type: "json",
                 contentType: "application/json",
-                crossOrigin: true,
+                crossOrigin: (typeof document == "object"),
                 before: function(xhr) {
-                    xhr.upload.addEventListener("progress", function(event) {
+                    if(xhr.upload && xhr.upload.addEventListener) {
+                        xhr.upload.addEventListener("progress", progress);
+                    } else {
+                        xhr.upload.onprogress = progress;
+                    }
+                    function progress(event) {
                         defer.notify({
                             percent: 100 * event.loaded / event.total,
                             loaded: event.loaded,
                             total: event.total
                         });
-                    });
+                    };
                 }
             }, options))
             .then(function(response) {
+                if(response && typeof response.responseText == "string") {
+                    response = response.responseText;
+                }
+                try {
+                    response = JSON.parse(response);
+                } catch(e) {}
                 defer.notify({percent: 100});
                 defer.resolve({
                     response: response,
@@ -48,5 +55,5 @@ function errorFromXhr(xhr) {
             return result;
         }
     } catch(e) {}
-    return xhr.responseText;
+    return new Error(xhr.responseText);
 }

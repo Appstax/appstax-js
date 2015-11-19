@@ -2,12 +2,8 @@
 var extend   = require("extend");
 var Q        = require("q");
 var encoding = require("./encoding");
-var socket = require("./socket");
-
-var http = require("./http-browser");
-if(typeof window != "object") {
-    http = require("./http-node");
-}
+var socket   = require("./socket");
+var http     = require("./http");
 
 module.exports = createApiClient;
 
@@ -117,7 +113,9 @@ function createApiClient(options) {
         return h;
 
         function addAppKeyHeader(headers) {
-            headers["x-appstax-appkey"] = config.appKey;
+            if(typeof config.appKey == "string") {
+                headers["x-appstax-appkey"] = config.appKey;
+            }
         }
         function addSessionIdHeader(headers) {
             if(hasSession()) {

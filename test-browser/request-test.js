@@ -90,7 +90,8 @@ describe("Request API", function() {
                 throw new Error("Promise should have failed")
             })
             .fail(function(error) {
-                expect(error).to.equal("Didn't work!");
+                expect(error).to.be.instanceof(Error);
+                expect(error.message).to.equal("Didn't work!");
             });
     });
 

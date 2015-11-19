@@ -125,7 +125,7 @@ describe("API Client under node.js", function() {
 
         return apiClient.request("get", "http://server/data")
         .then(function() {
-            throw("Not supposed to succeed!");
+            throw(new Error("Not supposed to succeed!"));
         })
         .fail(function(error) {
             expect(error).to.have.property("message", "No success!");
@@ -137,7 +137,7 @@ describe("API Client under node.js", function() {
 
         return apiClient.request("get", "http://server/data")
         .then(function() {
-            throw("Not supposed to succeed!");
+            throw(new Error("Not supposed to succeed!"));
         })
         .fail(function(error) {
             expect(error).to.have.property("message", "No success!");
