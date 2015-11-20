@@ -11,10 +11,12 @@ module.exports = {
                 contentType: "application/json",
                 crossOrigin: (typeof document == "object"),
                 before: function(xhr) {
-                    if(xhr.upload && xhr.upload.addEventListener) {
-                        xhr.upload.addEventListener("progress", progress);
-                    } else {
-                        xhr.upload.onprogress = progress;
+                    if(xhr && xhr.upload) {
+                        if(xhr.upload.addEventListener) {
+                            xhr.upload.addEventListener("progress", progress);
+                        } else {
+                            xhr.upload.onprogress = progress;
+                        }
                     }
                     function progress(event) {
                         defer.notify({
