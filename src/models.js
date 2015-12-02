@@ -82,7 +82,7 @@ function createModel(objects, users, channels, socket, hub) {
 function createArrayObserver(name, options, model, objects, channels) {
     var observer = {};
     observer.name = name;
-    observer.collection = name;
+    observer.collection = options.collection || name;
     observer.order = options.order || "-created";
     observer.filter = options.filter;
     observer.sort = sort;

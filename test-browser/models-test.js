@@ -392,6 +392,61 @@ describe("Live data model", function() {
         }, 10);
     });
 
+    it("should add array property with name alias", function(done) {
+        var model = appstax.model();
+
+        expect(model).to.not.have.property("barItems");
+        expect(model).to.not.have.property("bazItems");
+
+        model.watch("barItems", {collection: "items", filter: "foo='bar'"});
+        model.watch("bazItems", {collection: "items", filter: "foo='baz'"});
+
+        expect(model).to.have.property("barItems");
+        expect(model.barItems).to.be.instanceof(Array);
+        expect(model.barItems.length).to.equal(0);
+
+        expect(model).to.have.property("bazItems");
+        expect(model.bazItems).to.be.instanceof(Array);
+        expect(model.bazItems.length).to.equal(0);
+
+        expect(requests.length).to.equal(2);
+        expect(requests[0].method).to.equal("GET");
+        expect(requests[0].url).to.equal("http://localhost:3000/objects/items?filter=foo%3D%27bar%27");
+        expect(requests[1].method).to.equal("GET");
+        expect(requests[1].url).to.equal("http://localhost:3000/objects/items?filter=foo%3D%27baz%27");
+
+        setTimeout(function() {
+            expect(channelStub.callCount).to.equal(2);
+            expect(channelStub.args[0][0]).to.equal("objects/items");
+            expect(channelStub.args[0][1]).to.equal("foo='bar'");
+            expect(channelStub.args[1][0]).to.equal("objects/items");
+            expect(channelStub.args[1][1]).to.equal("foo='baz'");
+
+            requests[0].respond(200, {}, JSON.stringify({objects:[
+                {sysObjectId: "id1", content: "c1", sysCreated: "2015-08-19T11:00:00"},
+                {sysObjectId: "id2", content: "c2", sysCreated: "2015-08-19T10:00:00"}
+            ]}));
+            requests[1].respond(200, {}, JSON.stringify({objects:[
+                {sysObjectId: "id3", content: "c3", sysCreated: "2015-08-19T11:00:00"},
+                {sysObjectId: "id4", content: "c4", sysCreated: "2015-08-19T10:00:00"}
+            ]}));
+
+            setTimeout(function() {
+                expect(model.barItems.length).to.equal(2);
+                expect(model.barItems[0].id).to.equal("id1");
+                expect(model.barItems[1].id).to.equal("id2");
+                expect(model.barItems[0].collectionName).to.equal("items");
+                expect(model.barItems[1].collectionName).to.equal("items");
+                expect(model.bazItems.length).to.equal(2);
+                expect(model.bazItems[0].id).to.equal("id3");
+                expect(model.bazItems[1].id).to.equal("id4");
+                expect(model.bazItems[0].collectionName).to.equal("items");
+                expect(model.bazItems[1].collectionName).to.equal("items");
+                done();
+            }, 10);
+        }, 10);
+    });
+
     describe(".has() filter", function() {
 
         it("should match string properties", function(done) {
