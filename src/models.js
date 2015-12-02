@@ -84,6 +84,7 @@ function createArrayObserver(name, options, model, objects, channels) {
     observer.name = name;
     observer.collection = name;
     observer.order = options.order || "-created";
+    observer.filter = options.filter;
     observer.sort = sort;
     observer.load = load;
     observer.connect = connect;
@@ -132,11 +133,15 @@ function createArrayObserver(name, options, model, objects, channels) {
     }
 
     function load() {
-        objects.findAll(observer.collection).then(set);
+        if(typeof observer.filter == "string") {
+            objects.find(observer.collection, observer.filter).then(set);
+        } else {
+            objects.findAll(observer.collection).then(set);
+        }
     }
 
     function connect() {
-        var channel = channels.getChannel("objects/" + observer.collection);
+        var channel = channels.getChannel("objects/" + observer.collection, observer.filter);
         channel.on("object.created", function(event) {
             add(event.object);
         });

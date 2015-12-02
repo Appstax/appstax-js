@@ -356,6 +356,42 @@ describe("Live data model", function() {
         expect(changes).to.equal(3);
     });
 
+    it("should add filtered array property and subscribe to filtered objects", function(done) {
+        var model = appstax.model();
+
+        expect(model).to.not.have.property("items");
+        model.watch("items", {filter: "foo='bar'"});
+        expect(model).to.have.property("items");
+        expect(model.items).to.be.instanceof(Array);
+        expect(model.items.length).to.equal(0);
+
+        expect(requests.length).to.equal(1);
+        expect(requests[0].method).to.equal("GET");
+        expect(requests[0].url).to.equal("http://localhost:3000/objects/items?filter=foo%3D%27bar%27");
+
+        setTimeout(function() {
+            expect(channelStub.callCount).to.equal(1);
+            expect(channelStub.args[0][0]).to.equal("objects/items");
+            expect(channelStub.args[0][1]).to.equal("foo='bar'");
+
+            requests[0].respond(200, {}, JSON.stringify({objects:[
+                {sysObjectId: "id1", content: "c1", sysCreated: "2015-08-19T11:00:00"},
+                {sysObjectId: "id2", content: "c2", sysCreated: "2015-08-19T10:00:00"}
+            ]}));
+
+            setTimeout(function() {
+                expect(model.items.length).to.equal(2);
+                expect(model.items[0].id).to.equal("id1");
+                expect(model.items[1].id).to.equal("id2");
+                expect(model.items[0].content).to.equal("c1")
+                expect(model.items[1].content).to.equal("c2")
+                expect(model.items[0].collectionName).to.equal("items");
+                expect(model.items[1].collectionName).to.equal("items");
+                done();
+            }, 10);
+        }, 10);
+    });
+
     describe(".has() filter", function() {
 
         it("should match string properties", function(done) {
