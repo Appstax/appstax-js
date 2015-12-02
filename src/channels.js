@@ -21,8 +21,10 @@ function createChannelsContext(socket, objects) {
 
     function createChannel(channelName, options) {
         var nameParts = channelName.split("/");
-        var channel = channels[channelName] = {
+        var key = getChannelKey(channelName, options);
+        var channel = channels[key] = {
             type: nameParts[0],
+            key: key,
             created: false,
             wildcard: channelName.indexOf("*") != -1,
             on: function(eventName, handler) {
@@ -84,11 +86,12 @@ function createChannelsContext(socket, objects) {
         }
     }
 
-    function getChannel(name, permissions) {
-        if(!channels[name]) {
-            createChannel(name, permissions);
+    function getChannel(name, options) {
+        var key = getChannelKey(name, options)
+        if(!channels[key]) {
+            createChannel(name, options);
         }
-        return channels[name];
+        return channels[key];
     }
 
     function sendPacket(packet) {
@@ -117,6 +120,16 @@ function createChannelsContext(socket, objects) {
         return filtered.map(function(handler) {
             return handler.fn;
         });
+    }
+
+    function getChannelKey(channelName, options) {
+        var nameParts = channelName.split("/");
+        var type = nameParts[0];
+        if(type == "objects") {
+            return channelName + "$" + options;
+        } else {
+            return channelName;
+        }
     }
 
     function addHandler(channelPattern, eventName, handler) {

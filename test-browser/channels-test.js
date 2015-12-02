@@ -316,6 +316,24 @@ describe("Channels", function() {
         }, 200);
     });
 
+    it("should create different channels for same object collection with different filters", function(done) {
+        var channel1a = appstax.channel("objects/collection1", "foo='bar'");
+        var channel1b = appstax.channel("objects/collection1", "foo='bar'");
+        var channel2a = appstax.channel("objects/collection1", "goo='gar'");
+
+        setTimeout(function() {
+            expect(serverReceived.length).to.equal(2);
+            expect(serverReceived[0]).to.have.property("channel", "objects/collection1");
+            expect(serverReceived[0]).to.have.property("command", "subscribe");
+            expect(serverReceived[0]).to.have.property("filter", "foo='bar'");
+            expect(serverReceived[1]).to.have.property("channel", "objects/collection1");
+            expect(serverReceived[1]).to.have.property("command", "subscribe");
+            expect(serverReceived[1]).to.have.property("filter", "goo='gar'");
+            expect(channel1a === channel1b).to.equal(true);
+            done();
+        }, 200);
+    });
+
     it("should convert received data to appstax objects", function(done) {
         var ch = appstax.channel("objects/mycollection");
         var receivedObjects = [];
