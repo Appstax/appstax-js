@@ -6,8 +6,15 @@ var Q           = require("q");
 
 module.exports = createObjectsContext;
 
-var internalProperties = ["collectionName", "id", "internalId", "username", "created", "updated", "permissions", "save", "saveAll", "remove", "grant", "revoke", "sysCreated", "sysUpdated", "sysPermissions"];
 var nextContextId = 0;
+
+function getInternalProperties(collectionName) {
+    var properties = ["collectionName", "id", "internalId", "created", "updated", "permissions", "save", "saveAll", "remove", "grant", "revoke", "sysCreated", "sysUpdated", "sysPermissions"];
+    if(collectionName == "users") {
+        properties.push("username");
+    }
+    return properties;
+}
 
 function createObjectsContext(apiClient, files, collections) {
     var contextId = nextContextId++;
@@ -183,6 +190,7 @@ function createObjectsContext(apiClient, files, collections) {
     function refreshObject(object) {
         var defer = Q.defer();
         var internal = object.internalObject;
+        var internalProperties = getInternalProperties(object.collectionName);
         if(internal.status === "new") {
             defer.resolve(object);
         } else {
@@ -508,6 +516,7 @@ function createObjectsContext(apiClient, files, collections) {
     }
 
     function getPropertyNames(object) {
+        var internalProperties = getInternalProperties(object.collectionName);
         var keys = Object.keys(object);
         return keys.filter(function(key) {
             return internalProperties.indexOf(key) == -1;
@@ -523,6 +532,7 @@ function createObjectsContext(apiClient, files, collections) {
             }
         });
         var sysValues = object.internalObject.sysValues;
+        var internalProperties = getInternalProperties(object.collectionName);
         Object.keys(sysValues).forEach(function(key) {
             if(internalProperties.indexOf(key) == -1) {
                 data[key] = sysValues[key];
@@ -725,6 +735,7 @@ function createObjectsContext(apiClient, files, collections) {
         if(from == null || to == null) {
             return;
         }
+        var internalProperties = getInternalProperties(from.collectionName);
         Object.keys(from)
               .filter(function(key) {
                   return internalProperties.indexOf(key) == -1;

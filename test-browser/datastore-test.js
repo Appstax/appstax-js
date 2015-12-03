@@ -50,12 +50,14 @@ describe("DataStore", function() {
     it("should POST all non-internal properties as data", function(done) {
         var object = appstax.object("MyObjects", {property1: "value1", sysCreated:"1", sysUpdated: "2"});
         object.property2 = "value2";
+        object.username = "user123";
         object.save();
 
         setTimeout(function() {
             var data = JSON.parse(requests[0].requestBody)
             expect(data).to.have.property("property1", "value1");
             expect(data).to.have.property("property2", "value2");
+            expect(data).to.have.property("username", "user123");
             expect(data).to.not.have.property("save");
             expect(data).to.not.have.property("remove");
             expect(data).to.not.have.property("collectionName");
