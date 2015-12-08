@@ -447,6 +447,435 @@ describe("Live data model", function() {
         }, 10);
     });
 
+    describe.only("relations", function() {
+
+        var itemsResponse = {objects:[{
+            sysObjectId: "id0",
+            prop1: {
+                sysDatatype: "relation",
+                sysRelationType: "single",
+                sysCollection: "collection2",
+                sysObjects: [{
+                    sysObjectId:"id1",
+                    prop3: "value3"
+                }]
+            },
+            prop2: {
+                sysDatatype: "relation",
+                sysRelationType: "array",
+                sysCollection: "collection3",
+                sysObjects: [{
+                    sysObjectId:"id2",
+                    prop4: "value4a"
+                }, {
+                    sysObjectId:"id3",
+                    prop4: "value4b"
+                }]
+            }
+        }]}
+
+        var itemsResponseDeep = {objects:[{
+            sysObjectId: "id0",
+            prop1: {
+                sysDatatype: "relation",
+                sysRelationType: "single",
+                sysCollection: "collection2",
+                sysObjects: [{
+                    sysObjectId:"id1",
+                    prop2: "value2",
+                    prop3: {
+                        sysDatatype: "relation",
+                        sysRelationType: "single",
+                        sysCollection: "collection3",
+                        sysObjects: [{
+                            sysObjectId:"id2",
+                            prop4: "value4"
+                        }]
+                    }
+                }]
+            }
+        }]}
+
+        var itemsResponseDeepArray = {objects:[{
+            sysObjectId: "id0",
+            prop1: {
+                sysDatatype: "relation",
+                sysRelationType: "array",
+                sysCollection: "collection2",
+                sysObjects: [{
+                    sysObjectId:"id1",
+                    prop2: "value2",
+                    prop3: {
+                        sysDatatype: "relation",
+                        sysRelationType: "single",
+                        sysCollection: "collection3",
+                        sysObjects: [{
+                            sysObjectId:"id2",
+                            prop4: "value4"
+                        }]
+                    }
+                }]
+            }
+        }]}
+
+        it("should be loaded initially when expand is specified", function(done) {
+            var model = appstax.model();
+
+            expect(model).to.not.have.property("items");
+            model.watch("items", {expand: 2});
+            expect(model).to.have.property("items");
+
+            expect(requests.length).to.equal(1);
+            expect(requests[0].method).to.equal("GET");
+            expect(requests[0].url).to.equal("http://localhost:3000/objects/items?expanddepth=2");
+
+            setTimeout(function() {
+                expect(channelStub.callCount).to.equal(1);
+                expect(channelStub.args[0][0]).to.equal("objects/items");
+
+                requests[0].respond(200, {}, JSON.stringify(itemsResponse));
+
+                setTimeout(function() {
+                    expect(model.items.length).to.equal(1);
+                    expect(model.items[0].prop1.id).to.equal("id1");
+                    expect(model.items[0].prop2[0].id).to.equal("id2");
+                    expect(model.items[0].prop2[1].id).to.equal("id3");
+                    done();
+                }, 10);
+            }, 10);
+        });
+
+        it("should subscribe to unfiltered object channels for related collections", function(done) {
+            var model = appstax.model();
+            model.watch("items", {expand: 2});
+
+            setTimeout(function() {
+                requests[0].respond(200, {}, JSON.stringify(itemsResponse));
+
+                setTimeout(function() {
+                    expect(channelStub.callCount).to.equal(3);
+                    expect(channelStub.args[0][0]).to.equal("objects/items");
+                    expect(channelStub.args[1][0]).to.equal("objects/collection2");
+                    expect(channelStub.args[2][0]).to.equal("objects/collection3");
+                    done();
+                }, 10);
+            }, 10);
+        });
+
+        it("should update related objects in place", function(done) {
+            var model = appstax.model();
+            model.watch("items", {expand: 1});
+
+            setTimeout(function() {
+                requests[0].respond(200, {}, JSON.stringify(itemsResponse));
+
+                setTimeout(function() {
+                    var cached = {
+                        item0: model.items[0],
+                        item0_prop1: model.items[0].prop1,
+                        item0_prop2_1: model.items[0].prop2[1]
+                    }
+
+                    fakeChannelReceive("objects/collection2", "", {
+                        type: "object.updated",
+                        object: appstax.object("collection2", {
+                            sysObjectId: "id1",
+                            prop3: "value3 new!"
+                        })
+                    });
+
+                    fakeChannelReceive("objects/collection3", "", {
+                        type: "object.updated",
+                        object: appstax.object("collection3", {
+                            sysObjectId: "id3",
+                            prop4: "value4b new!"
+                        })
+                    });
+
+                    setTimeout(function() {
+                        expect(requests.length).to.equal(1);
+                        expect(model.items[0].prop1.prop3).to.equal("value3 new!");
+                        expect(model.items[0].prop2[1].prop4).to.equal("value4b new!");
+
+                        // check object normalization
+                        expect(cached.item0).to.equal(model.items[0]);
+                        expect(cached.item0_prop1).to.equal(model.items[0].prop1);
+                        expect(cached.item0_prop2_1).to.equal(model.items[0].prop2[1]);
+
+                        done();
+                    }, 10);
+                }, 10);
+            }, 10);
+        });
+
+        it("should re-expand relations when updating an object loaded with relations", function(done) {
+            var model = appstax.model();
+            model.watch("items", {expand: 1});
+
+            setTimeout(function() {
+                requests[0].respond(200, {}, JSON.stringify(itemsResponse));
+
+                setTimeout(function() {
+
+                    var cached = {
+                        item0: model.items[0],
+                        item0_prop1: model.items[0].prop1,
+                        item0_prop2_1: model.items[0].prop2[1]
+                    }
+
+                    fakeChannelReceive("objects/items", "", {
+                        type: "object.updated",
+                        object: appstax.object("items", {
+                            sysObjectId: "id0",
+                            prop1: {
+                                sysDatatype: "relation",
+                                sysRelationType: "single",
+                                sysCollection: "collection2",
+                                sysObjects: ["id1"] // realtime updates are not expanded
+                            },
+                            prop2: {
+                                sysDatatype: "relation",
+                                sysRelationType: "array",
+                                sysCollection: "collection3",
+                                sysObjects: ["id2", "id3"] // realtime updates are not expanded
+                            },
+                            prop2b: "prop2b is new"
+                    })});
+
+                    setTimeout(function() {
+                        // keep old object state until expand finishes
+                        expect(model.items[0].prop2b).to.equal(undefined);
+
+                        // check object normalization
+                        expect(cached.item0).to.equal(model.items[0]);
+                        expect(cached.item0_prop1).to.equal(model.items[0].prop1);
+                        expect(cached.item0_prop2_1).to.equal(model.items[0].prop2[1]);
+
+                        expect(requests.length).to.equal(2);
+                        expect(requests[1].url).to.equal("http://localhost:3000/objects/items/id0?expanddepth=1");
+
+                        requests[1].respond(200, {}, JSON.stringify({
+                            sysObjectId: "id0",
+                            prop1: {
+                                sysDatatype: "relation",
+                                sysRelationType: "single",
+                                sysCollection: "collection2",
+                                sysObjects: [{
+                                    sysObjectId:"id1",
+                                    prop3: "value3"
+                                }]
+                            },
+                            prop2: {
+                                sysDatatype: "relation",
+                                sysRelationType: "array",
+                                sysCollection: "collection3",
+                                sysObjects: [{
+                                    sysObjectId:"id2",
+                                    prop4: "value4a"
+                                }, {
+                                    sysObjectId:"id3",
+                                    prop4: "value4b"
+                                }]
+                            },
+                            prop2b: "prop2b is new"
+                        }));
+
+                        setTimeout(function() {
+                            expect(model.items[0].prop2b).to.equal("prop2b is new");
+                            expect(model.items[0].prop1.prop3).to.equal("value3");
+                            expect(model.items[0].prop2[1].prop4).to.equal("value4b");
+
+                            // check object normalization
+                            expect(cached.item0).to.equal(model.items[0]);
+                            expect(cached.item0_prop1).to.equal(model.items[0].prop1);
+                            expect(cached.item0_prop2_1).to.equal(model.items[0].prop2[1]);
+
+                            done();
+                        }, 10);
+                    }, 10);
+                }, 10);
+            }, 10);
+        });
+
+        it("should update deep objects and re-expand relations", function(done) {
+            var model = appstax.model();
+            model.watch("items", {expand: 2});
+
+            setTimeout(function() {
+                requests[0].respond(200, {}, JSON.stringify(itemsResponseDeep));
+
+                setTimeout(function() {
+
+                    var cached = {
+                        item0: model.items[0],
+                        item0_prop1: model.items[0].prop1,
+                        item0_prop1_prop3: model.items[0].prop1.prop3
+                    }
+
+                    fakeChannelReceive("objects/collection2", "", {
+                        type: "object.updated",
+                        object: appstax.object("collection2", {
+                            sysObjectId: "id1",
+                            prop2: "value2 new!",
+                            prop3: {
+                                sysDatatype: "relation",
+                                sysRelationType: "single",
+                                sysCollection: "collection3",
+                                sysObjects: ["id2"]
+                            }
+                        })
+                    });
+
+                    setTimeout(function() {
+                        expect(requests.length).to.equal(2);
+                        expect(requests[1].url).to.equal("http://localhost:3000/objects/collection2/id1?expanddepth=1");
+                        requests[1].respond(200, {}, JSON.stringify({
+                            sysObjectId:"id1",
+                            prop2: "value2 new!",
+                            prop3: {
+                                sysDatatype: "relation",
+                                sysRelationType: "single",
+                                sysCollection: "collection3",
+                                sysObjects: [{
+                                    sysObjectId:"id2",
+                                    prop4: "value4 new!"
+                                }]
+                            }
+                        }));
+
+                        setTimeout(function() {
+                            expect(model.items[0].prop1.prop2).to.equal("value2 new!");
+                            expect(model.items[0].prop1.prop3.prop4).to.equal("value4 new!");
+
+                            // check object normalization
+                            expect(cached.item0).to.equal(model.items[0]);
+                            expect(cached.item0_prop1).to.equal(model.items[0].prop1);
+                            expect(cached.item0_prop1_prop3).to.equal(model.items[0].prop1.prop3);
+
+                            done();
+                        }, 10);
+                    }, 10);
+                }, 10);
+            }, 10);
+        });
+
+        it("should update deep objects in array and re-expand relations", function(done) {
+            var model = appstax.model();
+            model.watch("items", {expand: 2});
+
+            setTimeout(function() {
+                requests[0].respond(200, {}, JSON.stringify(itemsResponseDeepArray));
+
+                setTimeout(function() {
+                    var cached = {
+                        item0: model.items[0],
+                        item0_prop1_0: model.items[0].prop1[0],
+                        item0_prop1_0_prop3: model.items[0].prop1[0].prop3
+                    }
+
+                    fakeChannelReceive("objects/collection2", "", {
+                        type: "object.updated",
+                        object: appstax.object("collection2", {
+                            sysObjectId: "id1",
+                            prop2: "value2 new!",
+                            prop3: {
+                                sysDatatype: "relation",
+                                sysRelationType: "single",
+                                sysCollection: "collection3",
+                                sysObjects: ["id2"]
+                            }
+                        })
+                    });
+
+                    setTimeout(function() {
+                        expect(requests.length).to.equal(2);
+                        expect(requests[1].url).to.equal("http://localhost:3000/objects/collection2/id1?expanddepth=1");
+                        requests[1].respond(200, {}, JSON.stringify({
+                            sysObjectId:"id1",
+                            prop2: "value2 new!",
+                            prop3: {
+                                sysDatatype: "relation",
+                                sysRelationType: "single",
+                                sysCollection: "collection3",
+                                sysObjects: [{
+                                    sysObjectId:"id2",
+                                    prop4: "value4 new!"
+                                }]
+                            }
+                        }));
+
+                        setTimeout(function() {
+                            expect(model.items[0].prop1[0].prop2).to.equal("value2 new!");
+                            expect(model.items[0].prop1[0].prop3.prop4).to.equal("value4 new!");
+
+                            // check object normalization
+                            expect(cached.item0).to.equal(model.items[0]);
+                            expect(cached.item0_prop1_0).to.equal(model.items[0].prop1[0]);
+                            expect(cached.item0_prop1_0_prop3).to.equal(model.items[0].prop1[0].prop3);
+
+                            done();
+                        }, 10);
+                    }, 10);
+                }, 10);
+            }, 10);
+        });
+
+        it("should get updates for related objects appearing after initial load", function(done) {
+            var model = appstax.model();
+            model.watch("items", {expand: 1});
+
+            setTimeout(function() {
+                requests[0].respond(200, {}, JSON.stringify({objects:[{sysObjectId: "id000"}]}));
+
+                setTimeout(function() {
+                    fakeChannelReceive("objects/items", "", {
+                        type: "object.updated",
+                        object: appstax.object("items", {
+                            sysObjectId: "id000",
+                            prop1: {
+                                sysDatatype: "relation",
+                                sysRelationType: "single",
+                                sysCollection: "collection2",
+                                sysObjects: ["id001"]
+                            }
+                        })
+                    });
+
+                    setTimeout(function() {
+                        expect(requests.length).to.equal(2);
+                        expect(requests[1].url).to.equal("http://localhost:3000/objects/items/id000?expanddepth=1");
+                        requests[1].respond(200, {}, JSON.stringify({
+                            sysObjectId: "id000",
+                            prop1: {
+                                sysDatatype: "relation",
+                                sysRelationType: "single",
+                                sysCollection: "collection2",
+                                sysObjects: [{sysObjectId:"id001", prop2: "value2"}]
+                            }
+                        }));
+
+                        setTimeout(function() {
+                            expect(model.items[0].prop1.prop2).to.equal("value2");
+
+                            fakeChannelReceive("objects/collection2", "", {
+                                type: "object.updated",
+                                object: appstax.object("collection2", {
+                                    sysObjectId: "id001",
+                                    prop2: "value2 new!"
+                                })
+                            });
+
+                            setTimeout(function() {
+                                expect(model.items[0].prop1.prop2).to.equal("value2 new!");
+                                done();
+                            }, 10);
+                        }, 10);
+                    }, 10);
+                }, 10);
+            }, 10);
+        });
+    });
+
     describe(".has() filter", function() {
 
         it("should match string properties", function(done) {

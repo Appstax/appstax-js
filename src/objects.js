@@ -81,6 +81,7 @@ function createObjectsContext(apiClient, files, collections) {
         getProperties: getProperties,
         createObject: createObject,
         getObjectStatus: getObjectStatus,
+        getRelatedObjects: getRelatedObjects,
         findAll: findAll,
         find: find,
         search: search,
@@ -269,20 +270,18 @@ function createObjectsContext(apiClient, files, collections) {
         if(isUnsaved(object)) {
             throw new Error("Error calling expand() on unsaved object.")
         }
-        var defer = Q.defer();
         var depth = 1;
         if(typeof options === "number") {
             depth = options;
         }
-        findById(object.collectionName, object.id, {expand:depth}).then(function(expanded) {
+        return findById(object.collectionName, object.id, {expand:depth}).then(function(expanded) {
             var internal = object.internalObject;
             var relations = Object.keys(internal.relations);
             relations.forEach(function(relation) {
                 object[relation] = expanded[relation];
             });
-            defer.resolve(object);
+            return Q.resolve(object);
         });
-        return defer.promise;
     }
 
     function markFilesSaved(object) {
