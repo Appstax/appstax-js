@@ -302,7 +302,7 @@ describe("Live data model", function() {
         }, 10);
     });
 
-    it("should update object in place when receiving object.deleted", function(done) {
+    it("should update object in place when receiving object.updated", function(done) {
         var model = appstax.model();
         model.watch("posts");
 
