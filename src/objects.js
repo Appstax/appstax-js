@@ -621,7 +621,7 @@ function createObjectsContext(apiClient, files, collections) {
         if(arguments.length < 2) { return; }
         var a1 = arguments[1];
         var a2 = arguments[2];
-        if(typeof a1 === "string" && a1.indexOf("=") == -1) {
+        if(typeof a1 === "string" && a1.indexOf("=") == -1 && a1.indexOf(" ") == -1) {
             return findById(collectionName, a1, a2);
         } else if(typeof a1 === "string") {
             return findByQueryString(collectionName, a1, a2);
