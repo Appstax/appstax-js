@@ -695,7 +695,14 @@ function createObjectsContext(apiClient, files, collections) {
     }
 
     function sendFindRequest(url, collectionName, options) {
-        var factory = (options && options.factory) || createObject;
+        var factory = createObject;
+        if(options && options.factory) {
+            factory = options.factory;
+        } else if(options && options.plain) {
+            factory = function(collectionName, properties, factory) {
+                return properties;
+            }
+        }
         var defer = Q.defer();
         apiClient.request("get", url)
                  .then(function(result) {

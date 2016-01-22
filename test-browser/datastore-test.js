@@ -662,6 +662,88 @@ describe("DataStore", function() {
 
     });
 
+    describe("loading 'plain' javascript objects", function() {
+
+        var serverJson;
+        var resultSpy;
+
+        beforeEach(function() {
+            serverJson = {objects:[{sysObjectId: "id1", sysCreated: "2015-11-01T11:00:00", prop: "val"}, {sysObjectId: "id2", sysCreated: "2015-11-01T11:01:00", prop: "val"}]};
+            resultSpy = sinon.spy();
+            setTimeout(function() {
+                if(requests.length > 0) {
+                    requests[0].respond(200, {}, JSON.stringify(serverJson));
+                }
+            }, 10);
+        });
+
+        it("should work with findAll(collection)", function(done) {
+            appstax.findAll("coll1", {plain: true})
+                .then(function(objects) {
+                    expect(objects).deep.equals(serverJson.objects);
+                    done();
+                }).fail(done);
+        });
+
+        it("should work with find(collection, id)", function(done) {
+            appstax.find("coll1", "myid", {plain: true})
+                .then(function(objects) {
+                    expect(objects).deep.equals(serverJson.objects);
+                    done();
+                }).fail(done);
+        });
+
+        it("should work with find(collection, queryFunction)", function(done) {
+            appstax.find("coll1", function() {}, {plain: true})
+                .then(function(objects) {
+                    expect(objects).deep.equals(serverJson.objects);
+                    done();
+                }).fail(done);
+        });
+
+        it("should work with find(collection, queryObject)", function(done) {
+            var query = {queryString: function() { return "foo" }};
+            appstax.find("coll1", query, {plain: true})
+                .then(function(objects) {
+                    expect(objects).deep.equals(serverJson.objects);
+                    done();
+                }).fail(done);
+        });
+
+        it("should work with find(collection, queryString)", function(done) {
+            appstax.find("coll1", "foo = 'bar'", {plain: true})
+                .then(function(objects) {
+                    expect(objects).deep.equals(serverJson.objects);
+                    done();
+                }).fail(done);
+        });
+
+        it("should work with find(collection, propertyValues)", function(done) {
+            appstax.find("coll1", {foo: "bar"}, {plain: true})
+                .then(function(objects) {
+                    expect(objects).deep.equals(serverJson.objects);
+                    done();
+                }).fail(done);
+        });
+
+        it("should work with search(collection, propertyValues)", function(done) {
+            appstax.search("coll1", {foo: "bar"}, {plain: true})
+                .then(function(objects) {
+                    expect(objects).deep.equals(serverJson.objects);
+                    done();
+                }).fail(done);
+        });
+
+        it("should work with search(collection, propertyValue, propertyNames)", function(done) {
+            appstax.search("coll1", "bar", ["foo", "goo"], {plain: true})
+                .then(function(objects) {
+                    expect(objects).deep.equals(serverJson.objects);
+                    done();
+                }).fail(done);
+        });
+
+    });
+
 });
 
 
