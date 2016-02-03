@@ -182,7 +182,7 @@ function createCurrentUserObserver(model, objects, users, channels, hub) {
     return observer;
 
     function init() {
-        set(null);
+        model.root[observer.name] = null;
         hub.on("users.login", function(event) {
             set(event.user);
         });
@@ -197,6 +197,7 @@ function createCurrentUserObserver(model, objects, users, channels, hub) {
     function set(o) {
         o = model.normalize(o);
         model.root[observer.name] = o;
+        model.notifyHandlers("change");
     }
 
     function load() {

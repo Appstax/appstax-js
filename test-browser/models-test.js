@@ -620,6 +620,11 @@ describe("Live data model", function() {
             var model = appstax.model();
             model.watch("currentUser");
 
+            var changes = 0;
+            model.on("change", function() {
+                changes++;
+            });
+
             expect(model.currentUser).to.equal(null);
             expect(requests.length).to.equal(1);
 
@@ -629,6 +634,7 @@ describe("Live data model", function() {
 
                 setTimeout(function() {
                     expect(model.currentUser).to.have.property("fullName", "Bart Simpson");
+                    expect(changes).to.equal(1);
                     delete localStorage[localKey];
                     done();
                 }, 10);
@@ -638,6 +644,11 @@ describe("Live data model", function() {
         it("should get loaded with properties after login", function(done) {
             var model = appstax.model();
             model.watch("currentUser");
+
+            var changes = 0;
+            model.on("change", function() {
+                changes++;
+            });
 
             appstax.login("homer", "secret");
             expect(model.currentUser).to.equal(null);
@@ -655,6 +666,7 @@ describe("Live data model", function() {
                 setTimeout(function() {
                     expect(model.currentUser).to.exist;
                     expect(model.currentUser).to.have.property("fullName", "Homer Simpson");
+                    expect(changes).to.equal(1);
                     done();
                 }, 10);
             }, 10);
@@ -663,6 +675,11 @@ describe("Live data model", function() {
         it("should get loaded with properties after signup", function(done) {
             var model = appstax.model();
             model.watch("currentUser");
+
+            var changes = 0;
+            model.on("change", function() {
+                changes++;
+            });
 
             appstax.signup("smithers", "secret");
             expect(model.currentUser).to.equal(null);
@@ -680,6 +697,7 @@ describe("Live data model", function() {
                 setTimeout(function() {
                     expect(model.currentUser).to.exist;
                     expect(model.currentUser).to.have.property("fullName", "Mr. Smithers");
+                    expect(changes).to.equal(1);
                     done();
                 }, 10);
             }, 10);
@@ -689,6 +707,11 @@ describe("Live data model", function() {
             var model = appstax.model();
             model.watch("currentUser");
 
+            var changes = 0;
+            model.on("change", function() {
+                changes++;
+            });
+
             appstax.login("smithers", "secret");
             setTimeout(function() {
                 requests[0].respond(200, {}, JSON.stringify({sysSessionId: "sid1003", user: {sysObjectId: "id1005"}}));
@@ -697,6 +720,7 @@ describe("Live data model", function() {
                     expect(model.currentUser).to.exist;
                     appstax.logout();
                     expect(model.currentUser).to.equal(null);
+                    expect(changes).to.equal(2);
                     done();
                 }, 10);
             }, 10);
@@ -705,6 +729,11 @@ describe("Live data model", function() {
         it("should be updated on object.updated", function(done) {
             var model = appstax.model();
             model.watch("currentUser");
+
+            var changes = 0;
+            model.on("change", function() {
+                changes++;
+            });
 
             appstax.login("homer", "secret");
             setTimeout(function() {
@@ -720,6 +749,7 @@ describe("Live data model", function() {
                         object: appstax.object("users", {sysObjectId: "id1005", fullName: "Homer Jay Simpson"})
                     });
                     expect(model.currentUser).to.have.property("fullName", "Homer Jay Simpson");
+                    expect(changes).to.equal(2);
                     done();
                 }, 10);
             }, 10);
