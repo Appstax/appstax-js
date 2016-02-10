@@ -447,7 +447,7 @@ describe("Live data model", function() {
         }, 10);
     });
 
-    describe.only("relations", function() {
+    describe("relations", function() {
 
         var itemsResponse = {objects:[{
             sysObjectId: "id0",
@@ -689,6 +689,79 @@ describe("Live data model", function() {
                             expect(cached.item0).to.equal(model.items[0]);
                             expect(cached.item0_prop1).to.equal(model.items[0].prop1);
                             expect(cached.item0_prop2_1).to.equal(model.items[0].prop2[1]);
+
+                            done();
+                        }, 10);
+                    }, 10);
+                }, 10);
+            }, 10);
+        });
+
+        it("should expand relations when newly created objects appear", function(done) {
+            var model = appstax.model();
+            model.watch("items", {expand: 1});
+
+            setTimeout(function() {
+                requests[0].respond(200, {}, JSON.stringify({objects:[]}));
+
+                setTimeout(function() {
+
+                    fakeChannelReceive("objects/items", "", {
+                        type: "object.created",
+                        object: appstax.object("items", {
+                            sysObjectId: "id0",
+                            prop1: {
+                                sysDatatype: "relation",
+                                sysRelationType: "single",
+                                sysCollection: "collection2",
+                                sysObjects: ["id1"] // realtime updates are not expanded
+                            },
+                            prop2: {
+                                sysDatatype: "relation",
+                                sysRelationType: "array",
+                                sysCollection: "collection3",
+                                sysObjects: ["id2", "id3"] // realtime updates are not expanded
+                            },
+                            prop2b: "prop2b is new"
+                    })});
+
+                    setTimeout(function() {
+                        // keep old object state until expand finishes
+                        expect(model.items[0]).to.equal(undefined);
+
+                        expect(requests.length).to.equal(2);
+                        expect(requests[1].url).to.equal("http://localhost:3000/objects/items/id0?expanddepth=1");
+
+                        requests[1].respond(200, {}, JSON.stringify({
+                            sysObjectId: "id0",
+                            prop1: {
+                                sysDatatype: "relation",
+                                sysRelationType: "single",
+                                sysCollection: "collection2",
+                                sysObjects: [{
+                                    sysObjectId:"id1",
+                                    prop3: "value3"
+                                }]
+                            },
+                            prop2: {
+                                sysDatatype: "relation",
+                                sysRelationType: "array",
+                                sysCollection: "collection3",
+                                sysObjects: [{
+                                    sysObjectId:"id2",
+                                    prop4: "value4a"
+                                }, {
+                                    sysObjectId:"id3",
+                                    prop4: "value4b"
+                                }]
+                            },
+                            prop2b: "prop2b is new"
+                        }));
+
+                        setTimeout(function() {
+                            expect(model.items[0].prop2b).to.equal("prop2b is new");
+                            expect(model.items[0].prop1.prop3).to.equal("value3");
+                            expect(model.items[0].prop2[1].prop4).to.equal("value4b");
 
                             done();
                         }, 10);

@@ -128,9 +128,19 @@ function createArrayObserver(name, options, model, objects, channels) {
     function add(o) {
         o = model.normalize(o);
         registerRelations(o);
-        get().push(o);
-        observer.sort();
-        model.notifyHandlers("change");
+
+        var depth = expandedObjects[o.id];
+        if(typeof depth != "undefined" && depth > 0) {
+            o.expand(depth).then(_add);
+        } else {
+            _add();
+        }
+
+        function _add() {
+            get().push(o);
+            observer.sort();
+            model.notifyHandlers("change");
+        }
     }
 
     function update(o) {
