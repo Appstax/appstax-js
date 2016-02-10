@@ -13,6 +13,7 @@ require("./request-test");
 require("./socket-test");
 require("./channels-test");
 require("./models-test");
+require("./normalizer-test");
 
 // Polyfill for f.bind()
 Function.prototype.bind = Function.prototype.bind || function (thisp) {

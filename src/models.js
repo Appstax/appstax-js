@@ -1,4 +1,6 @@
 
+var createNormalizer = require("./normalizer");
+
 module.exports = createModelContext;
 
 function createModelContext(objects, users, channels, socket, hub) {
@@ -12,7 +14,7 @@ function createModelContext(objects, users, channels, socket, hub) {
 function createModel(objects, users, channels, socket, hub) {
     var observers = [];
     var handlers = [];
-    var allObjects = {};
+    var normalizer = createNormalizer(objects);
 
     var api = {
         watch: addObserver,
@@ -55,32 +57,7 @@ function createModel(objects, users, channels, socket, hub) {
     }
 
     function normalize(object, depth) {
-        if(!object) {
-            return object;
-        }
-        var depth = depth || 0;
-        var id = object.id;
-        var normalized = allObjects[id];
-        if(typeof normalized == "undefined") {
-            normalized = allObjects[id] = object;
-        } else {
-            objects.copy(object, normalized);
-        }
-        if(depth >= 0) {
-            Object.keys(object).forEach(function(key) {
-                var property = object[key];
-                if(typeof property != "undefined" && typeof property.collectionName != "undefined") {
-                    normalized[key] = normalize(property, depth - 1);
-                } else if(Array.isArray(property)) {
-                    property.forEach(function(x, i) {
-                        if(typeof x.collectionName != "undefined") {
-                            normalized[key][i] = normalize(x, depth - 1);
-                        }
-                    });
-                }
-            });
-        }
-        return normalized;
+        return normalizer.normalize(object, depth);
     }
 
     function updateObject(updated, depth) {
