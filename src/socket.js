@@ -58,8 +58,9 @@ function createSocket(apiClient) {
 
     function disconnect() {
         clearInterval(connectionIntervalId);
+        connectionIntervalId = null;
         webSocket && webSocket.close();
-        realtimeSessionPromise = null;
+        setStatus("disconnected");
     }
 
     function connect() {

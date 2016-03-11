@@ -68,7 +68,9 @@ function createWsContext(url) {
         }
 
         function send(message) {
-            context.server.receive(message);
+            if(client.readyState == 1) {
+                context.server.receive(message);
+            }
         }
 
         function receive(message) {
@@ -81,7 +83,8 @@ function createWsContext(url) {
         }
 
         function close() {
-
+            client.readyState = 3;
+            eventHub.dispatch("close", {}, 1);
         }
     }
 

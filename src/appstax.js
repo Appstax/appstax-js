@@ -63,6 +63,7 @@ function createContext(options) {
         context.sessionId   = context.apiClient.sessionId;
         context.channel     = context.channels.getChannel;
         context.model       = context.models.create;
+        context.disconnect  = function() { context.apiClient.socket().disconnect(); }
     }
 }
 

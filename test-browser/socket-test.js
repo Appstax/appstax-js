@@ -226,6 +226,54 @@ describe("Sockets", function() {
         }, 1000);
     });
 
+    it("should close websocket when .disconnect() is called, and not reconnect until .connect() is called", function(done) {
+        var serverConnectionSpy = sinon.spy();
+        var serverMessageSpy = sinon.spy();
+        ws.server.on("connection", serverConnectionSpy);
+        ws.server.on("message", serverMessageSpy);
+
+        var socket = appstax.apiClient.socket();
+        socket.connect();
+
+        var sendCounter = 1;
+        var sendIntervalId = setInterval(function() {
+            socket.send("message" + sendCounter);
+            if(++sendCounter > 100) {
+                clearInterval(sendIntervalId);
+            }
+        }, 5);
+
+        setTimeout(function() {
+            requests[0].respond(200, {}, JSON.stringify({realtimeSessionId: realtimeSessionId}));
+        }, 20);
+
+        setTimeout(function() {
+            expect(ws.clients.length).equals(1);
+            var webSocket0 = ws.clients[0];
+            var webSocket0CloseSpy = sinon.spy(webSocket0, "close");
+
+            var messageCount0 = serverMessageSpy.callCount;
+            expect(messageCount0).to.be.greaterThan(0);
+            appstax.disconnect();
+
+            setTimeout(function() {
+                expect(webSocket0CloseSpy.callCount).equals(1);
+                expect(serverMessageSpy.callCount).not.greaterThan(messageCount0 + 1);
+                socket.connect();
+
+                setTimeout(function() {
+                    expect(ws.clients.length).equals(2);
+                    expect(serverMessageSpy.callCount).greaterThan(messageCount0 + 1);
+
+                    setTimeout(function() {
+                        clearInterval(sendIntervalId);
+                        done();
+                    }, 500);
+                }, 100);
+            }, 100);
+        }, 200);
+    });
+
 });
 
 
