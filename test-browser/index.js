@@ -4,6 +4,7 @@ require("./appstax-test");
 require("./datastore-test");
 require("./apiclient-test");
 require("./userservice-test");
+require("./social-login-test");
 require("./queries-test");
 require("./permissions-test");
 require("./files-test");

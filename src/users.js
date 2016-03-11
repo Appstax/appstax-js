@@ -6,7 +6,7 @@ module.exports = createUsersContext;
 
 var internalProperties = ["id", "username", "save"];
 
-function createUsersContext(apiClient, objects, hub) {
+function createUsersContext(apiClient, auth, objects, hub) {
 
     var currentUser = null;
 
@@ -58,7 +58,60 @@ function createUsersContext(apiClient, objects, hub) {
         return defer.promise;
     }
 
-    function login(username, password) {
+    function login(arg1, arg2) {
+        if(typeof arg1 == "object" && typeof arg1.provider == "string") {
+            return loginWithProvider(arg1.provider);
+        } else {
+            return loginWithUsername(arg1, arg2);
+        }
+    }
+
+    function loginWithProvider(provider) {
+        var dialog = auth.open();
+        return (
+            getProviderConfig(provider)
+                .then(dialog.run)
+                .then(_sendResult)
+        )
+
+        function _sendResult(authResult) {
+            if(authResult.error) {
+                throw new Error(authResult.error);
+            }
+            var url = apiClient.url("/sessions");
+            var data = {
+                sysProvider: {
+                    type: provider,
+                    data: {
+                        code: authResult.authCode,
+                        redirectUri: authResult.redirectUri
+                    }
+                }
+            }
+            return apiClient.request("post", url, data)
+                            .then(function(loginResult) {
+                                handleSignupOrLoginSuccess(undefined, loginResult);
+                                hub.pub("users.login", {user: currentUser});
+                                return currentUser;
+                            });
+        }
+    }
+
+    function getProviderConfig(provider) {
+        var url = apiClient.url("/sessions/providers/:provider", {provider: provider});
+        return apiClient.request("get", url).then(function(config) {
+            switch(provider) {
+                case "facebook":
+                    config.type = "oauth";
+                    config.uri = "https://www.facebook.com/dialog/oauth?display=popup&client_id={clientId}&redirect_uri={redirectUri}";
+                    config.redirectUri = window.location.href.split("#")[0];
+                    break;
+            }
+            return config;
+        });
+    }
+
+    function loginWithUsername(username, password) {
         var defer = Q.defer();
         var url = apiClient.url("/sessions");
         apiClient.request("post", url, {sysUsername:username, sysPassword:password})
@@ -75,6 +128,7 @@ function createUsersContext(apiClient, objects, hub) {
 
     function handleSignupOrLoginSuccess(username, result) {
         var id = result.user ? result.user.sysObjectId : null;
+        username = username || (result.user ? result.user.sysUsername : undefined);
         storeSession(result.sysSessionId, username, id);
         currentUser = createUser(username, result.user);
         return currentUser;

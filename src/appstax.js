@@ -8,6 +8,7 @@ var apiClient   = require("./apiclient");
 var request     = require("./request");
 var channels    = require("./channels");
 var models      = require("./models");
+var auth        = require("./auth");
 var createHub   = require("./hub");
 
 var defaults = {
@@ -40,10 +41,11 @@ function createContext(options) {
 
         // init modules
         context.apiClient   = apiClient({baseUrl: config.baseUrl, appKey: config.appKey, log: config.log});
+        context.auth        = auth();
         context.files       = files(context.apiClient);
         context.collections = collections();
         context.objects     = objects(context.apiClient, context.files, context.collections);
-        context.users       = users(context.apiClient, context.objects, hub);
+        context.users       = users(context.apiClient, context.auth, context.objects, hub);
         context.request     = request(context.apiClient)
         context.channels    = channels(context.apiClient.socket(), context.objects);
         context.models      = models(context.objects, context.users, context.channels, context.apiClient.socket(), hub);
