@@ -24,6 +24,7 @@ function createAuthContext() {
                 var url = options.uri;
                 url = url.replace("{clientId}", encodeURIComponent(options.clientId));
                 url = url.replace("{redirectUri}", encodeURIComponent(options.redirectUri));
+                url = url.replace("{nonce}", generateNonce())
 
                 popup.location.href = url;
 
@@ -46,6 +47,16 @@ function createAuthContext() {
                 }, 100);
             });
         }
+    }
+
+    function generateNonce() {
+        var length = 20;
+        var nonce = "";
+        var chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+        for(var i = 0; i < length; i++) {
+            nonce += chars.charAt(Math.floor(Math.random() * chars.length));
+        }
+        return nonce;
     }
 
     function openPopup(url) {

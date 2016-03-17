@@ -176,4 +176,131 @@ describe("Social login", function() {
 
     });
 
+    describe("google", function() {
+
+        it("should open auth dialog with options", function(done) {
+            appstax.login({provider: "google"}).fail(done);
+
+            expect(requests.length).equals(1);
+            expect(requests[0].method).equals("GET");
+            expect(requests[0].url).equals("http://localhost:3000/sessions/providers/google");
+
+            requests[0].respond(200, {}, JSON.stringify({clientId: "google-client-id-001"}));
+
+            setTimeout(function() {
+                expect(authOpenStub.callCount).equals(1);
+                expect(authRunStub.callCount).equals(1);
+
+                var authOptions = authRunStub.args[0][0];
+                expect(authOptions).has.property("type", "oauth");
+                expect(authOptions).has.property("uri", "https://accounts.google.com/o/oauth2/v2/auth?client_id={clientId}&redirect_uri={redirectUri}&nonce={nonce}&response_type=code&scope=profile+email");
+                expect(authOptions).has.property("redirectUri", window.location.href);
+                expect(authOptions).has.property("clientId", "google-client-id-001");
+                done();
+            }, 10);
+        });
+
+        it("should send authCode and redirectUri from auth dialog to server and resolve with session + user", function(done) {
+            var promise = appstax.login({provider: "google"});
+
+            authRunStub.returns(Q.resolve({authCode: "the-auth-code-12345", redirectUri:"/the/uri"}))
+            requests[0].respond(200, {}, JSON.stringify({clientId: "google-client-id-001"}));
+
+            setTimeout(function() {
+                expect(requests.length).equals(2);
+                expect(requests[1].method).equals("POST");
+                expect(requests[1].url).equals("http://localhost:3000/sessions");
+                expect(requests[1].requestBody).to.exist;
+                var data = JSON.parse(requests[1].requestBody);
+                expect(data).to.have.deep.property("sysProvider.type", "google");
+                expect(data).to.have.deep.property("sysProvider.data.code", "the-auth-code-12345");
+                expect(data).to.have.deep.property("sysProvider.data.redirectUri", "/the/uri");
+
+                requests[1].respond(200, {}, JSON.stringify({sysSessionId:"the-session-id-2", user:{sysObjectId:"the-user-id-2", sysUsername:"the-username-2"}}));
+            }, 10)
+
+            promise
+                .then(function(user) {
+                    expect(appstax.sessionId()).equals("the-session-id-2");
+
+                    expect(user).to.have.property("id", "the-user-id-2");
+                    expect(user).to.have.property("username", "the-username-2");
+
+                    done();
+                })
+                .fail(done);
+        });
+
+        it("should reject if provider config call fails", function(done) {
+            var promise = appstax.login({provider: "google"});
+            requests[0].respond(422, {}, JSON.stringify({errorMessage:"The config error"}));
+
+            promise
+                .then(function(user) {
+                    done(new Error("Should have been rejected"));
+                })
+                .fail(function(error) {
+                    expect(error).has.property("message", "The config error");
+                    done();
+                })
+                .fail(done);
+        });
+
+        it("should reject if auth dialog fails", function(done) {
+            var promise = appstax.login({provider: "google"});
+
+            authRunStub.returns(Q.reject(new Error("Auth dialog error")))
+            requests[0].respond(200, {}, JSON.stringify({clientId: "google-client-id-002"}));
+
+            promise
+                .then(function(user) {
+                    done(new Error("Should have been rejected"));
+                })
+                .fail(function(error) {
+                    expect(error).has.property("message", "Auth dialog error");
+                    done();
+                })
+                .fail(done);
+        });
+
+        it("should reject if auth result has error", function(done) {
+            var promise = appstax.login({provider: "google"});
+
+            authRunStub.returns(Q.resolve({error: "Something went wrong"}))
+            requests[0].respond(200, {}, JSON.stringify({clientId: "google-client-id-002"}));
+
+            promise
+                .then(function(user) {
+                    done(new Error("Should have been rejected"));
+                })
+                .fail(function(error) {
+                    expect(error).has.property("message", "Something went wrong");
+                    done();
+                })
+                .fail(done);
+        });
+
+        it("should reject if /sessions call fails", function(done) {
+            var promise = appstax.login({provider: "google"});
+
+            authRunStub.returns(Q.resolve({authCode: "the-auth-code-12345"}))
+            requests[0].respond(200, {}, JSON.stringify({clientId: "google-client-id-001"}));
+
+            setTimeout(function() {
+                requests[1].respond(422, {}, JSON.stringify({errorMessage:"The server error"}));
+            }, 10)
+
+            promise
+                .then(function(user) {
+                    done(new Error("Should have been rejected"));
+                })
+                .fail(function(error) {
+                    expect(error).has.property("message", "The server error");
+                    done();
+                })
+                .fail(done);
+        });
+
+    });
+
 });

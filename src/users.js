@@ -100,11 +100,14 @@ function createUsersContext(apiClient, auth, objects, hub) {
     function getProviderConfig(provider) {
         var url = apiClient.url("/sessions/providers/:provider", {provider: provider});
         return apiClient.request("get", url).then(function(config) {
+            config.type = "oauth";
+            config.redirectUri = window.location.href.split("#")[0];
             switch(provider) {
                 case "facebook":
-                    config.type = "oauth";
                     config.uri = "https://www.facebook.com/dialog/oauth?display=popup&client_id={clientId}&redirect_uri={redirectUri}";
-                    config.redirectUri = window.location.href.split("#")[0];
+                    break;
+                case "google":
+                    config.uri = "https://accounts.google.com/o/oauth2/v2/auth?client_id={clientId}&redirect_uri={redirectUri}&nonce={nonce}&response_type=code&scope=profile+email"
                     break;
             }
             return config;
