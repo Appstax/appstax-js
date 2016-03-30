@@ -51,21 +51,23 @@ function createContext(options) {
         context.models      = models(context.objects, context.users, context.channels, context.apiClient.socket(), hub);
 
         // expose shortcuts
-        context.object      = context.objects.createObject;
-        context.status      = context.objects.getObjectStatus;
-        context.findAll     = context.objects.findAll;
-        context.find        = context.objects.find;
-        context.search      = context.objects.search;
-        context.signup      = context.users.signup;
-        context.login       = context.users.login;
-        context.logout      = context.users.logout;
-        context.currentUser = context.users.currentUser;
-        context.collection  = context.collections.collection;
-        context.file        = context.files.createFile;
-        context.sessionId   = context.apiClient.sessionId;
-        context.channel     = context.channels.getChannel;
-        context.model       = context.models.create;
-        context.disconnect  = function() { context.apiClient.socket().disconnect(); }
+        context.object               = context.objects.createObject;
+        context.status               = context.objects.getObjectStatus;
+        context.findAll              = context.objects.findAll;
+        context.find                 = context.objects.find;
+        context.search               = context.objects.search;
+        context.signup               = context.users.signup;
+        context.login                = context.users.login;
+        context.logout               = context.users.logout;
+        context.currentUser          = context.users.currentUser;
+        context.requestPasswordReset = context.users.requestPasswordReset;
+        context.changePassword       = context.users.changePassword;
+        context.collection           = context.collections.collection;
+        context.file                 = context.files.createFile;
+        context.sessionId            = context.apiClient.sessionId;
+        context.channel              = context.channels.getChannel;
+        context.model                = context.models.create;
+        context.disconnect           = function() { context.apiClient.socket().disconnect(); }
     }
 }
 

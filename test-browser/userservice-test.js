@@ -462,4 +462,140 @@ describe("User service", function() {
         }).done();
     });
 
+    describe("Password reset", function() {
+
+        it("should send request with email", function(done) {
+            var promise = appstax.requestPasswordReset("my@email.com")
+
+            expect(requests.length).equals(1);
+            expect(requests[0].method).equals("POST");
+            expect(requests[0].url).equals("http://localhost:3000/users/reset/email");
+
+            var data = JSON.parse(requests[0].requestBody)
+            expect(data.email).equals("my@email.com");
+
+            requests[0].respond(200, {}, "");
+
+            promise
+                .then(function() {
+                    done();
+                })
+                .done();
+        });
+
+        it("should fail if sendt request fails", function(done) {
+            var promise = appstax.requestPasswordReset("my@email.com")
+
+            requests[0].respond(422, {}, JSON.stringify({errorMessage: "It didn't work"}));
+
+            promise
+                .then(function() {
+                    throw new Error("Should have been rejected");
+                })
+                .fail(function(error) {
+                    expect(error.message).equals("It didn't work");
+                    done();
+                })
+                .done();
+        });
+
+        it("should change password with username, new password and code", function(done) {
+            var promise = appstax.changePassword({
+                username: "the-user",
+                password: "the-new-password",
+                code: "the-super-secret"
+            });
+
+            expect(requests.length).equals(1);
+            expect(requests[0].method).equals("POST");
+            expect(requests[0].url).equals("http://localhost:3000/users/reset/password");
+
+            var data = JSON.parse(requests[0].requestBody)
+            expect(data.username).equals("the-user");
+            expect(data.password).equals("the-new-password");
+            expect(data.pinCode).equals("the-super-secret");
+
+            requests[0].respond(200, {}, "");
+
+            promise
+                .then(function() {
+                    done();
+                })
+                .done();
+        });
+
+        it("should fail if change request fails", function(done) {
+            var promise = appstax.changePassword({
+                username: "the-user",
+                password: "the-new-password",
+                code: "the-super-secret"
+            });
+
+            requests[0].respond(422, {}, JSON.stringify({errorMessage: "Nope, sorry"}));
+
+            promise
+                .then(function() {
+                    throw new Error("Should have been rejected");
+                })
+                .fail(function(error) {
+                    expect(error.message).equals("Nope, sorry");
+                    done();
+                })
+                .done();
+        });
+
+        it("should not log in by default", function(done) {
+            expect(appstax.currentUser()).equals(null);
+            expect(appstax.sessionId()).equals(null);
+
+            var promise = appstax.changePassword({
+                username: "the-user",
+                password: "the-new-password",
+                code: "the-super-secret"
+            });
+
+            var data = JSON.parse(requests[0].requestBody)
+            expect(data.login).equals(false);
+
+            requests[0].respond(200, {}, "");
+
+            promise
+                .then(function(user) {
+                    expect(user).equals(undefined);
+                    expect(appstax.currentUser()).equals(null);
+                    expect(appstax.sessionId()).equals(null);
+                    done();
+                })
+                .done();
+        });
+
+        it("should log in and set current user if specified", function(done) {
+            expect(appstax.currentUser()).equals(null);
+            expect(appstax.sessionId()).equals(null);
+
+            var promise = appstax.changePassword({
+                username: "the-user",
+                password: "the-new-password",
+                code: "the-super-secret",
+                login: true
+            });
+
+            var data = JSON.parse(requests[0].requestBody)
+            expect(data.login).equals(true);
+
+            requests[0].respond(200, {}, JSON.stringify({sysSessionId:"the-session-id", user:{sysObjectId:"userid", sysUsername:"theusername"}}));
+
+            promise
+                .then(function(user) {
+                    expect(appstax.currentUser()).to.not.be.null;
+                    expect(appstax.currentUser()).to.have.property("username", "theusername");
+                    expect(appstax.currentUser()).to.equal(user);
+                    expect(appstax.sessionId()).equals("the-session-id");
+                    done();
+                })
+                .done();
+        });
+
+    })
+
 });

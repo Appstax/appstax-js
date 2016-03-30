@@ -16,6 +16,8 @@ function createUsersContext(apiClient, auth, objects, hub) {
         signup: signup,
         login: login,
         logout: logout,
+        requestPasswordReset: requestPasswordReset,
+        changePassword: changePassword,
         currentUser: function() { return currentUser; }
     };
 
@@ -144,6 +146,32 @@ function createUsersContext(apiClient, auth, objects, hub) {
             localStorage.removeItem("appstax_session_" + apiClient.appKey());
         }
         hub.pub("users.logout");
+    }
+
+    function requestPasswordReset(email) {
+        var url = apiClient.url("/users/reset/email");
+        return apiClient.request("post", url, {email: email})
+            .then(function() {
+                return undefined;
+            });
+    }
+
+    function changePassword(options) {
+        var url = apiClient.url("/users/reset/password");
+        var data = {
+            username: options.username,
+            password: options.password,
+            pinCode:  options.code,
+            login:    options.login || false
+        }
+        return apiClient.request("post", url, data)
+            .then(function(result) {
+                if(data.login) {
+                    return handleSignupOrLoginSuccess(undefined, result);
+                } else {
+                    return undefined;
+                }
+            });
     }
 
     function storeSession(sessionId, username, id) {
