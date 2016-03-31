@@ -66,7 +66,7 @@ describe("Social login", function() {
 
                 var authOptions = authRunStub.args[0][0];
                 expect(authOptions).has.property("type", "oauth");
-                expect(authOptions).has.property("uri", "https://www.facebook.com/dialog/oauth?display=popup&client_id={clientId}&redirect_uri={redirectUri}");
+                expect(authOptions).has.property("uri", "https://www.facebook.com/dialog/oauth?display=popup&client_id={clientId}&redirect_uri={redirectUri}&scope=public_profile,email");
                 expect(authOptions).has.property("redirectUri", window.location.href);
                 expect(authOptions).has.property("clientId", "fb-client-id-001");
                 done();

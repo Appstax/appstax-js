@@ -106,7 +106,7 @@ function createUsersContext(apiClient, auth, objects, hub) {
             config.redirectUri = window.location.href.split("#")[0];
             switch(provider) {
                 case "facebook":
-                    config.uri = "https://www.facebook.com/dialog/oauth?display=popup&client_id={clientId}&redirect_uri={redirectUri}";
+                    config.uri = "https://www.facebook.com/dialog/oauth?display=popup&client_id={clientId}&redirect_uri={redirectUri}&scope=public_profile,email";
                     break;
                 case "google":
                     config.uri = "https://accounts.google.com/o/oauth2/v2/auth?client_id={clientId}&redirect_uri={redirectUri}&nonce={nonce}&response_type=code&scope=profile+email"
