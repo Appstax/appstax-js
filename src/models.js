@@ -18,7 +18,8 @@ function createModel(objects, users, channels, socket, hub) {
 
     var api = {
         watch: addObserver,
-        on: addHandler
+        on: addHandler,
+        observable: function(o) { return createObservable(api, o, objects) }
     }
     var model = {
         root: api,
@@ -288,5 +289,41 @@ function createConnectionStatusObserver(model, socket) {
 
     function connect() {
 
+    }
+}
+
+function createObservable(model, Observable, objects) {
+    var root = Observable({});
+    model.on("change", update);
+
+    update();
+    return root;
+
+    function update() {
+        var values = {};
+        keys().forEach(function(k) {
+            var v = root.value[k]
+            if(typeof v == "undefined") {
+                v = Observable();
+            }
+            v.replaceAll(model[k]);
+            values[k] = v;
+        });
+        root.value = values;
+    }
+
+    function compareObjects(o1, o2) {
+        return o1.id == o2.id;
+    }
+
+    function updateObject(oldObject, newObject) {}
+
+    function mapObject(newObject) {
+        return newObject;
+    }
+
+    function keys() {
+        return Object.keys(model)
+                     .filter(function(k) { return typeof model[k] != "function" });
     }
 }
