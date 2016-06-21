@@ -19,6 +19,7 @@ function createModel(objects, users, channels, socket, hub) {
     var api = {
         watch: addObserver,
         on: addHandler,
+        save: saveObject,
         observable: function(o) { return createObservable(api, o, objects) }
     }
     var model = {
@@ -67,6 +68,11 @@ function createModel(objects, users, channels, socket, hub) {
             observer.sort && observer.sort();
         });
         notifyHandlers("change");
+    }
+
+    function saveObject(object) {
+        notifyHandlers("change");
+        return object.save();
     }
 }
 

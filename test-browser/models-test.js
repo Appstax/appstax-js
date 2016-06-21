@@ -204,6 +204,29 @@ describe("Live data model", function() {
         ]}));
     });
 
+    it("should trigger change event before saving object", function(done) {
+        var model = appstax.model();
+
+        var object = appstax.object("posts");
+        var changeSpy = sinon.spy();
+        var saveSpy = sinon.spy(object, "save");
+
+        model.on("change", changeSpy);
+
+        model.save(object).then(function() {
+            expect(saveSpy.callCount).equals(1);
+            expect(changeSpy.callCount).equals(1);
+            done();
+        }).done(done);
+
+        setTimeout(function() {
+            expect(requests.length).equals(1);
+            requests[0].respond(200, {}, JSON.stringify({objects:[
+                {sysObjectId: "id1"}
+            ]}));
+        }, 20);
+    });
+
     it("should add objects when receiving realtime object.created", function() {
         var model = appstax.model();
         model.watch("posts");
