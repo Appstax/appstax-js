@@ -617,6 +617,14 @@ function createObjectsContext(apiClient, files, collections) {
             parameters.sortcolumn = options.order.substring(startPos, options.order.length);
         }
 
+        if(typeof options.page === "number") {
+            parameters.paging = "yes";
+            parameters.pagenum = options.page;
+        }
+        if(typeof options.pageSize === "number") {
+            parameters.paging = "yes";
+            parameters.pagelimit = options.pageSize;
+        }
         return parameters;
     }
 

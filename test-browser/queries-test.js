@@ -202,5 +202,27 @@ describe("Object queries", function() {
         expect(requests[0].url).to.equal("http://localhost:3000/objects/friends?filter=foo%3Dbar&expanddepth=1&sortorder=desc&sortcolumn=foo");
     });
 
+    it("should send paging as url parameters", function() {
+        appstax.find("friends", "foo=bar", {page: 2, pageSize: 300});
+        expect(requests).to.have.length(1);
+        expect(requests[0].method).to.equal("GET");
+        expect(requests[0].url).to.equal("http://localhost:3000/objects/friends?filter=foo%3Dbar&paging=yes&pagenum=2&pagelimit=300");
+    });
+
+    it("should send pagenum as url parameter", function() {
+        appstax.find("friends", "foo=bar", {pageSize: 50});
+        expect(requests).to.have.length(1);
+        expect(requests[0].method).to.equal("GET");
+        expect(requests[0].url).to.equal("http://localhost:3000/objects/friends?filter=foo%3Dbar&paging=yes&pagelimit=50");
+    });
+
+
+    it("should send pagelimit as url parameter", function() {
+        appstax.find("friends", "foo=bar", {page: 10});
+        expect(requests).to.have.length(1);
+        expect(requests[0].method).to.equal("GET");
+        expect(requests[0].url).to.equal("http://localhost:3000/objects/friends?filter=foo%3Dbar&paging=yes&pagenum=10");
+    });
+
 
 });
