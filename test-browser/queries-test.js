@@ -166,4 +166,41 @@ describe("Object queries", function() {
             });
     });
 
+    it("should send descending order as url parameters", function() {
+        appstax.find("friends", "foo=bar", {order: "-foo"});
+        expect(requests).to.have.length(1);
+        expect(requests[0].method).to.equal("GET");
+        expect(requests[0].url).to.equal("http://localhost:3000/objects/friends?filter=foo%3Dbar&sortorder=desc&sortcolumn=foo");
+    });
+
+    it("should send ascending order as url parameters", function() {
+        appstax.find("friends", "foo=bar", {order: "foo"});
+        expect(requests).to.have.length(1);
+        expect(requests[0].method).to.equal("GET");
+        expect(requests[0].url).to.equal("http://localhost:3000/objects/friends?filter=foo%3Dbar&sortorder=asc&sortcolumn=foo");
+    });
+
+
+    it("should send expand as url parameters", function() {
+        appstax.find("friends", "foo=bar", {expand: 2});
+        expect(requests).to.have.length(1);
+        expect(requests[0].method).to.equal("GET");
+        expect(requests[0].url).to.equal("http://localhost:3000/objects/friends?filter=foo%3Dbar&expanddepth=2");
+    });
+
+    it("should send expand as url parameters", function() {
+        appstax.find("friends", "foo=bar", {expand: true});
+        expect(requests).to.have.length(1);
+        expect(requests[0].method).to.equal("GET");
+        expect(requests[0].url).to.equal("http://localhost:3000/objects/friends?filter=foo%3Dbar&expanddepth=1");
+    });
+
+    it("should send multiple options as url parameters", function() {
+        appstax.find("friends", "foo=bar", {expand: true, order:"-foo"});
+        expect(requests).to.have.length(1);
+        expect(requests[0].method).to.equal("GET");
+        expect(requests[0].url).to.equal("http://localhost:3000/objects/friends?filter=foo%3Dbar&expanddepth=1&sortorder=desc&sortcolumn=foo");
+    });
+
+
 });

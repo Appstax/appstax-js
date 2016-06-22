@@ -606,6 +606,17 @@ function createObjectsContext(apiClient, files, collections) {
         } else if(options.expand === true) {
             parameters.expanddepth = 1;
         }
+
+        if(typeof options.order === "string") {
+            var startPos = 0
+            parameters.sortorder = "asc"
+            if(options.order.indexOf("-") == 0) {
+                parameters.sortorder = "desc"
+                startPos = 1
+            }
+            parameters.sortcolumn = options.order.substring(startPos, options.order.length);
+        }
+
         return parameters;
     }
 
